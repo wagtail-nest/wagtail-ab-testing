@@ -80,3 +80,9 @@ def add_form(request, page_id):
         'page': page,
         'form': form,
     })
+
+
+def progress(request, page, experiment):
+    return render(request, 'wagtail_ab_testing/progress.html', {
+        'page': page,
+    })

@@ -1,0 +1,9 @@
+{% extends "wagtailadmin/base.html" %}
+{% load wagtailadmin_tags i18n %}
+{% block titletag %}{% trans "A/B Test in progress" %} - {{ page.title }} - {{ experiment.name }}{% endblock %}
+
+{% block content %}
+    {% include "wagtailadmin/shared/header.html" with title=experiment.name tabbed=1 merged=1 %}
+
+
+{% endblock %}
