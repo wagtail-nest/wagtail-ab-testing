@@ -7,6 +7,7 @@ from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.core import hooks
 
 from . import views
+from .models import AbTest
 
 
 @hooks.register("register_admin_urls")
@@ -45,3 +46,10 @@ def register_create_abtest_action_menu_item():
 def redirect_to_create_ab_test(request, page):
     if 'create-ab-test' in request.POST:
         return redirect('wagtail_ab_testing:add_ab_test_compare', page.id)
+
+
+@hooks.register('before_edit_page')
+def check_for_running_ab_test(request, page):
+    running_experiment = AbTest.objects.get_current_for_page(page=page)
+    if running_experiment:
+        return views.progress(request, page, running_experiment)
