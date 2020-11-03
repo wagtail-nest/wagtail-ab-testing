@@ -1,0 +1,18 @@
+{% extends "wagtailadmin/base.html" %}
+{% load wagtailadmin_tags i18n %}
+{% block titletag %}{% trans "Create an A/B Test" %} - {{ page.title }}{% endblock %}
+
+{% block content %}
+    {% trans "Create an A/B Test" as title %}
+    {% include "wagtailadmin/shared/header.html" with title=title subtitle=page.title tabbed=1 merged=1 %}
+
+    <div class="nice-padding">
+        <form method="post">
+            {% csrf_token %}
+            {{ form }}
+
+            <button type="submit" class="button button-primary">{% trans "Save" %}</a>
+            <button type="submit" name="start" class="button button-primary">{% trans "Save and start test" %}</a>
+        </form>
+    </div>
+{% endblock %}
