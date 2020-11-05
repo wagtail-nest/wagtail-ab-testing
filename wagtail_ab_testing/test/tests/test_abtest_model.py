@@ -4,7 +4,7 @@ from django.test import TestCase
 from freezegun import freeze_time
 from wagtail.core.models import Page
 
-from wagtail_ab_testing.models import AbTest
+from wagtail_ab_testing.models import AbTest, AbTestHourlyLog
 
 
 @freeze_time('2020-11-04T22:37:00Z')
@@ -62,3 +62,64 @@ class TestAbTestModel(TestCase):
 
         self.assertEqual(log.participants, 0)
         self.assertEqual(log.conversions, 2)
+
+    def set_up_test(self, control_participants, control_conversions, treatment_participants, treatment_conversions):
+        AbTestHourlyLog.objects.create(
+            ab_test=self.ab_test,
+            variant=AbTest.Variant.CONTROL,
+            date=datetime.date(2020, 11, 4),
+            hour=22,
+            participants=control_participants,
+            conversions=control_conversions,
+        )
+
+        AbTestHourlyLog.objects.create(
+            ab_test=self.ab_test,
+            variant=AbTest.Variant.TREATMENT,
+            date=datetime.date(2020, 11, 4),
+            hour=22,
+            participants=treatment_participants,
+            conversions=treatment_conversions,
+        )
+
+    def test_check_for_winner_no_data(self):
+        self.set_up_test(0, 0, 0, 0)
+
+        self.assertIsNone(self.ab_test.check_for_winner())
+
+    def test_check_control_clearly_wins(self):
+        self.set_up_test(100, 80, 100, 20)
+
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.CONTROL)
+
+    def test_check_treatment_clearly_wins(self):
+        self.set_up_test(100, 20, 100, 80)
+
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.TREATMENT)
+
+    def test_control_just_wins(self):
+        self.set_up_test(100, 64, 100, 50)
+
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.CONTROL)
+
+    def test_treatment_just_wins(self):
+        self.set_up_test(100, 50, 100, 64)
+
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.TREATMENT)
+
+    def test_close_leaning_control(self):
+        self.set_up_test(100, 62, 100, 50)
+
+        self.assertIsNone(self.ab_test.check_for_winner())
+
+    def test_close_leaning_treatment(self):
+        self.set_up_test(100, 50, 100, 62)
+
+        self.assertIsNone(self.ab_test.check_for_winner())
+
+    def test_confidence_improves_with_more_participants(self):
+        # Even though as a percentage, this is less of a win than in previous tests,
+        # we can be more confident with a slight difference if there are more paricipants
+        self.set_up_test(1000, 550, 1000, 500)
+
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.CONTROL)
