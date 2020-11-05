@@ -63,7 +63,7 @@ class PermissionTests:
         AbTest.objects.create(
             page=self.page,
             name="Test",
-            variant_revision=self.page.get_latest_revision(),
+            treatment_revision=self.page.get_latest_revision(),
             status=status,
             sample_size=100,
         )
@@ -161,7 +161,7 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
 
         ab_test = AbTest.objects.get()
         self.assertEqual(ab_test.page, self.page.page_ptr)
-        self.assertEqual(ab_test.variant_revision, self.latest_revision)
+        self.assertEqual(ab_test.treatment_revision, self.latest_revision)
         self.assertEqual(ab_test.name, 'Test')
         self.assertEqual(ab_test.goal_type, 'foo')
         self.assertIsNone(ab_test.goal_page)
