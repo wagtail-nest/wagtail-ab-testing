@@ -10,10 +10,10 @@ from .models import AbTest
 
 class CreateAbTestForm(forms.ModelForm):
 
-    def save(self, page, variant_revision):
+    def save(self, page, treatment_revision):
         ab_test = super().save(commit=False)
         ab_test.page = page
-        ab_test.variant_revision = variant_revision
+        ab_test.treatment_revision = treatment_revision
         ab_test.save()
         return ab_test
 

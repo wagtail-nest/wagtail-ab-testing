@@ -29,7 +29,7 @@ class TestProgressView(WagtailTestUtils, TestCase):
         AbTest.objects.create(
             page=self.page,
             name="Test",
-            variant_revision=self.page.get_latest_revision(),
+            treatment_revision=self.page.get_latest_revision(),
             status=AbTest.Status.RUNNING,
             sample_size=100,
         )
