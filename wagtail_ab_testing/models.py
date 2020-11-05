@@ -1,7 +1,8 @@
+import random
 from datetime import datetime
 
 from django.db import connection, models
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.utils.translation import gettext_lazy as __
 
 
@@ -40,7 +41,7 @@ class AbTest(models.Model):
 
     objects = AbTestManager()
 
-    def finish(self, cancel=False):
+    def finish(self, *, cancel=False):
         """
         Finishes the test.
         """
@@ -48,22 +49,51 @@ class AbTest(models.Model):
 
         self.save(update_fields=['status'])
 
-    def log_new_participant(self, variant):
+    def add_participant(self, variant=None):
         """
-        Inserts a new participant into the log.
+        Inserts a new participant into the log. Returns the variant that they should be shown.
         """
+        # Get current numbers of participants for each variant
+        stats = self.hourly_logs.aggregate(
+            control_participants=Sum('participants', filter=Q(variant=self.Variant.CONTROL)),
+            treatment_participants=Sum('participants', filter=Q(variant=self.Variant.TREATMENT)),
+        )
+        control_participants = stats['control_participants'] or 0
+        treatment_participants = stats['treatment_participants'] or 0
+
+        # Create an equal number of participants for each variant
+        if variant is None:
+            if treatment_participants > control_participants:
+                variant = self.Variant.CONTROL
+
+            elif treatment_participants < control_participants:
+                variant = self.Variant.TREATMENT
+
+            else:
+                variant = random.choice([
+                    self.Variant.CONTROL,
+                    self.Variant.TREATMENT,
+                ])
+
+        # Add new participant to statistics model
         AbTestHourlyLog._increment_stats(self, variant, 1, 0)
 
         # If we have now reached the required sample size, end the test
         # Note: we don't care too much that the last few participants won't
         # get a chance to turn into conversions. It's unlikely to make a
         # significant difference to the results.
-        if self.hourly_logs.aggregate(total_participants=Sum('participants'))['total_participants'] >= self.sample_size:
+        # Note: Adding 1 to account for the new participant
+        if control_participants + treatment_participants + 1 >= self.sample_size:
             self.finish()
 
-    def log_new_conversion(self, variant):
+        return variant
+
+    def log_conversion(self, variant):
         """
-        Inserts a conversion into the log.
+        Logs when a participant completed the goal.
+
+        Note: It's up to the caller to make sure that this doesn't get called more than once
+        per participant.
         """
         AbTestHourlyLog._increment_stats(self, variant, 0, 1)
 

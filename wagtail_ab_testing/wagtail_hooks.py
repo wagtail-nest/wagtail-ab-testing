@@ -8,6 +8,7 @@ from wagtail.core import hooks
 
 from . import views
 from .models import AbTest
+from .utils import request_is_trackable
 
 
 @hooks.register("register_admin_urls")
@@ -53,3 +54,24 @@ def check_for_running_ab_test(request, page):
     running_experiment = AbTest.objects.get_current_for_page(page=page)
     if running_experiment:
         return views.progress(request, page, running_experiment)
+
+
+@hooks.register('before_serve_page')
+def before_serve_page(page, request, serve_args, serve_kwargs):
+    # Check if there are any running tests on the page
+    try:
+        test = AbTest.objects.get(page=page, status=AbTest.Status.DRAFT)
+    except AbTest.DoesNotExist:
+        return
+
+    # Check if the user is trackable
+    if not request_is_trackable(request):
+        return
+
+    # Make the user a participant if they're not already
+    if f'wagtail-ab-testing_{test.id}_variant' not in request.session:
+        request.session[f'wagtail-ab-testing_{test.id}_variant'] = test.add_participant()
+
+    # If the user is visiting the treatment variant, serve that from the revision
+    if request.session[f'wagtail-ab-testing_{test.id}_variant'] == AbTest.Variant.TREATMENT:
+        return test.treatment_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)

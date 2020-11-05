@@ -31,28 +31,20 @@ class TestAbTestModel(TestCase):
         self.ab_test.refresh_from_db()
         self.assertEqual(self.ab_test.status, AbTest.Status.CANCELLED)
 
-    def test_log_new_participant(self):
-        self.ab_test.log_new_participant(AbTest.Variant.CONTROL)
+    def test_add_participant(self):
+        variant = self.ab_test.add_participant()
 
         # This should've created a history log
         log = self.ab_test.hourly_logs.get()
 
         self.assertEqual(log.date, datetime.date(2020, 11, 4))
         self.assertEqual(log.hour, 22)
-        self.assertEqual(log.variant, AbTest.Variant.CONTROL)
+        self.assertEqual(log.variant, variant)
         self.assertEqual(log.participants, 1)
         self.assertEqual(log.conversions, 0)
 
-        # Now add another
-        self.ab_test.log_new_participant(AbTest.Variant.CONTROL)
-
-        log.refresh_from_db()
-
-        self.assertEqual(log.participants, 2)
-        self.assertEqual(log.conversions, 0)
-
-    def test_log_new_conversion(self):
-        self.ab_test.log_new_conversion(AbTest.Variant.CONTROL)
+    def test_log_conversion(self):
+        self.ab_test.log_conversion(AbTest.Variant.CONTROL)
 
         # This should've created a history log
         log = self.ab_test.hourly_logs.get()
@@ -64,7 +56,7 @@ class TestAbTestModel(TestCase):
         self.assertEqual(log.conversions, 1)
 
         # Now add another
-        self.ab_test.log_new_conversion(AbTest.Variant.CONTROL)
+        self.ab_test.log_conversion(AbTest.Variant.CONTROL)
 
         log.refresh_from_db()
 
