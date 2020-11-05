@@ -1,6 +1,8 @@
 import random
 from datetime import datetime
 
+import scipy.stats
+import numpy as np
 from django.db import connection, models
 from django.db.models import Q, Sum
 from django.utils.translation import gettext_lazy as __
@@ -38,6 +40,7 @@ class AbTest(models.Model):
     goal_page = models.ForeignKey('wagtailcore.Page', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
     sample_size = models.PositiveIntegerField()
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
+    winning_variant = models.CharField(max_length=9, null=True, choices=Variant.choices)
 
     objects = AbTestManager()
 
@@ -47,7 +50,10 @@ class AbTest(models.Model):
         """
         self.status = self.Status.CANCELLED if cancel else self.Status.COMPLETED
 
-        self.save(update_fields=['status'])
+        if not cancel:
+            self.winning_variant = self.check_for_winner()
+
+        self.save(update_fields=['status', 'winning_variant'])
 
     def add_participant(self, variant=None):
         """
@@ -96,6 +102,58 @@ class AbTest(models.Model):
         per participant.
         """
         AbTestHourlyLog._increment_stats(self, variant, 0, 1)
+
+    def check_for_winner(self):
+        """
+        Performs a Chi-Squared test to check if there is a clear winner.
+
+        Returns Variant.CONTROL or Variant.TREATMENT if there is one. Otherwise, it returns None.
+
+        For more information on what the Chi-Squared test does, see:
+        https://www.evanmiller.org/ab-testing/chi-squared.html
+        https://towardsdatascience.com/a-b-testing-with-chi-squared-test-to-maximize-conversions-and-ctrs-6599271a2c31
+        """
+        # Fetch stats from database
+        stats = self.hourly_logs.aggregate(
+            control_participants=Sum('participants', filter=Q(variant=self.Variant.CONTROL)),
+            control_conversions=Sum('conversions', filter=Q(variant=self.Variant.CONTROL)),
+            treatment_participants=Sum('participants', filter=Q(variant=self.Variant.TREATMENT)),
+            treatment_conversions=Sum('conversions', filter=Q(variant=self.Variant.TREATMENT)),
+        )
+        control_participants = stats['control_participants'] or 0
+        control_conversions = stats['control_conversions'] or 0
+        treatment_participants = stats['treatment_participants'] or 0
+        treatment_conversions = stats['treatment_conversions'] or 0
+
+        if not control_conversions and not treatment_conversions:
+            return
+
+        if control_conversions > control_participants or treatment_conversions > treatment_participants:
+            # Something's up. I'm sure it's already clear in the UI what's going on, so let's not crash
+            return
+
+        # Create a numpy array with values to pass in to Chi-Squared test
+        control_failures = control_participants - control_conversions
+        treatment_failures = treatment_participants - treatment_conversions
+
+        if control_failures == 0 and treatment_failures == 0:
+            # Prevent this error: "The internally computed table of expected frequencies has a zero element at (0, 1)."
+            return
+
+        T = np.array([[control_conversions, control_failures], [treatment_conversions, treatment_failures]])
+
+        # Perform Chi-Squared test
+        p = scipy.stats.chi2_contingency(T, correction=False)[1]
+
+        # Check if there is a clear winner
+        required_confidence_level = 0.95  # 95%
+        if 1 - p > required_confidence_level:
+            # There is a clear winner!
+            # Return the one with the highest success rate
+            if (control_conversions / control_participants) > (treatment_conversions / treatment_participants):
+                return self.Variant.CONTROL
+            else:
+                return self.Variant.TREATMENT
 
 
 class AbTestHourlyLog(models.Model):
