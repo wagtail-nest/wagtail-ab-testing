@@ -33,7 +33,7 @@ class AbTest(models.Model):
     page = models.ForeignKey('wagtailcore.Page', on_delete=models.CASCADE, related_name='ab_tests')
     name = models.CharField(max_length=255)
     treatment_revision = models.ForeignKey('wagtailcore.PageRevision', on_delete=models.CASCADE, related_name='+')
-    goal_type = models.CharField(max_length=255)
+    goal_event = models.CharField(max_length=255)
     # TODO Page chooser
     goal_page = models.ForeignKey('wagtailcore.Page', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
     sample_size = models.PositiveIntegerField()

@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
@@ -149,11 +151,18 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
     def test_get_add_form(self):
         response = self.get(self.page.id)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.context['goal_selector_props']), {
+            "testPageId": self.page.id,
+            "goalTypesByPageType": {
+                "wagtailcore.page": [{"slug": "visit-page", "name": "Visit page"}],
+                "wagtail_ab_testing_test.simplepage": [{"slug": "visit-page", "name": "Visit page"}]
+            }
+        })
 
     def test_post_add_form(self):
         response = self.client.post(reverse('wagtail_ab_testing:add_ab_test_form', args=[self.page.id]), {
             'name': 'Test',
-            'goal_type': 'foo',
+            'goal_event': 'visit-page',
             'goal_page': '',
             'sample_size': '100'
         })
@@ -163,6 +172,6 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         self.assertEqual(ab_test.page, self.page.page_ptr)
         self.assertEqual(ab_test.treatment_revision, self.latest_revision)
         self.assertEqual(ab_test.name, 'Test')
-        self.assertEqual(ab_test.goal_type, 'foo')
+        self.assertEqual(ab_test.goal_event, 'visit-page')
         self.assertIsNone(ab_test.goal_page)
         self.assertEqual(ab_test.sample_size, 100)

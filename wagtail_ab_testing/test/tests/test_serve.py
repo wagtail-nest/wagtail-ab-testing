@@ -13,7 +13,7 @@ class TestServe(TestCase):
             page=self.home_page,
             name="Test",
             treatment_revision=revision,
-            goal_type="foo",
+            goal_event="foo",
             sample_size=10,
         )
 

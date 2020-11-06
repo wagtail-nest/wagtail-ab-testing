@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255)),
-                ('goal_type', models.CharField(max_length=255)),
+                ('goal_event', models.CharField(max_length=255)),
                 ('sample_size', models.PositiveIntegerField()),
                 ('status', models.CharField(choices=[('draft', 'Draft'), ('running', 'Running'), ('paused', 'Paused'), ('cancelled', 'Cancelled'), ('completed', 'Completed')], default='draft', max_length=20)),
                 ('goal_page', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='wagtailcore.page')),
