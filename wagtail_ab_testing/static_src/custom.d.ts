@@ -12,6 +12,8 @@ declare global {
     // Wagtail globals
 
     interface WagtailConfig {
+        ADMIN_ROOT_URL: string;
+
         ADMIN_API: {
             PAGES: string;
             DOCUMENTS: string;

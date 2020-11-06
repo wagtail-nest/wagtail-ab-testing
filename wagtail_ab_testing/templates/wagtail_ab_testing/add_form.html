@@ -9,10 +9,38 @@
     <div class="nice-padding">
         <form method="post">
             {% csrf_token %}
-            {{ form }}
 
-            <button type="submit" class="button button-primary">{% trans "Save" %}</a>
-            <button type="submit" name="start" class="button button-primary">{% trans "Save and start test" %}</a>
+            <p>
+                {{ form.name.label_tag }}
+                {{ form.name }}
+                {{ form.name.errors }}
+            </p>
+
+            <p>
+                <div data-component="goal-selector" data-props="{{ goal_selector_props }}"></div>
+            </p>
+
+            <p>
+                {{ form.sample_size.label_tag }}
+                {{ form.sample_size }}
+                {{ form.sample_size.errors }}
+            </p>
+
+            <p>
+                <button type="submit" class="button button-primary">{% trans "Save" %}</button>
+                <button type="submit" name="start" class="button button-primary">{% trans "Save and start test" %}</button>
+            </p>
         </form>
     </div>
+{% endblock %}
+
+{% block extra_js %}
+    {% include "wagtailadmin/pages/_editor_js.html" %}
+    <script>
+        {% url 'wagtailadmin_home' as wagtailadmin_root_url %}
+        wagtailConfig.ADMIN_ROOT_URL = '{{ wagtailadmin_root_url|escapejs }}';
+    </script>
+    <script src="{% url 'wagtail_ab_testing:javascript_catalog' %}"></script>
+    <script type="text/javascript" src="{% versioned_static 'wagtailadmin/js/page-chooser-modal.js' %}"></script>
+    <script src="{% versioned_static 'wagtail_ab_testing/js/wagtail-ab-testing.js' %}"></script>
 {% endblock %}
