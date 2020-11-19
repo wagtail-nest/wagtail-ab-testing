@@ -1,9 +1,13 @@
+import datetime
 import json
+import random
 
 from django import forms
 from django.core.exceptions import PermissionDenied
+from django.db.models import Sum, Q
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from wagtail.admin import messages
 from wagtail.core.models import Page, PAGE_MODEL_CLASSES
@@ -111,7 +115,95 @@ def add_form(request, page_id):
     })
 
 
-def progress(request, page, experiment):
+def progress(request, page, ab_test):
+    # Fetch stats from database
+    stats = ab_test.hourly_logs.aggregate(
+        control_participants=Sum('participants', filter=Q(variant=AbTest.Variant.CONTROL)),
+        control_conversions=Sum('conversions', filter=Q(variant=AbTest.Variant.CONTROL)),
+        treatment_participants=Sum('participants', filter=Q(variant=AbTest.Variant.TREATMENT)),
+        treatment_conversions=Sum('conversions', filter=Q(variant=AbTest.Variant.TREATMENT)),
+    )
+    control_participants = stats['control_participants'] or 0
+    control_conversions = stats['control_conversions'] or 0
+    treatment_participants = stats['treatment_participants'] or 0
+    treatment_conversions = stats['treatment_conversions'] or 0
+
+    current_sample_size = control_participants + treatment_participants
+
+    if ab_test.status == AbTest.Status.RUNNING and current_sample_size:
+        participants_per_day = current_sample_size / ab_test.total_running_duration()
+        estimated_days_remaining = (ab_test.sample_size - current_sample_size) / participants_per_day
+        estimated_completion_date = timezone.now().date() + datetime.timedelta(days=estimated_days_remaining)
+    else:
+        estimated_completion_date = None
+
+    # Generate time series data for the chart
+    time_series = []
+    control = 0
+    treatment = 0
+    date = None
+    for log in ab_test.hourly_logs.order_by('date', 'hour'):
+        # Accumulate the conversions
+        if log.variant == AbTest.Variant.CONTROL:
+            control += log.conversions
+        else:
+            treatment += log.conversions
+
+        while date is None or date < log.date:
+            if date is None:
+                # First record
+                date = log.date
+            else:
+                # Move time forward to match log record
+                date += datetime.timedelta(days=1)
+
+            # Generate a log for this time
+            time_series.append({
+                'date': date,
+                'control': control,
+                'treatment': treatment,
+            })
+
     return render(request, 'wagtail_ab_testing/progress.html', {
         'page': page,
+        'ab_test': ab_test,
+        'current_sample_size': current_sample_size,
+        'current_sample_size_percent': int(current_sample_size / ab_test.sample_size * 100),
+        'control_conversions': control_conversions,
+        'control_participants': control_participants,
+        'control_conversions_percent': int(control_conversions / control_participants * 100) if control_participants else 0,
+        'treatment_conversions': treatment_conversions,
+        'treatment_participants': treatment_participants,
+        'treatment_conversions_percent': int(treatment_conversions / treatment_participants * 100) if treatment_participants else 0,
+        'control_is_winner': ab_test.winning_variant == AbTest.Variant.CONTROL,
+        'treatment_is_winner': ab_test.winning_variant == AbTest.Variant.TREATMENT,
+        'estimated_completion_date': estimated_completion_date,
+        'chart_data': json.dumps({
+            'x': 'x',
+            'columns': [
+                ['x'] + [data_point['date'].isoformat() for data_point in time_series],
+                [_("Control")] + [data_point['control'] for data_point in time_series],
+                [_("Treatment")] + [data_point['treatment'] for data_point in time_series],
+            ],
+            'type': 'spline',
+        }),
     })
+
+
+# TEMPORARY
+def add_test_participants(request, ab_test_id):
+    ab_test = get_object_or_404(AbTest, id=ab_test_id)
+
+    for i in range(int(ab_test.sample_size / 10)):
+        ab_test.add_participant()
+
+    return redirect('wagtailadmin_pages:edit', ab_test.page_id)
+
+
+def add_test_conversions(request, ab_test_id, variant):
+    ab_test = get_object_or_404(AbTest, id=ab_test_id)
+
+    for i in range(int(ab_test.sample_size / 10)):
+        ab_test.log_conversion(variant, time=timezone.now() - datetime.timedelta(days=random.randint(1, 20), hours=random.randint(0, 24)))
+
+    return redirect('wagtailadmin_pages:edit', ab_test.page_id)

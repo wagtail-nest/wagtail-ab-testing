@@ -1,0 +1,163 @@
+@import 'vendor/c3.min.css';
+
+$color-control: #0c0073;
+$color-treatment: #ef746f;
+
+$light-teal: #e1f0f0;
+$dark-teal: #007273;
+
+$charcoal-grey: #333;
+
+.abtest-progressbar {
+    position: relative;
+
+    &__sample-size {
+        width: 100%;
+    }
+
+    &__sample-size line {
+        stroke: black;
+        stroke-width: 2px;
+    }
+
+    &__sample-size-bg {
+        fill: $light-teal;
+    }
+
+    &__sample-size-bar {
+        fill: $dark-teal;
+    }
+
+    &__sample-size-percentage {
+        font-weight: bold;
+        font-size: 40px;
+        fill: white;
+    }
+
+    &__sample-size-complete {
+        font-size: 17px;
+        fill: white;
+    }
+}
+
+.abtest-results {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    overflow: auto;
+
+    &__variant {
+        float: left;
+        width: 50%;
+        box-sizing: border-box;
+
+        &--control {
+            padding-right: 10px;
+            color: $color-control;
+
+            a {
+                color: $color-control !important;
+
+                &:hover {
+                    color: darken($color-control, 10%) !important;
+                }
+            }
+        }
+
+        &--treatment {
+            right: 0;
+            padding-left: 10px;
+            color: $color-treatment;
+
+            a {
+                color: $color-treatment !important;
+
+                &:hover {
+                    color: darken($color-treatment, 10%) !important;
+                }
+            }
+        }
+
+        h3 .icon {
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    &__variant-heading {
+        height: 30px;
+        border-bottom-width: 5px;
+        border-bottom-style: solid;
+        color: white;
+        text-transform: uppercase;
+        text-align: center;
+        font-size: 15px;
+        font-weight: bold;
+        line-height: 30px;
+    }
+    &__variant--control &__variant-heading {
+        border-bottom-color: $color-control;
+    }
+    &__variant--treatment &__variant-heading {
+        border-bottom-color: $color-treatment;
+    }
+
+    &__variant--control &__variant-heading--winner {
+        background-color: $color-control;
+    }
+    &__variant--treatment &__variant-heading--winner {
+        background-color: $color-treatment;
+    }
+
+    &__variant-inner {
+        border: 1px solid #eeeeee;
+        border-top: none;
+        box-sizing: border-box;
+        padding: 20px;
+
+        h3 {
+            text-transform: uppercase;
+            margin-top: 0;
+            font-weight: bold;
+            font-size: 20px;
+        }
+    }
+
+    &__variant-stats {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        margin-bottom: 30px;
+
+        &:after {
+            content: ' ';
+            clear: both;
+            display: block;
+        }
+    }
+
+    &__variant-stats > li {
+        float: left;
+        padding-right: 30px;
+        margin-top: 30px;
+    }
+
+    &__variant-stat {
+        font-weight: bold;
+        font-size: 50px;
+    }
+
+    &__variant-stat-name {
+        text-transform: uppercase;
+        font-size: 20px;
+        color: $charcoal-grey;
+        margin-top: 20px;
+
+        span {
+            text-transform: none;
+        }
+    }
+}
+
+.abtest-chart {
+    padding-top: 20px;
+}
