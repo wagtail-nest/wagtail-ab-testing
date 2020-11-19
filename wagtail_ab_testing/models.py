@@ -1,10 +1,11 @@
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import scipy.stats
 import numpy as np
 from django.db import connection, models
 from django.db.models import Q, Sum
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as __
 
 
@@ -41,8 +42,48 @@ class AbTest(models.Model):
     sample_size = models.PositiveIntegerField()
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     winning_variant = models.CharField(max_length=9, null=True, choices=Variant.choices)
+    first_started_at = models.DateTimeField(null=True)
+
+    # Because an admin can pause/resume tests, we need to make sure we record the amount of time it has been running
+    previous_run_duration = models.DurationField(default=timedelta(0))
+    current_run_started_at = models.DateTimeField(null=True)
 
     objects = AbTestManager()
+
+    def start(self):
+        """
+        Starts/unpauses the test.
+        """
+        if self.status in [self.Status.DRAFT, self.Status.PAUSED]:
+            self.status = self.Status.RUNNING
+            self.current_run_started_at = timezone.now()
+
+            if self.status == self.Status.DRAFT:
+                self.first_started_at = self.current_run_started_at
+
+            self.save(update_fields=['status', 'current_run_started_at', 'first_started_at'])
+
+    def pause(self):
+        """
+        Pauses the test.
+        """
+        if self.status == self.Status.RUNNING:
+            self.status = self.Status.PAUSED
+            self.previous_run_duration += timezone.now() - self.current_run_started_at
+            self.current_run_started_at = None
+
+            self.save(update_fields=['status', 'previous_run_duration', 'current_run_started_at'])
+
+    def total_running_duration(self):
+        """
+        Returns the total duration that this test has been running.
+        """
+        duration = self.previous_run_duration
+
+        if self.status == self.Status.RUNNING:
+            duration += timezone.now() - self.current_run_started_at
+
+        return duration
 
     def finish(self, *, cancel=False):
         """
