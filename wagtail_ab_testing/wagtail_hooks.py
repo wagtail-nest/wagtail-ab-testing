@@ -17,6 +17,8 @@ def register_admin_urls():
         path('jsi18n/', JavaScriptCatalog.as_view(packages=['wagtail_ab_testing']), name='javascript_catalog'),
         path('add/<int:page_id>/compare/', views.add_compare, name='add_ab_test_compare'),
         path('add/<int:page_id>/', views.add_form, name='add_ab_test_form'),
+        path('add-test-participants/<int:ab_test_id>/', views.add_test_participants, name='add_test_participants'),
+        path('add-test-conversions/<int:ab_test_id>/<slug:variant>', views.add_test_conversions, name='add_test_conversions'),
     ]
 
     return [

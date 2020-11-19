@@ -1,5 +1,6 @@
 import random
-from datetime import datetime, timedelta
+
+from datetime import datetime, timedelta, timezone as tz
 
 import scipy.stats
 import numpy as np
@@ -8,6 +9,8 @@ from django.db import connection, models
 from django.db.models import Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as __
+
+from .events import EVENT_TYPES
 
 
 class AbTestManager(models.Manager):
@@ -52,6 +55,16 @@ class AbTest(models.Model):
     current_run_started_at = models.DateTimeField(null=True)
 
     objects = AbTestManager()
+
+    def get_goal_event_display(self):
+        """
+        Returns the display name of the goal event.
+        """
+        for event_type_slug, event_type in EVENT_TYPES.items():
+            if event_type_slug == self.goal_event:
+                return event_type.name
+
+        return self.goal_event
 
     def start(self):
         """
@@ -138,14 +151,14 @@ class AbTest(models.Model):
 
         return variant
 
-    def log_conversion(self, variant):
+    def log_conversion(self, variant, *, time=None):
         """
         Logs when a participant completed the goal.
 
         Note: It's up to the caller to make sure that this doesn't get called more than once
         per participant.
         """
-        AbTestHourlyLog._increment_stats(self, variant, 0, 1)
+        AbTestHourlyLog._increment_stats(self, variant, 0, 1, time=time)
 
     def check_for_winner(self):
         """
@@ -214,13 +227,13 @@ class AbTestHourlyLog(models.Model):
     conversions = models.PositiveIntegerField(default=0)
 
     @classmethod
-    def _increment_stats(cls, ab_test, variant, participants, conversions):
+    def _increment_stats(cls, ab_test, variant, participants, conversions, *, time=None):
         """
         Increments the participants/conversions statistics for the given ab_test/variant.
 
         This will create a new AbTestHourlyLog record if one doesn't exist for the current hour.
         """
-        time = datetime.utcnow()
+        time = time.astimezone(tz.utc) if time else datetime.utcnow()
         date = time.date()
         hour = time.hour
 
