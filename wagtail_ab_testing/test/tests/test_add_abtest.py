@@ -162,6 +162,7 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
     def test_post_add_form(self):
         response = self.client.post(reverse('wagtail_ab_testing:add_ab_test_form', args=[self.page.id]), {
             'name': 'Test',
+            'hypothesis': 'Does changing the title to "Donate now!" increase donations?',
             'goal_event': 'visit-page',
             'goal_page': '',
             'sample_size': '100'
@@ -172,6 +173,9 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         self.assertEqual(ab_test.page, self.page.page_ptr)
         self.assertEqual(ab_test.treatment_revision, self.latest_revision)
         self.assertEqual(ab_test.name, 'Test')
+        self.assertEqual(ab_test.hypothesis, 'Does changing the title to "Donate now!" increase donations?')
         self.assertEqual(ab_test.goal_event, 'visit-page')
         self.assertIsNone(ab_test.goal_page)
         self.assertEqual(ab_test.sample_size, 100)
+        self.assertEqual(ab_test.created_by, self.user)
+        self.assertEqual(ab_test.status, AbTest.Status.DRAFT)

@@ -17,6 +17,12 @@
             </p>
 
             <p>
+                {{ form.hypothesis.label_tag }}
+                {{ form.hypothesis }}
+                {{ form.hypothesis.errors }}
+            </p>
+
+            <p>
                 <div data-component="goal-selector" data-props="{{ goal_selector_props }}"></div>
             </p>
 
