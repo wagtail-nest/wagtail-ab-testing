@@ -105,7 +105,6 @@ def add_form(request, page_id):
         'page': page,
         'form': form,
         'goal_selector_props': json.dumps({
-            'testPageId': page.id,
             'goalTypesByPageType': {
                 f'{page_type._meta.app_label}.{page_type._meta.model_name}': [
                     {
