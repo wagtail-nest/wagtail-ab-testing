@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 import scipy.stats
 import numpy as np
+from django.conf import settings
 from django.db import connection, models
 from django.db.models import Q, Sum
 from django.utils import timezone
@@ -35,11 +36,13 @@ class AbTest(models.Model):
 
     page = models.ForeignKey('wagtailcore.Page', on_delete=models.CASCADE, related_name='ab_tests')
     name = models.CharField(max_length=255)
+    hypothesis = models.TextField(blank=True)
     treatment_revision = models.ForeignKey('wagtailcore.PageRevision', on_delete=models.CASCADE, related_name='+')
     goal_event = models.CharField(max_length=255)
     # TODO Page chooser
     goal_page = models.ForeignKey('wagtailcore.Page', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
     sample_size = models.PositiveIntegerField()
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     winning_variant = models.CharField(max_length=9, null=True, choices=Variant.choices)
     first_started_at = models.DateTimeField(null=True)

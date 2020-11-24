@@ -14,6 +14,7 @@ from .events import EVENT_TYPES
 
 class CreateAbTestForm(forms.ModelForm):
     goal_event = forms.ChoiceField(choices=[])
+    hypothesis = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,16 +24,17 @@ class CreateAbTestForm(forms.ModelForm):
             for slug, goal in EVENT_TYPES.items()
         ]
 
-    def save(self, page, treatment_revision):
+    def save(self, page, treatment_revision, user):
         ab_test = super().save(commit=False)
         ab_test.page = page
         ab_test.treatment_revision = treatment_revision
+        ab_test.created_by = user
         ab_test.save()
         return ab_test
 
     class Meta:
         model = AbTest
-        fields = ['name', 'goal_event', 'goal_page', 'sample_size']
+        fields = ['name', 'hypothesis', 'goal_event', 'goal_page', 'sample_size']
 
 
 def add_ab_test_checks(request, page):
@@ -83,7 +85,7 @@ def add_form(request, page_id):
         form = CreateAbTestForm(request.POST)
 
         if form.is_valid():
-            form.save(page, page.get_latest_revision())
+            form.save(page, page.get_latest_revision(), request.user)
 
             return redirect('wagtailadmin_pages:edit', page.id)
     else:
