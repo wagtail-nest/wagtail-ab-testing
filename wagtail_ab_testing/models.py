@@ -44,7 +44,6 @@ class AbTest(models.Model):
     hypothesis = models.TextField(blank=True)
     treatment_revision = models.ForeignKey('wagtailcore.PageRevision', on_delete=models.CASCADE, related_name='+')
     goal_event = models.CharField(max_length=255)
-    # TODO Page chooser
     goal_page = models.ForeignKey('wagtailcore.Page', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
     sample_size = models.PositiveIntegerField()
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')

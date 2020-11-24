@@ -6,38 +6,62 @@
     {% trans "Create an A/B Test" as title %}
     {% include "wagtailadmin/shared/header.html" with title=title subtitle=page.title tabbed=1 merged=1 %}
 
-    <div class="nice-padding">
-        <form method="post">
-            {% csrf_token %}
+    <form method="post" class="fixlabels">
+        {% csrf_token %}
 
-            <p>
-                {{ form.name.label_tag }}
-                {{ form.name }}
-                {{ form.name.errors }}
-            </p>
+        <section class="section">
+            <div class="section__title">
+                <h3>{% trans "Enter test details" %}</h3>
+            </div>
 
-            <p>
-                {{ form.hypothesis.label_tag }}
-                {{ form.hypothesis }}
-                {{ form.hypothesis.errors }}
-            </p>
+            <div class="section__content nice-padding">
+                <p>
+                    {{ form.name.label_tag }}
+                    {{ form.name }}
+                    {{ form.name.errors }}
+                </p>
 
-            <p>
+                <p>
+                    {{ form.hypothesis.label_tag }}
+                    {{ form.hypothesis }}
+                    {{ form.hypothesis.errors }}
+                </p>
+            </div>
+        </section>
+
+
+        <section class="section">
+            <div class="section__title">
+                <h3>{% trans "Choose a goal" %}</h3>
+            </div>
+
+            <div class="section__content nice-padding">
                 <div data-component="goal-selector" data-props="{{ goal_selector_props }}"></div>
-            </p>
+                <p>
+                    {% trans "By default pages only have one goal (Page Visit). Read the developer docs to earn why, and how to add custom goals." %}
+                </p>
+            </div>
+        </section>
 
-            <p>
+
+        <section class="section">
+            <div class="section__title">
+                <h3>{% trans "Sample size" %}</h3>
+            </div>
+
+            <p class="section__content nice-padding">
                 {{ form.sample_size.label_tag }}
                 {{ form.sample_size }}
                 {{ form.sample_size.errors }}
+                {% trans "Need help calculating sample size for A/B tests? Try Optimisely, Evan Miller or AB Tasty." %}
             </p>
+        </section>
 
-            <p>
-                <button type="submit" class="button button-primary">{% trans "Save" %}</button>
-                <button type="submit" name="start" class="button button-primary">{% trans "Save and start test" %}</button>
-            </p>
-        </form>
-    </div>
+        <p class="section__content nice-padding">
+            <button type="submit" class="button button-primary">{% trans "Save" %}</button>
+            <button type="submit" name="start" class="button button-primary">{% trans "Save and start test" %}</button>
+        </p>
+    </form>
 {% endblock %}
 
 {% block extra_js %}

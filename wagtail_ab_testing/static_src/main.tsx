@@ -3,6 +3,9 @@ import c3 from 'c3';
 import { initGoalSelector } from './components/GoalSelector';
 import './style/progress.scss';
 
+import './styles/sections.scss';
+import './styles/forms.scss';
+
 document.addEventListener('DOMContentLoaded', () => {
     initGoalSelector();
 

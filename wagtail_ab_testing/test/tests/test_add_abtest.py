@@ -152,7 +152,6 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         response = self.get(self.page.id)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.context['goal_selector_props']), {
-            "testPageId": self.page.id,
             "goalTypesByPageType": {
                 "wagtailcore.page": [{"slug": "visit-page", "name": "Visit page"}],
                 "wagtail_ab_testing_test.simplepage": [{"slug": "visit-page", "name": "Visit page"}]
