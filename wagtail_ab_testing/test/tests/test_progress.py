@@ -26,7 +26,7 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.page.save_revision().publish()
 
         # Create an A/B test
-        AbTest.objects.create(
+        self.ab_test = AbTest.objects.create(
             page=self.page,
             name="Test",
             treatment_revision=self.page.get_latest_revision(),
@@ -39,3 +39,53 @@ class TestProgressView(WagtailTestUtils, TestCase):
 
         self.assertNotContains(response, "Save draft")
         self.assertTemplateUsed(response, "wagtail_ab_testing/progress.html")
+
+    def test_post_start(self):
+        self.ab_test.status = AbTest.Status.DRAFT
+        self.ab_test.save()
+
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-start-ab-test': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+
+        self.assertEqual(self.ab_test.status, AbTest.Status.RUNNING)
+
+    def test_post_pause(self):
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-pause-ab-test': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+
+        self.assertEqual(self.ab_test.status, AbTest.Status.PAUSED)
+
+    def test_post_restart(self):
+        self.ab_test.status = AbTest.Status.PAUSED
+        self.ab_test.save()
+
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-restart-ab-test': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+
+        self.assertEqual(self.ab_test.status, AbTest.Status.RUNNING)
+
+    def test_post_end(self):
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-end-ab-test': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+
+        self.assertEqual(self.ab_test.status, AbTest.Status.CANCELLED)

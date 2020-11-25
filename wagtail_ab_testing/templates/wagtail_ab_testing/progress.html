@@ -104,6 +104,22 @@
             <div component="chart" data="{{ chart_data }}"></div>
         </div>
     </div>
+
+    <form action="{% url 'wagtailadmin_pages:edit' page.id %}" method="POST">
+        {% csrf_token %}
+
+        <footer>
+            <nav aria-label="{% trans 'Actions' %}">
+                <ul>
+                    <li class="actions actions--primary">
+                        <div class="dropdown dropup dropdown-button match-width">
+                            {{ action_menu.render_html }}
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </footer>
+    </form>
 {% endblock %}
 
 {% block extra_css %}
