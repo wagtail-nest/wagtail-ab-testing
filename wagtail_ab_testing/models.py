@@ -71,11 +71,12 @@ class AbTest(models.Model):
         Starts/unpauses the test.
         """
         if self.status in [self.Status.DRAFT, self.Status.PAUSED]:
-            self.status = self.Status.RUNNING
             self.current_run_started_at = timezone.now()
 
             if self.status == self.Status.DRAFT:
                 self.first_started_at = self.current_run_started_at
+
+            self.status = self.Status.RUNNING
 
             self.save(update_fields=['status', 'current_run_started_at', 'first_started_at'])
 
@@ -85,8 +86,10 @@ class AbTest(models.Model):
         """
         if self.status == self.Status.RUNNING:
             self.status = self.Status.PAUSED
-            self.previous_run_duration += timezone.now() - self.current_run_started_at
-            self.current_run_started_at = None
+
+            if self.current_run_started_at is not None:
+                self.previous_run_duration += timezone.now() - self.current_run_started_at
+                self.current_run_started_at = None
 
             self.save(update_fields=['status', 'previous_run_duration', 'current_run_started_at'])
 

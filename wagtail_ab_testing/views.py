@@ -7,10 +7,13 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Sum, Q
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
 from wagtail.admin import messages
-from wagtail.core.models import Page, PAGE_MODEL_CLASSES
+from wagtail.admin.action_menu import ActionMenuItem
+from wagtail.core.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
 
 from .models import AbTest
 from .events import EVENT_TYPES
@@ -89,7 +92,10 @@ def add_form(request, page_id):
         form = CreateAbTestForm(request.POST)
 
         if form.is_valid():
-            form.save(page, page.get_latest_revision(), request.user)
+            ab_test = form.save(page, page.get_latest_revision(), request.user)
+
+            if 'start' in request.POST:
+                ab_test.start()
 
             return redirect('wagtailadmin_pages:edit', page.id)
     else:
@@ -115,7 +121,110 @@ def add_form(request, page_id):
     })
 
 
+class StartAbTestMenuItem(ActionMenuItem):
+    name = 'action-start-ab-test'
+    label = _("Start A/B test")
+
+    def is_shown(self, request, context):
+        return context['ab_test'].status == AbTest.Status.DRAFT
+
+
+class RestartAbTestMenuItem(ActionMenuItem):
+    name = 'action-restart-ab-test'
+    label = _("Restart A/B test")
+
+    def is_shown(self, request, context):
+        return context['ab_test'].status == AbTest.Status.PAUSED
+
+
+class EndAbTestMenuItem(ActionMenuItem):
+    name = 'action-end-ab-test'
+    label = _("End A/B test")
+
+    def is_shown(self, request, context):
+        return context['ab_test'].status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]
+
+
+class PauseAbTestMenuItem(ActionMenuItem):
+    name = 'action-pause-ab-test'
+    label = _("Pause A/B test")
+
+    def is_shown(self, request, context):
+        return context['ab_test'].status == AbTest.Status.RUNNING
+
+
+class AbTestActionMenu:
+    template = 'wagtailadmin/pages/action_menu/menu.html'
+
+    def __init__(self, request, **kwargs):
+        self.request = request
+        self.context = kwargs
+        self.context['user_page_permissions'] = UserPagePermissionsProxy(self.request.user)
+
+        self.menu_items = [
+            StartAbTestMenuItem(order=0),
+            RestartAbTestMenuItem(order=1),
+            EndAbTestMenuItem(order=2),
+            PauseAbTestMenuItem(order=3)
+        ]
+
+        self.menu_items = [
+            menu_item
+            for menu_item in self.menu_items
+            if menu_item.is_shown(self.request, self.context)
+        ]
+
+        try:
+            self.default_item = self.menu_items.pop(0)
+        except IndexError:
+            self.default_item = None
+
+    def render_html(self):
+        return render_to_string(self.template, {
+            'default_menu_item': self.default_item.render_html(self.request, self.context),
+            'show_menu': bool(self.menu_items),
+            'rendered_menu_items': [
+                menu_item.render_html(self.request, self.context)
+                for menu_item in self.menu_items
+            ],
+        }, request=self.request)
+
+    @cached_property
+    def media(self):
+        media = forms.Media()
+        for item in self.menu_items:
+            media += item.media
+        return media
+
+
 def progress(request, page, ab_test):
+    if request.method == 'POST':
+        if 'action-start-ab-test' in request.POST or 'action-restart-ab-test' in request.POST:
+            if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.PAUSED]:
+                ab_test.start()
+
+                messages.success(request, _("A/B test started!"))
+            else:
+                messages.error(request, _("The A/B test must be in draft or paused in order to be started."))
+
+        elif 'action-end-ab-test' in request.POST:
+            if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]:
+                ab_test.finish(cancel=True)
+            else:
+                messages.error(request, _("The A/B test has already ended."))
+
+        elif 'action-pause-ab-test' in request.POST:
+            if ab_test.status == AbTest.Status.RUNNING:
+                ab_test.pause()
+            else:
+                messages.error(request, _("The A/B test cannot be paused because it is not running."))
+
+        else:
+            messages.error(request, _("Unknown action"))
+
+        # Redirect back
+        return redirect('wagtailadmin_pages:edit', page.id)
+
     # Fetch stats from database
     stats = ab_test.hourly_logs.aggregate(
         control_participants=Sum('participants', filter=Q(variant=AbTest.Variant.CONTROL)),
@@ -130,12 +239,14 @@ def progress(request, page, ab_test):
 
     current_sample_size = control_participants + treatment_participants
 
+    estimated_completion_date = None
     if ab_test.status == AbTest.Status.RUNNING and current_sample_size:
-        participants_per_day = current_sample_size / ab_test.total_running_duration()
-        estimated_days_remaining = (ab_test.sample_size - current_sample_size) / participants_per_day
-        estimated_completion_date = timezone.now().date() + datetime.timedelta(days=estimated_days_remaining)
-    else:
-        estimated_completion_date = None
+        running_duration_days = ab_test.total_running_duration().days
+
+        if running_duration_days > 0:
+            participants_per_day = current_sample_size / ab_test.total_running_duration().days
+            estimated_days_remaining = (ab_test.sample_size - current_sample_size) / participants_per_day
+            estimated_completion_date = timezone.now().date() + datetime.timedelta(days=estimated_days_remaining)
 
     # Generate time series data for the chart
     time_series = []
@@ -187,6 +298,7 @@ def progress(request, page, ab_test):
             ],
             'type': 'spline',
         }),
+        'action_menu': AbTestActionMenu(request, view='edit', page=page, ab_test=ab_test),
     })
 
 
