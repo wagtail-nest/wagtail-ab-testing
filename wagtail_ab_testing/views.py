@@ -68,15 +68,22 @@ def add_ab_test_checks(request, page):
 
 
 def add_compare(request, page_id):
-    page = get_object_or_404(Page, id=page_id)
+    page = get_object_or_404(Page, id=page_id).specific
 
     # Run some checks
     response = add_ab_test_checks(request, page)
     if response:
         return response
 
+    latest_revision_as_page = page.get_latest_revision().as_page_object()
+    comparison = page.get_edit_handler().get_comparison()
+    comparison = [comp(page, latest_revision_as_page) for comp in comparison]
+    comparison = [comp for comp in comparison if comp.has_changed()]
+
     return render(request, 'wagtail_ab_testing/add_compare.html', {
         'page': page,
+        'latest_revision_as_page': latest_revision_as_page,
+        'comparison': comparison,
     })
 
 
