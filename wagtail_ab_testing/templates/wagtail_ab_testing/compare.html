@@ -1,17 +1,13 @@
 {% extends "wagtailadmin/base.html" %}
 {% load wagtailadmin_tags i18n %}
-{% block titletag %}{% trans "Create an A/B Test" %} - {{ page.title }}{% endblock %}
+{% block titletag %}{% trans "Compare A/B test variants" %} - {{ page.title }}{% endblock %}
 
 {% block content %}
-    {% trans "Create an A/B Test" as title %}
+    {% trans "Compare A/B test variants" as title %}
     {% include "wagtailadmin/shared/header.html" with title=title subtitle=page.title tabbed=1 merged=1 %}
 
     <div class="nice-padding" style="padding-top: 20px;">
-        <p>{% trans "This will create an A/B test comparing the published version of this page and the draft with the following differences:" %}</p>
-
         {% include "./includes/comparison.html" %}
-
-        <a class="button button-primary" href="{% url 'wagtail_ab_testing:add_ab_test_form' page.id %}">{% trans "Create this test" %}</a>
     </div>
 {% endblock %}
 
