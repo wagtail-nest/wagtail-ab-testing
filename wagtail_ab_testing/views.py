@@ -309,6 +309,21 @@ def progress(request, page, ab_test):
     })
 
 
+def compare_draft(request, page_id):
+    page = get_object_or_404(Page, id=page_id).specific
+
+    latest_revision_as_page = page.get_latest_revision().as_page_object()
+    comparison = page.get_edit_handler().get_comparison()
+    comparison = [comp(page, latest_revision_as_page) for comp in comparison]
+    comparison = [comp for comp in comparison if comp.has_changed()]
+
+    return render(request, 'wagtail_ab_testing/compare.html', {
+        'page': page,
+        'latest_revision_as_page': latest_revision_as_page,
+        'comparison': comparison,
+    })
+
+
 # TEMPORARY
 def add_test_participants(request, ab_test_id):
     ab_test = get_object_or_404(AbTest, id=ab_test_id)
