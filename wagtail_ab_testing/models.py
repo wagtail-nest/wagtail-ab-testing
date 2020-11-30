@@ -7,8 +7,10 @@ import numpy as np
 from django.conf import settings
 from django.db import connection, models
 from django.db.models import Q, Sum
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as __
+from wagtail.core.signals import page_unpublished
 
 from .events import EVENT_TYPES
 
@@ -284,3 +286,9 @@ class AbTestHourlyLog(models.Model):
         unique_together = [
             ('ab_test', 'variant', 'date', 'hour'),
         ]
+
+
+@receiver(page_unpublished)
+def cancel_on_page_unpublish(instance, **kwargs):
+    for ab_test in AbTest.objects.filter(page=instance, status__in=[AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]):
+        ab_test.finish(cancel=True)
