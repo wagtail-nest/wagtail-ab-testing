@@ -9,7 +9,7 @@ from django.db import connection, models
 from django.db.models import Q, Sum
 from django.dispatch import receiver
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as __
+from django.utils.translation import gettext as _, gettext_lazy as __
 from wagtail.core.signals import page_unpublished
 
 from .events import EVENT_TYPES
@@ -215,6 +215,30 @@ class AbTest(models.Model):
                 return self.Variant.CONTROL
             else:
                 return self.Variant.TREATMENT
+
+    def get_status_description(self):
+        """
+        Returns a string that describes the status in more detail.
+        """
+        status = self.get_status_display()
+
+        if self.status == AbTest.Status.RUNNING:
+            participants = self.hourly_logs.aggregate(participants=Sum('participants'))['participants'] or 0
+            completeness_percentange = int((participants * 100) / self.sample_size)
+            return status + f" ({completeness_percentange}%)"
+
+        elif self.status == AbTest.Status.COMPLETED:
+            if self.winning_variant == AbTest.Variant.CONTROL:
+                return status + " (" + _("Control won") + ")"
+
+            elif self.winning_variant == AbTest.Variant.TREATMENT:
+                return status + " (" + _("Treatment won") + ")"
+
+            else:
+                return status + " (" + _("No clear winner") + ")"
+
+        else:
+            return status
 
 
 class AbTestHourlyLog(models.Model):

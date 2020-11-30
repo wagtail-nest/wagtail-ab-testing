@@ -1,9 +1,10 @@
 from django.shortcuts import redirect
-from django.urls import path, include
-from django.utils.translation import gettext_lazy as __
+from django.urls import path, include, reverse
+from django.utils.translation import gettext as _, gettext_lazy as __
 from django.views.i18n import JavaScriptCatalog
 
 from wagtail.admin.action_menu import ActionMenuItem
+from wagtail.admin.menu import MenuItem
 from wagtail.core import hooks
 
 from . import views
@@ -20,6 +21,8 @@ def register_admin_urls():
         path('add/<int:page_id>/', views.add_form, name='add_ab_test_form'),
         path('add-test-participants/<int:ab_test_id>/', views.add_test_participants, name='add_test_participants'),
         path('add-test-conversions/<int:ab_test_id>/<slug:variant>', views.add_test_conversions, name='add_test_conversions'),
+        path('report/', views.AbTestingReportView.as_view(), name='report'),
+
     ]
 
     return [
@@ -78,3 +81,13 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
     # If the user is visiting the treatment variant, serve that from the revision
     if request.session[f'wagtail-ab-testing_{test.id}_variant'] == AbTest.Variant.TREATMENT:
         return test.treatment_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+
+
+class AbTestingReportMenuItem(MenuItem):
+    def is_shown(self, request):
+        return True
+
+
+@hooks.register('register_reports_menu_item')
+def register_ab_testing_report_menu_item():
+    return AbTestingReportMenuItem(_('A/B testing'), reverse('wagtail_ab_testing:report'), icon_name='', order=1000)

@@ -10,9 +10,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.functional import cached_property
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, gettext_lazy
+import django_filters
+from django_filters.constants import EMPTY_VALUES
 from wagtail.admin import messages
 from wagtail.admin.action_menu import ActionMenuItem
+from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
+from wagtail.admin.views.reports import ReportView
 from wagtail.core.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
 
 from .models import AbTest
@@ -340,3 +344,31 @@ def add_test_conversions(request, ab_test_id, variant):
         ab_test.log_conversion(variant, time=timezone.now() - datetime.timedelta(days=random.randint(1, 20), hours=random.randint(0, 24)))
 
     return redirect('wagtailadmin_pages:edit', ab_test.page_id)
+
+
+class SearchPageTitleFilter(django_filters.CharFilter):
+    def filter(self, qs, value):
+        if value in EMPTY_VALUES:
+            return qs
+
+        return qs.filter(page__title__icontains=value)
+
+
+class AbTestingReportFilterSet(WagtailFilterSet):
+    page = SearchPageTitleFilter()
+    first_started_at = django_filters.DateFromToRangeFilter(label=gettext_lazy("Started at"), widget=DateRangePickerWidget)
+
+    class Meta:
+        model = AbTest
+        fields = ['page', 'first_started_at']
+
+
+class AbTestingReportView(ReportView):
+    template_name = 'wagtail_ab_testing/report.html'
+    title = gettext_lazy('A/B testing')
+    header_icon = ''
+
+    filterset_class = AbTestingReportFilterSet
+
+    def get_queryset(self):
+        return AbTest.objects.all()
