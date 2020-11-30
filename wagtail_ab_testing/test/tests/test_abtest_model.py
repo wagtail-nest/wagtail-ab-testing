@@ -123,3 +123,62 @@ class TestAbTestModel(TestCase):
         self.set_up_test(1000, 550, 1000, 500)
 
         self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.CONTROL)
+
+
+class TestAutoCancelOnUnpublish(TestCase):
+    def setUp(self):
+        self.home_page = Page.objects.get(id=2)
+        self.home_page.title = "Changed title"
+        revision = self.home_page.save_revision()
+        self.ab_test = AbTest.objects.create(
+            page=self.home_page,
+            name="Test",
+            treatment_revision=revision,
+            goal_event="foo",
+            sample_size=10,
+        )
+
+    def test_unpublish_draft(self):
+        self.ab_test.status = AbTest.Status.DRAFT
+        self.ab_test.save()
+
+        self.home_page.unpublish()
+
+        self.ab_test.refresh_from_db()
+        self.assertEqual(self.ab_test.status, AbTest.Status.CANCELLED)
+
+    def test_unpublish_running(self):
+        self.ab_test.status = AbTest.Status.RUNNING
+        self.ab_test.save()
+
+        self.home_page.unpublish()
+
+        self.ab_test.refresh_from_db()
+        self.assertEqual(self.ab_test.status, AbTest.Status.CANCELLED)
+
+    def test_unpublish_paused(self):
+        self.ab_test.status = AbTest.Status.PAUSED
+        self.ab_test.save()
+
+        self.home_page.unpublish()
+
+        self.ab_test.refresh_from_db()
+        self.assertEqual(self.ab_test.status, AbTest.Status.CANCELLED)
+
+    def test_unpublish_completed(self):
+        self.ab_test.status = AbTest.Status.COMPLETED
+        self.ab_test.save()
+
+        self.home_page.unpublish()
+
+        self.ab_test.refresh_from_db()
+        self.assertEqual(self.ab_test.status, AbTest.Status.COMPLETED)
+
+    def test_unpublish_cancelled(self):
+        self.ab_test.status = AbTest.Status.CANCELLED
+        self.ab_test.save()
+
+        self.home_page.unpublish()
+
+        self.ab_test.refresh_from_db()
+        self.assertEqual(self.ab_test.status, AbTest.Status.CANCELLED)
