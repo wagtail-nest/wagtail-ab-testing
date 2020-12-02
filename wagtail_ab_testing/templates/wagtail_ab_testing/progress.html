@@ -122,10 +122,6 @@
     </form>
 {% endblock %}
 
-{% block extra_css %}
-    <link rel="stylesheet" src="{% versioned_static 'wagtail_ab_testing/css/progress.css' %}">
-{% endblock %}
-
 {% block extra_js %}
     {% include "wagtailadmin/pages/_editor_js.html" %}
     <script src="{% url 'wagtail_ab_testing:javascript_catalog' %}"></script>
