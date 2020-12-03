@@ -9,6 +9,8 @@ declare module '*.svg' {
 // Declare globals provided by Django's JavaScript Catalog
 // For more information, see: https://docs.djangoproject.com/en/3.1/topics/i18n/translation/#module-django.views.i18n
 declare global {
+    const abTestingTabProps: any | undefined;
+
     // Wagtail globals
 
     interface WagtailConfig {

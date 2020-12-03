@@ -1,13 +1,18 @@
+import json
+
 from django.shortcuts import redirect
 from django.urls import path, include, reverse
+from django.utils.html import format_html, escapejs
 from django.utils.translation import gettext as _, gettext_lazy as __
 from django.views.i18n import JavaScriptCatalog
 
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.menu import MenuItem
+from wagtail.admin.staticfiles import versioned_static
 from wagtail.core import hooks
 
 from . import views
+from .compat import DATE_FORMAT
 from .models import AbTest
 from .utils import request_is_trackable
 
@@ -47,6 +52,35 @@ class CreateAbTestActionMenuItem(ActionMenuItem):
 @hooks.register('register_page_action_menu_item')
 def register_create_abtest_action_menu_item():
     return CreateAbTestActionMenuItem(order=100)
+
+
+# This is the only way to inject custom JS into the editor with knowledge of the page being edited
+class AbTestingTabActionMenuItem(ActionMenuItem):
+    def render_html(self, request, context):
+        if 'page' in context:
+            return format_html(
+                '<script src="{}"></script><script src="{}"></script><script>window.abTestingTabProps = JSON.parse("{}");</script>',
+                reverse('wagtail_ab_testing:javascript_catalog'),
+                versioned_static('wagtail_ab_testing/js/wagtail-ab-testing.js'),
+                escapejs(json.dumps({
+                    'tests': [
+                        {
+                            'id': ab_test.id,
+                            'name': ab_test.name,
+                            'started_at': ab_test.first_started_at.strftime(DATE_FORMAT) if ab_test.first_started_at else _("Not started"),
+                            'status': ab_test.get_status_description(),
+                        }
+                        for ab_test in AbTest.objects.filter(page=context['page']).order_by('-id')
+                    ]
+                }))
+            )
+
+        return ''
+
+
+@hooks.register('register_page_action_menu_item')
+def register_ab_testing_tab_action_menu_item():
+    return AbTestingTabActionMenuItem()
 
 
 @hooks.register('after_edit_page')
