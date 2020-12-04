@@ -4,7 +4,7 @@
 
 {% block content %}
     {% trans "Create an A/B Test" as title %}
-    {% include "wagtailadmin/shared/header.html" with title=title subtitle=page.title tabbed=1 merged=1 %}
+    {% include "wagtailadmin/shared/header.html" with title=title subtitle=page.title icon='people-arrows' tabbed=1 merged=1 %}
 
     <form method="post">
         {% csrf_token %}

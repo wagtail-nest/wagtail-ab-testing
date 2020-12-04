@@ -44,6 +44,7 @@ def register_admin_urls():
 class CreateAbTestActionMenuItem(ActionMenuItem):
     name = 'create-ab-test'
     label = __("Save and create A/B Test")
+    icon_name = 'people-arrows'
 
     def is_shown(self, request, context):
         return context['view'] == 'edit'
@@ -119,10 +120,17 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
 
 
 class AbTestingReportMenuItem(MenuItem):
+
     def is_shown(self, request):
         return True
 
 
 @hooks.register('register_reports_menu_item')
 def register_ab_testing_report_menu_item():
-    return AbTestingReportMenuItem(_('A/B testing'), reverse('wagtail_ab_testing:report'), icon_name='', order=1000)
+    return AbTestingReportMenuItem(_('A/B testing'), reverse('wagtail_ab_testing:report'), icon_name='people-arrows', order=1000)
+
+
+@hooks.register('register_icons')
+def register_icons(icons):
+    icons.append('wagtail_ab_testing/icons/people-arrows.svg')
+    return icons
