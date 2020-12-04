@@ -1,115 +1,9 @@
-{% extends "wagtailadmin/base.html" %}
+{% extends "./results.html" %}
 {% load wagtailcore_tags wagtailadmin_tags i18n %}
 {% block titletag %}{% trans "A/B testing activity log" %} - {{ page.title }} - {{ ab_test.name }}{% endblock %}
 
 {% block content %}
-    {% trans "A/B testing activity log" as title %}
-    {% include "wagtailadmin/shared/header.html" with title=title tabbed=1 merged=1 %}
-
-    <div class="nice-padding">
-        <h2>{{ ab_test.name }}</h2>
-        <p><b>{% trans "Page:" %}</b> {{ page.title }}</p>
-        {% if ab_test.hypothesis %}<p><b>{% trans "Hypothesis:" %}</b> {{ ab_test.hypothesis }}</p>{% endif %}
-        <p><b>{% trans "Goal:" %}</b> {{ ab_test.get_goal_event_display }}: {{ ab_test.goal_page }}</p>
-        {% if ab_test.created_by %}<p><b>{% trans "Test by:" %}</b> {{ ab_test.created_by }}</p>{% endif %}
-
-        <a href="{% url 'wagtail_ab_testing:add_test_participants' ab_test.id %}">Add test participants</a>
-        <a href="{% url 'wagtail_ab_testing:add_test_conversions' ab_test.id 'control' %}">Add conversions for control</a>
-        <a href="{% url 'wagtail_ab_testing:add_test_conversions' ab_test.id 'treatment' %}">Add conversions for treatment</a>
-
-        <div class="abtest-progressbar">
-            <svg class="abtest-progressbar__sample-size">
-                {# Progress bar #}
-                <rect class="abtest-progressbar__sample-size-bg" y="20px" width="100%" height="100px"></rect>
-                <rect class="abtest-progressbar__sample-size-bar" y="20px" width="{{ current_sample_size_percent }}%" height="100px"></rect>
-
-                {# Left overlay text #}
-                <text x="20px" y="70px" class="abtest-progressbar__sample-size-percentage">{{ current_sample_size_percent }}%</text>
-                <text x="20px" y="95px" class="abtest-progressbar__sample-size-complete">{% trans "Complete" %}</text>
-                {# Start #}
-                <text x="7px" y="15px">{{ ab_test.first_started_at }}</text>
-                <line x1="1" y1="0" x2="1" y2="120px"></line>
-
-                {# Middle #}
-                <g style="transform: translate({{ current_sample_size_percent }}%, 0%)">
-                    <text x="-5px" y="135px" style="text-anchor: end;">{{ current_sample_size }}/{{ ab_test.sample_size}}</text>
-                    <line y1="20" y2="140px"></line>
-                </g>
-
-                {# End #}
-                <g style="transform: translate(100%, 0%)">
-                    <line x1="-1px" y1="0" x2="-1px" y2="140px"></line>
-                    <text x="-5px" y="15px" style="text-anchor: end;">{% if estimated_completion_date %}Est: {{ estimated_completion_date }}{% endif %}</text>
-                    <text x="-5px" y="155px" style="text-anchor: end;">{% trans "Total sample:" %} <tspan style="font-weight: bold;">{{ ab_test.sample_size}}</tspan></text>
-                </g>
-            </svg>
-            <div class="abtest-results">
-                <div class="abtest-results__variant abtest-results__variant--control">
-                    <div class="abtest-results__variant-heading{% if control_is_winner %} abtest-results__variant-heading--winner{% endif %}">
-                        {% if control_is_winner %}{% trans "Winner!" %}{% endif %}
-                    </div>
-                    <div class="abtest-results__variant-inner">
-                        <h3>{% trans "Control" %} <a href="{% pageurl page %}" target="_blank">{% icon name="link-external" %}</a></h3>
-
-                        <ul class="abtest-results__variant-stats">
-                            <li>
-                                <div class="abtest-results__variant-stat">
-                                    {{ control_conversions_percent }}%
-                                </div>
-                                <div class="abtest-results__variant-stat-name">
-                                    {% trans "Conversion rate" %}
-                                </div>
-                            </li>
-                            <li>
-                                <div class="abtest-results__variant-stat">
-                                    {{ control_conversions }}
-                                </div>
-                                <div class="abtest-results__variant-stat-name">
-                                    {% trans "Conversions" %} <span>({% blocktrans count control_participants as count %}1 user{% plural %}{{ count }} users{% endblocktrans %})</span>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="abtest-results__variant abtest-results__variant--treatment">
-                    <div class="abtest-results__variant-heading{% if treatment_is_winner %} abtest-results__variant-heading--winner{% endif %}">
-                        {% if treatment_is_winner %}{% trans "Winner!" %}{% endif %}
-                    </div>
-                    <div class="abtest-results__variant-inner">
-                        <h3>{% trans "Treatment" %} <a href="{% url 'wagtailadmin_pages:view_draft' page.id %}" target="_blank">{% icon name="link-external" %}</a></h3>
-
-                        <ul class="abtest-results__variant-stats">
-                            <li>
-                                <div class="abtest-results__variant-stat">
-                                    {{ treatment_conversions_percent }}%
-                                </div>
-                                <div class="abtest-results__variant-stat-name">
-                                    {% trans "Conversion rate" %}
-                                </div>
-                            </li>
-                            <li>
-                                <div class="abtest-results__variant-stat">
-                                    {{ treatment_conversions }}
-                                </div>
-                                <div class="abtest-results__variant-stat-name">
-                                    {% trans "Conversions" %} <span>({% blocktrans count treatment_participants as count %}1 user{% plural %}{{ count }} users{% endblocktrans %})</span>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% url 'wagtail_ab_testing:compare_draft' page.id as compare_url%}
-        {% blocktrans with compare_url=compare_url trimmed %}
-            <a href="{{ compare_url }}" target="_blank">Compare pages</a> and see how the control and treatment pages differ.
-        {% endblocktrans %}
-        <hr>
-        <h3>{% trans "Conversions over time" %}</h3>
-        <div class="abtest-chart">
-            <div component="chart" data="{{ chart_data }}"></div>
-        </div>
-    </div>
+    {{ block.super }}
 
     <form action="{% url 'wagtailadmin_pages:edit' page.id %}" method="POST">
         {% csrf_token %}
@@ -126,11 +20,4 @@
             </nav>
         </footer>
     </form>
-{% endblock %}
-
-{% block extra_js %}
-    {% include "wagtailadmin/pages/_editor_js.html" %}
-    <script src="{% url 'wagtail_ab_testing:javascript_catalog' %}"></script>
-    <script type="text/javascript" src="{% versioned_static 'wagtailadmin/js/page-chooser-modal.js' %}"></script>
-    <script src="{% versioned_static 'wagtail_ab_testing/js/wagtail-ab-testing.js' %}"></script>
 {% endblock %}

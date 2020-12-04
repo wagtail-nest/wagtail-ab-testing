@@ -208,34 +208,7 @@ class AbTestActionMenu:
         return media
 
 
-def progress(request, page, ab_test):
-    if request.method == 'POST':
-        if 'action-start-ab-test' in request.POST or 'action-restart-ab-test' in request.POST:
-            if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.PAUSED]:
-                ab_test.start()
-
-                messages.success(request, _("A/B test started!"))
-            else:
-                messages.error(request, _("The A/B test must be in draft or paused in order to be started."))
-
-        elif 'action-end-ab-test' in request.POST:
-            if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]:
-                ab_test.finish(cancel=True)
-            else:
-                messages.error(request, _("The A/B test has already ended."))
-
-        elif 'action-pause-ab-test' in request.POST:
-            if ab_test.status == AbTest.Status.RUNNING:
-                ab_test.pause()
-            else:
-                messages.error(request, _("The A/B test cannot be paused because it is not running."))
-
-        else:
-            messages.error(request, _("Unknown action"))
-
-        # Redirect back
-        return redirect('wagtailadmin_pages:edit', page.id)
-
+def get_progress_and_results_common_context(request, page, ab_test):
     # Fetch stats from database
     stats = ab_test.hourly_logs.aggregate(
         control_participants=Sum('participants', filter=Q(variant=AbTest.Variant.CONTROL)),
@@ -286,7 +259,7 @@ def progress(request, page, ab_test):
                 'treatment': treatment,
             })
 
-    return render(request, 'wagtail_ab_testing/progress.html', {
+    return {
         'page': page,
         'ab_test': ab_test,
         'current_sample_size': current_sample_size,
@@ -309,8 +282,51 @@ def progress(request, page, ab_test):
             ],
             'type': 'spline',
         }),
-        'action_menu': AbTestActionMenu(request, view='edit', page=page, ab_test=ab_test),
-    })
+    }
+
+
+def progress(request, page, ab_test):
+    if request.method == 'POST':
+        if 'action-start-ab-test' in request.POST or 'action-restart-ab-test' in request.POST:
+            if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.PAUSED]:
+                ab_test.start()
+
+                messages.success(request, _("A/B test started!"))
+            else:
+                messages.error(request, _("The A/B test must be in draft or paused in order to be started."))
+
+        elif 'action-end-ab-test' in request.POST:
+            if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]:
+                ab_test.finish(cancel=True)
+            else:
+                messages.error(request, _("The A/B test has already ended."))
+
+        elif 'action-pause-ab-test' in request.POST:
+            if ab_test.status == AbTest.Status.RUNNING:
+                ab_test.pause()
+            else:
+                messages.error(request, _("The A/B test cannot be paused because it is not running."))
+
+        else:
+            messages.error(request, _("Unknown action"))
+
+        # Redirect back
+        return redirect('wagtailadmin_pages:edit', page.id)
+
+    context = get_progress_and_results_common_context(request, page, ab_test)
+    context['action_menu'] = AbTestActionMenu(request, view='edit', page=page, ab_test=ab_test)
+    return render(request, 'wagtail_ab_testing/progress.html', context)
+
+
+def results(request, page_id, ab_test_id):
+    page = get_object_or_404(Page, id=page_id)
+    if not page.permissions_for_user(request.user).can_edit():
+        raise PermissionDenied
+
+    ab_test = get_object_or_404(AbTest, page=page, id=ab_test_id)
+
+    context = get_progress_and_results_common_context(request, page, ab_test)
+    return render(request, 'wagtail_ab_testing/results.html', context)
 
 
 def compare_draft(request, page_id):

@@ -27,7 +27,7 @@ def register_admin_urls():
         path('add-test-participants/<int:ab_test_id>/', views.add_test_participants, name='add_test_participants'),
         path('add-test-conversions/<int:ab_test_id>/<slug:variant>', views.add_test_conversions, name='add_test_conversions'),
         path('report/', views.AbTestingReportView.as_view(), name='report'),
-
+        path('results/<int:page_id>/<int:ab_test_id>/', views.results, name='results'),
     ]
 
     return [
@@ -69,6 +69,7 @@ class AbTestingTabActionMenuItem(ActionMenuItem):
                             'name': ab_test.name,
                             'started_at': ab_test.first_started_at.strftime(DATE_FORMAT) if ab_test.first_started_at else _("Not started"),
                             'status': ab_test.get_status_description(),
+                            'results_url': reverse('wagtail_ab_testing:results', args=[ab_test.page_id, ab_test.id]),
                         }
                         for ab_test in AbTest.objects.filter(page=context['page']).order_by('-id')
                     ]
