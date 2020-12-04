@@ -6,6 +6,7 @@ interface AbTest {
     name: string;
     started_at: string;
     status: string;
+    results_url: string;
 }
 
 interface PageEditorTabProps {
@@ -27,7 +28,9 @@ const PageEditorTab: FunctionComponent<PageEditorTabProps> = ({ tests }) => {
                     {tests.map(test => (
                         <tr key={test.id}>
                             <td className="title">{test.started_at}</td>
-                            <td>{test.name}</td>
+                            <td>
+                                <a href={test.results_url}>{test.name}</a>
+                            </td>
                             <td>
                                 <span className="status-tag primary">
                                     {test.status}
