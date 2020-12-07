@@ -1,5 +1,4 @@
 from django.utils.translation import gettext_lazy as __
-from wagtail.contrib.forms.utils import get_form_types
 
 
 class BaseEvent:
@@ -37,20 +36,22 @@ class VisitPageEvent(BaseEvent):
     name = __("Visit page")
 
 
-class SubmitFormPageEvent(BaseEvent):
-    """
-    Triggered when a user submits a form page.
-    """
-    name = __("Submit form page")
+# TODO: Find a way to hook this into Wagtail
+# from wagtail.contrib.forms.utils import get_form_types
+# class SubmitFormPageEvent(BaseEvent):
+#     """
+#     Triggered when a user submits a form page.
+#     """
+#     name = __("Submit form page")
 
-    def get_page_types(self):
-        return [
-            ct.model_class()
-            for ct in get_form_types()
-        ]
+#     def get_page_types(self):
+#         return [
+#             ct.model_class()
+#             for ct in get_form_types()
+#         ]
 
 
 EVENT_TYPES = {
     'visit-page': VisitPageEvent(),
-    'submit-form': SubmitFormPageEvent(),
+    # 'submit-form': SubmitFormPageEvent(),
 }
