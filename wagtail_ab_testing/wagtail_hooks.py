@@ -107,14 +107,29 @@ def check_for_running_ab_test(request, page):
 
 @hooks.register('before_serve_page')
 def before_serve_page(page, request, serve_args, serve_kwargs):
-    # Check if there are any running tests on the page
-    try:
-        test = AbTest.objects.get(page=page, status=AbTest.STATUS_DRAFT)
-    except AbTest.DoesNotExist:
-        return
-
     # Check if the user is trackable
     if not request_is_trackable(request):
+        return
+
+    # Check if visiting the page is the goal of any running tests
+    tests = AbTest.objects.filter(goal_event='visit-page', goal_page=page, status=AbTest.STATUS_RUNNING)
+    for test in tests:
+        # Is the user a participant in this test?
+        if f'wagtail-ab-testing_{test.id}_version' not in request.session:
+            continue
+
+        # Has the user already completed the test?
+        if f'wagtail-ab-testing_{test.id}_completed' in request.session:
+            continue
+
+        # Log a conversion
+        test.log_conversion(request.session[f'wagtail-ab-testing_{test.id}_version'])
+        request.session[f'wagtail-ab-testing_{test.id}_completed'] = 'yes'
+
+    # Check if the page itself is running any tests
+    try:
+        test = AbTest.objects.get(page=page, status=AbTest.STATUS_RUNNING)
+    except AbTest.DoesNotExist:
         return
 
     # Make the user a participant if they're not already
