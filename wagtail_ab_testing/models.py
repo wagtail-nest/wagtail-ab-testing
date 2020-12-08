@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone as tz
 import scipy.stats
 import numpy as np
 from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import connection, models
 from django.db.models import Q, Sum
 from django.dispatch import receiver
@@ -45,7 +46,7 @@ class AbTest(models.Model):
     treatment_revision = models.ForeignKey('wagtailcore.PageRevision', on_delete=models.CASCADE, related_name='+')
     goal_event = models.CharField(max_length=255)
     goal_page = models.ForeignKey('wagtailcore.Page', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
-    sample_size = models.PositiveIntegerField()
+    sample_size = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     winning_variant = models.CharField(max_length=9, null=True, choices=Variant.choices)
