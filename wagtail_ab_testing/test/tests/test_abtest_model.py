@@ -24,10 +24,10 @@ class TestAbTestModel(TestCase):
     def test_finish(self):
         self.ab_test.finish()
         self.ab_test.refresh_from_db()
-        self.assertEqual(self.ab_test.status, AbTest.Status.COMPLETED)
+        self.assertEqual(self.ab_test.status, AbTest.Status.FINISHED)
 
-    def test_finish_cancel(self):
-        self.ab_test.finish(cancel=True)
+    def test_cancel(self):
+        self.ab_test.cancel()
         self.ab_test.refresh_from_db()
         self.assertEqual(self.ab_test.status, AbTest.Status.CANCELLED)
 
@@ -164,6 +164,15 @@ class TestAutoCancelOnUnpublish(TestCase):
 
         self.ab_test.refresh_from_db()
         self.assertEqual(self.ab_test.status, AbTest.Status.CANCELLED)
+
+    def test_unpublish_finished(self):
+        self.ab_test.status = AbTest.Status.FINISHED
+        self.ab_test.save()
+
+        self.home_page.unpublish()
+
+        self.ab_test.refresh_from_db()
+        self.assertEqual(self.ab_test.status, AbTest.Status.COMPLETED)
 
     def test_unpublish_completed(self):
         self.ab_test.status = AbTest.Status.COMPLETED

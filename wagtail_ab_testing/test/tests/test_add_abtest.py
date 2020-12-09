@@ -94,6 +94,12 @@ class PermissionTests:
         response = self.get(self.page.id)
         self.assertEqual(response.status_code, 200)
 
+    def test_with_existing_finished_abtest(self):
+        self._create_abtest(AbTest.Status.FINISHED)
+
+        response = self.get(self.page.id)
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
     def test_with_existing_completed_abtest(self):
         self._create_abtest(AbTest.Status.COMPLETED)
 
