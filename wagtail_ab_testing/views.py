@@ -171,7 +171,7 @@ class EndAbTestMenuItem(ActionMenuItem):
         if not context['user_page_permissions'].for_page(context['ab_test'].page).can_publish():
             return False
 
-        return context['ab_test'].status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]
+        return context['ab_test'].status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED, AbTest.Status.FINISHED]
 
 
 class PauseAbTestMenuItem(ActionMenuItem):
@@ -183,6 +183,22 @@ class PauseAbTestMenuItem(ActionMenuItem):
             return False
 
         return context['ab_test'].status == AbTest.Status.RUNNING
+
+
+class SelectControlMenuItem(ActionMenuItem):
+    name = 'action-select-control'
+    label = _("Revert to control")
+
+    def is_shown(self, request, context):
+        return context['ab_test'].status == AbTest.Status.FINISHED
+
+
+class SelectTreatmentMenuItem(ActionMenuItem):
+    name = 'action-select-treatment'
+    label = _("Publish treatment")
+
+    def is_shown(self, request, context):
+        return context['ab_test'].status == AbTest.Status.FINISHED
 
 
 class AbTestActionMenu:
@@ -197,7 +213,9 @@ class AbTestActionMenu:
             StartAbTestMenuItem(order=0),
             RestartAbTestMenuItem(order=1),
             EndAbTestMenuItem(order=2),
-            PauseAbTestMenuItem(order=3)
+            PauseAbTestMenuItem(order=3),
+            SelectControlMenuItem(order=4),
+            SelectTreatmentMenuItem(order=5),
         ]
 
         self.menu_items = [
@@ -324,8 +342,11 @@ def progress(request, page, ab_test):
         elif 'action-end-ab-test' in request.POST:
             if page_perms.can_publish():
                 if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]:
-                    ab_test.finish(cancel=True)
-                    messages.error(request, _("The A/B test has been ended."))
+                    ab_test.cancel()
+
+                    messages.success(request, _("The A/B test has been ended."))
+                elif ab_test.status == AbTest.Status.FINISHED:
+                    ab_test.complete(AbTest.CompletionAction.DO_NOTHING, user=request.user)
                 else:
                     messages.error(request, _("The A/B test has already ended."))
             else:
@@ -335,11 +356,27 @@ def progress(request, page, ab_test):
             if page_perms.can_publish():
                 if ab_test.status == AbTest.Status.RUNNING:
                     ab_test.pause()
-                    messages.error(request, _("The A/B test has been paused."))
+
+                    messages.success(request, _("The A/B test has been paused."))
                 else:
                     messages.error(request, _("The A/B test cannot be paused because it is not running."))
             else:
                 messages.error(request, _("You must have permission to publish in order to pause an A/B test."))
+
+        elif 'action-select-control' in request.POST:
+            if ab_test.status == AbTest.Status.FINISHED:
+                ab_test.complete(AbTest.CompletionAction.REVERT, user=request.user)
+
+            else:
+                messages.error(request, _("The A/B test cannot be paused because it is not running."))
+
+        elif 'action-select-treatment' in request.POST:
+            if ab_test.status == AbTest.Status.FINISHED:
+                # TODO Permission check?
+                ab_test.complete(AbTest.CompletionAction.PUBLISH, user=request.user)
+
+            else:
+                messages.error(request, _("The A/B test cannot be paused because it is not running."))
 
         else:
             messages.error(request, _("Unknown action"))

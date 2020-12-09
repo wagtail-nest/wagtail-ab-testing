@@ -25,11 +25,15 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.page = Page.objects.get(id=1).add_child(instance=SimplePage(title="Test", slug="test"))
         self.page.save_revision().publish()
 
+        # Edit the page and save a revision
+        self.page.title = "Test updated"
+        revision = self.page.save_revision()
+
         # Create an A/B test
         self.ab_test = AbTest.objects.create(
             page=self.page,
             name="Test",
-            treatment_revision=self.page.get_latest_revision(),
+            treatment_revision=revision,
             status=AbTest.Status.RUNNING,
             sample_size=100,
         )
@@ -132,7 +136,6 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
 
         self.ab_test.refresh_from_db()
-
         self.assertEqual(self.ab_test.status, AbTest.Status.PAUSED)
 
     def test_post_end_without_publish_permission(self):
@@ -145,5 +148,50 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
 
         self.ab_test.refresh_from_db()
-
         self.assertEqual(self.ab_test.status, AbTest.Status.RUNNING)
+
+    def test_post_end_when_finished(self):
+        self.ab_test.status = AbTest.Status.FINISHED
+        self.ab_test.save()
+
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-end-ab-test': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+
+        self.assertEqual(self.ab_test.status, AbTest.Status.COMPLETED)
+        self.assertEqual(self.ab_test.page.title, "Test")
+        self.assertTrue(self.ab_test.page.has_unpublished_changes)
+
+    def test_post_select_control(self):
+        self.ab_test.status = AbTest.Status.FINISHED
+        self.ab_test.save()
+
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-select-control': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+        self.assertEqual(self.ab_test.status, AbTest.Status.COMPLETED)
+        self.assertEqual(self.ab_test.page.title, "Test")
+        self.assertFalse(self.ab_test.page.has_unpublished_changes)
+
+    def test_post_select_treatment(self):
+        self.ab_test.status = AbTest.Status.FINISHED
+        self.ab_test.save()
+
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-select-treatment': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+        self.assertEqual(self.ab_test.status, AbTest.Status.COMPLETED)
+        self.assertEqual(self.ab_test.page.title, "Test updated")
+        self.assertFalse(self.ab_test.page.has_unpublished_changes)

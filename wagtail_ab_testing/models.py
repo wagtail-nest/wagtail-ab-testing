@@ -6,7 +6,7 @@ import scipy.stats
 import numpy as np
 from django.conf import settings
 from django.core.validators import MinValueValidator
-from django.db import connection, models
+from django.db import connection, models, transaction
 from django.db.models import Q, Sum
 from django.dispatch import receiver
 from django.urls import reverse
@@ -35,11 +35,25 @@ class AbTest(models.Model):
         RUNNING = 'running', __('Running')
         PAUSED = 'paused', __('Paused')
         CANCELLED = 'cancelled', __('Cancelled')
+
+        # These two sound similar, but there's a difference:
+        # 'Finished' means that we've reached the sample size and testing has stopped
+        # but the user still needs to decide whether to publish the treatment version
+        # or revert back to the control.
+        # Once they've decided and that action has taken place, the test status is
+        # updated to 'Completed'.
+        FINISHED = 'finished', __('Finished')
         COMPLETED = 'completed', __('Completed')
 
     class Variant(models.TextChoices):
         CONTROL = 'control', __('Control')
         TREATMENT = 'treatment', __('Treatment')
+
+    class CompletionAction(models.TextChoices):
+        # See docstring of the .complete() method for descriptions
+        DO_NOTHING = 'do-nothing', "Do nothing"
+        REVERT = 'revert', "Revert to control"
+        PUBLISH = 'publisn', "Publish treatment"
 
     page = models.ForeignKey('wagtailcore.Page', on_delete=models.CASCADE, related_name='ab_tests')
     name = models.CharField(max_length=255)
@@ -121,16 +135,58 @@ class AbTest(models.Model):
 
         return duration
 
-    def finish(self, *, cancel=False):
+    def cancel(self):
         """
-        Finishes the test.
+        Cancels the test.
         """
-        self.status = self.Status.CANCELLED if cancel else self.Status.COMPLETED
+        self.status = self.Status.CANCELLED
 
-        if not cancel:
-            self.winning_variant = self.check_for_winner()
+        self.save(update_fields=['status'])
+
+    def finish(self):
+        """
+        Finishes the testing.
+
+        Note that this doesn't 'complete' the test: a finished test means
+        that testing is no longer happening. The test is not complete until
+        the user decides on the outcome of the test (keep the control or
+        publish the treatment). This decision is set using the .complete()
+        method.
+        """
+        self.status = self.Status.FINISHED
+        self.winning_variant = self.check_for_winner()
 
         self.save(update_fields=['status', 'winning_variant'])
+
+    @transaction.atomic
+    def complete(self, action, user=None):
+        """
+        Completes the test and carries out the specificed action.
+
+        Actions can be:
+         - AbTest.CompletionAction.DO_NOTHING - This just completes
+           the test but does nothing to the page. The control will
+           remain the published version and the treatment will be
+           in draft.
+         - AbTest.CompletionAction.REVERT - This completes the test
+           and also creates a new revision to revert the content back
+           to what it was in the control while the test was taking
+           place.
+         - AbTest.CompletionAction.PUBLISH - This completes the test
+           and also publishes the treatment revision.
+        """
+        self.status = self.Status.COMPLETED
+        self.save(update_fields=['status'])
+
+        if action == AbTest.CompletionAction.DO_NOTHING:
+            pass
+
+        elif action == AbTest.CompletionAction.REVERT:
+            # Create a new revision with the content of the live page and publish it
+            self.page.save_revision(user=user, log_action='wagtail.revert').publish(user=user)
+
+        elif action == AbTest.CompletionAction.PUBLISH:
+            self.treatment_revision.publish(user=user)
 
     def add_participant(self, variant=None):
         """
@@ -243,7 +299,7 @@ class AbTest(models.Model):
             completeness_percentange = int((participants * 100) / self.sample_size)
             return status + f" ({completeness_percentange}%)"
 
-        elif self.status == AbTest.Status.COMPLETED:
+        elif self.status in [AbTest.Status.FINISHED, AbTest.Status.COMPLETED]:
             if self.winning_variant == AbTest.Variant.CONTROL:
                 return status + " (" + _("Control won") + ")"
 
@@ -330,4 +386,7 @@ class AbTestHourlyLog(models.Model):
 @receiver(page_unpublished)
 def cancel_on_page_unpublish(instance, **kwargs):
     for ab_test in AbTest.objects.filter(page=instance, status__in=[AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]):
-        ab_test.finish(cancel=True)
+        ab_test.cancel()
+
+    for ab_test in AbTest.objects.filter(page=instance, status=AbTest.Status.FINISHED):
+        ab_test.complete(AbTest.CompletionAction.DO_NOTHING)
