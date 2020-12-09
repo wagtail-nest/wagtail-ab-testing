@@ -311,6 +311,7 @@ def get_progress_and_results_common_context(request, page, ab_test):
         'treatment_conversions_percent': int(treatment_conversions / treatment_participants * 100) if treatment_participants else 0,
         'control_is_winner': ab_test.winning_variant == AbTest.Variant.CONTROL,
         'treatment_is_winner': ab_test.winning_variant == AbTest.Variant.TREATMENT,
+        'unclear_winner': ab_test.status in [AbTest.Status.FINISHED, ab_test.Status.COMPLETED] and ab_test.winning_variant is None,
         'estimated_completion_date': estimated_completion_date,
         'chart_data': json.dumps({
             'x': 'x',
