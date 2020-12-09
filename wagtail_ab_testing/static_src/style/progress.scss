@@ -13,6 +13,7 @@ $charcoal-grey: #333;
 
     &__sample-size {
         width: 100%;
+        height: 160px;
     }
 
     &__sample-size line {
@@ -41,7 +42,6 @@ $charcoal-grey: #333;
 }
 
 .abtest-results {
-    margin-top: 20px;
     margin-bottom: 20px;
     overflow: auto;
 
