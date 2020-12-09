@@ -6,7 +6,7 @@
     {% trans "Create an A/B Test" as title %}
     {% include "wagtailadmin/shared/header.html" with title=title subtitle=page.title tabbed=1 merged=1 %}
 
-    <form method="post" class="fixlabels">
+    <form method="post">
         {% csrf_token %}
 
         <section class="section">
@@ -15,17 +15,10 @@
             </div>
 
             <div class="section__content nice-padding">
-                <p>
-                    {{ form.name.label_tag }}
-                    {{ form.name }}
-                    {{ form.name.errors }}
-                </p>
-
-                <p>
-                    {{ form.hypothesis.label_tag }}
-                    {{ form.hypothesis }}
-                    {{ form.hypothesis.errors }}
-                </p>
+                <ul class="fields">
+                    {% include "wagtailadmin/shared/field_as_li.html" with field=form.name %}
+                    {% include "wagtailadmin/shared/field_as_li.html" with field=form.hypothesis %}
+                </ul>
             </div>
         </section>
 
@@ -46,12 +39,12 @@
                 <h3>{% trans "Sample size" %}</h3>
             </div>
 
-            <p class="section__content nice-padding">
-                {{ form.sample_size.label_tag }}
-                {{ form.sample_size }}
-                {{ form.sample_size.errors }}
+            <div class="section__content nice-padding">
+                <ul class="fields">
+                    {% include "wagtailadmin/shared/field_as_li.html" with field=form.sample_size %}
+                </ul>
                 {% trans 'Need help calculating sample size for A/B tests? Try <a href="https://www.optimizely.com/uk/sample-size-calculator/" target="_blank">Optimisely</a>, <a href="https://www.evanmiller.org/ab-testing/sample-size.html" target="_blank">Evan Miller</a>, or <a href="https://www.abtasty.com/sample-size-calculator/" target="_blank">AB Tasty</a>.' %}
-            </p>
+            </div>
         </section>
 
         <p class="section__content nice-padding">
@@ -67,6 +60,10 @@
             </div>
         </div>
     </form>
+{% endblock %}
+
+{% block extra_css %}
+    {% include "wagtailadmin/pages/_editor_css.html" %}
 {% endblock %}
 
 {% block extra_js %}
