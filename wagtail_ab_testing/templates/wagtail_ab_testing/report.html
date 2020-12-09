@@ -28,12 +28,14 @@
                             {{ ab_test.first_started_at|default:not_started_str }}
                         </td>
                         <td>
-                            <a href="{% url 'wagtailadmin_pages:edit' ab_test.page.id %}">
+                            <a href="{{ ab_test.get_results_url }}">
                                 {{ ab_test.page.get_admin_display_title }}
                             </a>
                         </td>
                         <td>
-                            {{ ab_test.name }}
+                            <a href="{{ ab_test.get_results_url }}">
+                                {{ ab_test.name }}
+                            </a>
                         </td>
                         <td>
                             <span class="status-tag primary">

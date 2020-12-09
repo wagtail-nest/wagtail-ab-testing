@@ -9,6 +9,7 @@ from django.core.validators import MinValueValidator
 from django.db import connection, models
 from django.db.models import Q, Sum
 from django.dispatch import receiver
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy as __
 from wagtail.core.signals import page_unpublished
@@ -94,6 +95,20 @@ class AbTest(models.Model):
                 self.current_run_started_at = None
 
             self.save(update_fields=['status', 'previous_run_duration', 'current_run_started_at'])
+
+    def get_results_url(self):
+        """
+        Returns the URL to the page wherethe user can see the results.
+
+        While the test is running, this is the URL of the edit view.
+        Afterwards, we need to send them to a separate view as the
+        page editor returns to normal.
+        """
+        if self.status in [AbTest.Status.COMPLETED, AbTest.Status.CANCELLED]:
+            return reverse('wagtail_ab_testing:results', args=[self.page_id, self.id])
+
+        else:
+            return reverse('wagtailadmin_pages:edit', args=[self.page_id])
 
     def total_running_duration(self):
         """
