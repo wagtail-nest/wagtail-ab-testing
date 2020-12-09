@@ -5,7 +5,6 @@ import { initPageEditorTab } from './components/PageEditorTab';
 import './style/progress.scss';
 
 import './styles/sections.scss';
-import './styles/forms.scss';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Goal selector on create new A/B test
