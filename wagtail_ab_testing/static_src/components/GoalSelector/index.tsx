@@ -149,7 +149,7 @@ const GoalSelector: FunctionComponent<GoalSelectorProps> = ({
                 </select>
                 <p>
                     {gettext(
-                        'By default pages only have one goal (Page Visit). Read the developer docs to earn why, and how to add custom goals.'
+                        'By default pages only have one goal (Page Visit). Read the developer docs to learn why, and how to add custom goals.'
                     )}
                 </p>
             </Field>
