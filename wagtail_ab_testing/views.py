@@ -4,7 +4,7 @@ import random
 
 from django import forms
 from django.core.exceptions import PermissionDenied
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, OrderBy, F
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -371,4 +371,4 @@ class AbTestingReportView(ReportView):
     filterset_class = AbTestingReportFilterSet
 
     def get_queryset(self):
-        return AbTest.objects.all()
+        return AbTest.objects.all().order_by(OrderBy(F('first_started_at'), descending=True, nulls_first=True))
