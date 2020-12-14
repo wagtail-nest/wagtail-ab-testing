@@ -9,9 +9,15 @@
     <div class="nice-padding" style="padding-top: 20px;">
         <p>{% trans "This will create an A/B test comparing the published version of this page and the draft with the following differences:" %}</p>
 
-        {% include "./includes/comparison.html" %}
+        {% if differences %}
+            {% include "./includes/comparison.html" %}
 
-        <a class="button button-primary" href="{% url 'wagtail_ab_testing:add_ab_test_form' page.id %}">{% trans "Create this test" %}</a>
+            <a class="button button-primary" href="{% url 'wagtail_ab_testing:add_ab_test_form' page.id %}">{% trans "Create this test" %}</a>
+        {% else %}
+            <div class="help-block help-warning">
+                <p>{% trans "There are no differences, please go back and make some changes to set up a new test" %}
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
 

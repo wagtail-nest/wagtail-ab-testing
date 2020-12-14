@@ -88,6 +88,7 @@ def add_compare(request, page_id):
         'page': page,
         'latest_revision_as_page': latest_revision_as_page,
         'comparison': comparison,
+        'differences': any(comp.has_changed() for comp in comparison),
     })
 
 
