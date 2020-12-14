@@ -360,7 +360,7 @@ class AbTestingReportFilterSet(WagtailFilterSet):
 
     class Meta:
         model = AbTest
-        fields = ['page', 'first_started_at']
+        fields = ['status', 'page', 'first_started_at']
 
 
 class AbTestingReportView(ReportView):
