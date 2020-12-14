@@ -1,5 +1,6 @@
 import json
 
+from django.contrib.auth.models import Permission
 from django.shortcuts import redirect
 from django.urls import path, include, reverse
 from django.utils.html import format_html, escapejs
@@ -135,3 +136,8 @@ def register_icons(icons):
     icons.append('wagtail_ab_testing/icons/people-arrows.svg')
     icons.append('wagtail_ab_testing/icons/crown.svg')
     return icons
+
+
+@hooks.register('register_permissions')
+def register_add_abtest_permission():
+    return Permission.objects.filter(content_type__app_label='wagtail_ab_testing', codename='add_abtest')
