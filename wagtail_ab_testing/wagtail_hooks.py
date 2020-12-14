@@ -48,7 +48,14 @@ class CreateAbTestActionMenuItem(ActionMenuItem):
     icon_name = 'people-arrows'
 
     def is_shown(self, request, context):
-        return context['view'] == 'edit'
+        if context['view'] != 'edit':
+            return False
+
+        # User must have permission to add A/B tests
+        if not request.user.has_perm('wagtail_ab_testing.add_abtest'):
+            return False
+
+        return True
 
 
 @hooks.register('register_page_action_menu_item')
