@@ -58,6 +58,14 @@
             <button type="submit" class="button button-primary">{% trans "Save" %}</button>
             <button type="submit" name="start" class="button button-primary">{% trans "Save and start test" %}</button>
         </p>
+
+        <div class="nice-padding">
+            <div class="help-block help-info">
+                <p>{% trans "A/B tests are calculated using Pearson's chi squared test and are set at 95% confidence level." %}</p>
+                <p>{% trans "Traffic is split evenly between each variant." %}</p>
+                <p>{% trans 'Users with "<a href="https://en.wikipedia.org/wiki/Do_Not_Track" target="_blank">Do Not Track</a>" enabled are not counted.' %}</p>
+            </div>
+        </div>
     </form>
 {% endblock %}
 
