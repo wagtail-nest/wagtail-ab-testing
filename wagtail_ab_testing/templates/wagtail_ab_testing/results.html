@@ -69,6 +69,13 @@
                                 </div>
                             </li>
                         </ul>
+
+                        {% if ab_test.status == 'finished' %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <button type="submit" name="action-select-control" value="{% trans 'Keep and end test' %}" class="button">{% trans "<span>Keep</span> and end test" %}</button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="abtest-results__variant abtest-results__variant--treatment">
@@ -96,6 +103,13 @@
                                 </div>
                             </li>
                         </ul>
+
+                        {% if ab_test.status == 'finished' %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <button type="submit" name="action-select-treatment" value="{% trans 'Publish and end test' %}" class="button">{% trans "<span>Publish</span> and end test" %}</button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>
