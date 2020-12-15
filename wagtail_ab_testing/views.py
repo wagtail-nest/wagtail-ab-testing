@@ -110,8 +110,13 @@ def add_form(request, page_id):
                 page_perms = page.permissions_for_user(request.user)
                 if page_perms.can_publish():
                     ab_test.start()
+
+                    messages.success(request, _("The A/B test has been created and started."))
                 else:
-                    messages.error(request, _("You must have permission to publish in order to start an A/B test."))
+                    messages.error(request, _("The A/B test has been created but you do not have permission to publish so it couldn't be started."))
+
+            else:
+                messages.success(request, _("The A/B test has been created."))
 
             return redirect('wagtailadmin_pages:edit', page.id)
     else:
@@ -310,7 +315,7 @@ def progress(request, page, ab_test):
                 if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.PAUSED]:
                     ab_test.start()
 
-                    messages.success(request, _("A/B test started!"))
+                    messages.success(request, _("The A/B test has been started."))
                 else:
                     messages.error(request, _("The A/B test must be in draft or paused in order to be started."))
             else:
@@ -320,6 +325,7 @@ def progress(request, page, ab_test):
             if page_perms.can_publish():
                 if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]:
                     ab_test.finish(cancel=True)
+                    messages.error(request, _("The A/B test has been ended."))
                 else:
                     messages.error(request, _("The A/B test has already ended."))
             else:
@@ -329,6 +335,7 @@ def progress(request, page, ab_test):
             if page_perms.can_publish():
                 if ab_test.status == AbTest.Status.RUNNING:
                     ab_test.pause()
+                    messages.error(request, _("The A/B test has been paused."))
                 else:
                     messages.error(request, _("The A/B test cannot be paused because it is not running."))
             else:
