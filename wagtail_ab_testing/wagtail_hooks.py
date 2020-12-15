@@ -133,4 +133,5 @@ def register_ab_testing_report_menu_item():
 @hooks.register('register_icons')
 def register_icons(icons):
     icons.append('wagtail_ab_testing/icons/people-arrows.svg')
+    icons.append('wagtail_ab_testing/icons/crown.svg')
     return icons
