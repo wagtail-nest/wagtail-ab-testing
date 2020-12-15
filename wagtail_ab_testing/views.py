@@ -171,7 +171,7 @@ class EndAbTestMenuItem(ActionMenuItem):
         if not context['user_page_permissions'].for_page(context['ab_test'].page).can_publish():
             return False
 
-        return context['ab_test'].status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED, AbTest.Status.FINISHED]
+        return context['ab_test'].status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]
 
 
 class PauseAbTestMenuItem(ActionMenuItem):
@@ -183,22 +183,6 @@ class PauseAbTestMenuItem(ActionMenuItem):
             return False
 
         return context['ab_test'].status == AbTest.Status.RUNNING
-
-
-class SelectControlMenuItem(ActionMenuItem):
-    name = 'action-select-control'
-    label = _("Revert to control")
-
-    def is_shown(self, request, context):
-        return context['ab_test'].status == AbTest.Status.FINISHED
-
-
-class SelectTreatmentMenuItem(ActionMenuItem):
-    name = 'action-select-treatment'
-    label = _("Publish treatment")
-
-    def is_shown(self, request, context):
-        return context['ab_test'].status == AbTest.Status.FINISHED
 
 
 class AbTestActionMenu:
@@ -214,8 +198,6 @@ class AbTestActionMenu:
             RestartAbTestMenuItem(order=1),
             EndAbTestMenuItem(order=2),
             PauseAbTestMenuItem(order=3),
-            SelectControlMenuItem(order=4),
-            SelectTreatmentMenuItem(order=5),
         ]
 
         self.menu_items = [
@@ -368,6 +350,8 @@ def progress(request, page, ab_test):
             if ab_test.status == AbTest.Status.FINISHED:
                 ab_test.complete(AbTest.CompletionAction.REVERT, user=request.user)
 
+                messages.success(request, _("The page has been reverted back to the control version."))
+
             else:
                 messages.error(request, _("The A/B test cannot be paused because it is not running."))
 
@@ -375,6 +359,8 @@ def progress(request, page, ab_test):
             if ab_test.status == AbTest.Status.FINISHED:
                 # TODO Permission check?
                 ab_test.complete(AbTest.CompletionAction.PUBLISH, user=request.user)
+
+                messages.success(request, _("The treatment version has been published."))
 
             else:
                 messages.error(request, _("The A/B test cannot be paused because it is not running."))
