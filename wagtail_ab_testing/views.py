@@ -107,7 +107,11 @@ def add_form(request, page_id):
             ab_test = form.save(page, page.get_latest_revision(), request.user)
 
             if 'start' in request.POST:
-                ab_test.start()
+                page_perms = page.permissions_for_user(request.user)
+                if page_perms.can_publish():
+                    ab_test.start()
+                else:
+                    messages.error(request, _("You must have permission to publish in order to start an A/B test."))
 
             return redirect('wagtailadmin_pages:edit', page.id)
     else:
@@ -137,6 +141,9 @@ class StartAbTestMenuItem(ActionMenuItem):
     label = _("Start A/B test")
 
     def is_shown(self, request, context):
+        if not context['user_page_permissions'].for_page(context['ab_test'].page).can_publish():
+            return False
+
         return context['ab_test'].status == AbTest.Status.DRAFT
 
 
@@ -145,6 +152,9 @@ class RestartAbTestMenuItem(ActionMenuItem):
     label = _("Restart A/B test")
 
     def is_shown(self, request, context):
+        if not context['user_page_permissions'].for_page(context['ab_test'].page).can_publish():
+            return False
+
         return context['ab_test'].status == AbTest.Status.PAUSED
 
 
@@ -153,6 +163,9 @@ class EndAbTestMenuItem(ActionMenuItem):
     label = _("End A/B test")
 
     def is_shown(self, request, context):
+        if not context['user_page_permissions'].for_page(context['ab_test'].page).can_publish():
+            return False
+
         return context['ab_test'].status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]
 
 
@@ -161,6 +174,9 @@ class PauseAbTestMenuItem(ActionMenuItem):
     label = _("Pause A/B test")
 
     def is_shown(self, request, context):
+        if not context['user_page_permissions'].for_page(context['ab_test'].page).can_publish():
+            return False
+
         return context['ab_test'].status == AbTest.Status.RUNNING
 
 
@@ -287,25 +303,36 @@ def get_progress_and_results_common_context(request, page, ab_test):
 
 def progress(request, page, ab_test):
     if request.method == 'POST':
-        if 'action-start-ab-test' in request.POST or 'action-restart-ab-test' in request.POST:
-            if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.PAUSED]:
-                ab_test.start()
+        page_perms = page.permissions_for_user(request.user)
 
-                messages.success(request, _("A/B test started!"))
+        if 'action-start-ab-test' in request.POST or 'action-restart-ab-test' in request.POST:
+            if page_perms.can_publish():
+                if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.PAUSED]:
+                    ab_test.start()
+
+                    messages.success(request, _("A/B test started!"))
+                else:
+                    messages.error(request, _("The A/B test must be in draft or paused in order to be started."))
             else:
-                messages.error(request, _("The A/B test must be in draft or paused in order to be started."))
+                messages.error(request, _("You must have permission to publish in order to start an A/B test."))
 
         elif 'action-end-ab-test' in request.POST:
-            if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]:
-                ab_test.finish(cancel=True)
+            if page_perms.can_publish():
+                if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]:
+                    ab_test.finish(cancel=True)
+                else:
+                    messages.error(request, _("The A/B test has already ended."))
             else:
-                messages.error(request, _("The A/B test has already ended."))
+                messages.error(request, _("You must have permission to publish in order to end an A/B test."))
 
         elif 'action-pause-ab-test' in request.POST:
-            if ab_test.status == AbTest.Status.RUNNING:
-                ab_test.pause()
+            if page_perms.can_publish():
+                if ab_test.status == AbTest.Status.RUNNING:
+                    ab_test.pause()
+                else:
+                    messages.error(request, _("The A/B test cannot be paused because it is not running."))
             else:
-                messages.error(request, _("The A/B test cannot be paused because it is not running."))
+                messages.error(request, _("You must have permission to publish in order to pause an A/B test."))
 
         else:
             messages.error(request, _("Unknown action"))
