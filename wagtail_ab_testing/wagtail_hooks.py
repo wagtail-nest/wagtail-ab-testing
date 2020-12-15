@@ -81,7 +81,8 @@ class AbTestingTabActionMenuItem(ActionMenuItem):
                             'results_url': reverse('wagtail_ab_testing:results', args=[ab_test.page_id, ab_test.id]),
                         }
                         for ab_test in AbTest.objects.filter(page=context['page']).order_by('-id')
-                    ]
+                    ],
+                    'can_create_abtest': request.user.has_perm('wagtail_ab_testing.add_abtest'),
                 }))
             )
 
