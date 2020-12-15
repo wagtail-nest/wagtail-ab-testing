@@ -93,6 +93,14 @@ $charcoal-grey: #333;
         font-size: 15px;
         font-weight: bold;
         line-height: 30px;
+
+        .icon-crown {
+            margin-top: 4px;
+            margin-right: 1px;
+            width: 22px;
+            height: 22px;
+            vertical-align: -11%;
+        }
     }
     &__variant--control &__variant-heading {
         border-bottom-color: $color-control;

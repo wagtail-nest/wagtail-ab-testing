@@ -46,7 +46,7 @@
             <div class="abtest-results">
                 <div class="abtest-results__variant abtest-results__variant--control">
                     <div class="abtest-results__variant-heading{% if control_is_winner %} abtest-results__variant-heading--winner{% endif %}">
-                        {% if control_is_winner %}{% trans "Winner!" %}{% endif %}
+                        {% if control_is_winner %}{% icon "crown" %} {% trans "Winner!" %}{% endif %}
                     </div>
                     <div class="abtest-results__variant-inner">
                         <h3>{% trans "Control" %} <a href="{% pageurl page %}" target="_blank">{% icon name="link-external" %}</a></h3>
@@ -73,7 +73,7 @@
                 </div>
                 <div class="abtest-results__variant abtest-results__variant--treatment">
                     <div class="abtest-results__variant-heading{% if treatment_is_winner %} abtest-results__variant-heading--winner{% endif %}">
-                        {% if treatment_is_winner %}{% trans "Winner!" %}{% endif %}
+                        {% if treatment_is_winner %}{% icon "crown" %} {% trans "Winner!" %}{% endif %}
                     </div>
                     <div class="abtest-results__variant-inner">
                         <h3>{% trans "Treatment" %} <a href="{% url 'wagtailadmin_pages:view_draft' page.id %}" target="_blank">{% icon name="link-external" %}</a></h3>
