@@ -89,3 +89,61 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.ab_test.refresh_from_db()
 
         self.assertEqual(self.ab_test.status, AbTest.Status.CANCELLED)
+
+    def test_post_start_without_publish_permission(self):
+        self.moderators_group.page_permissions.filter(permission_type='publish').delete()
+
+        self.ab_test.status = AbTest.Status.DRAFT
+        self.ab_test.save()
+
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-start-ab-test': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+
+        self.assertEqual(self.ab_test.status, AbTest.Status.DRAFT)
+
+    def test_post_pause_without_publish_permission(self):
+        self.moderators_group.page_permissions.filter(permission_type='publish').delete()
+
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-pause-ab-test': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+
+        self.assertEqual(self.ab_test.status, AbTest.Status.RUNNING)
+
+    def test_post_restart_without_publish_permission(self):
+        self.moderators_group.page_permissions.filter(permission_type='publish').delete()
+
+        self.ab_test.status = AbTest.Status.PAUSED
+        self.ab_test.save()
+
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-restart-ab-test': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+
+        self.assertEqual(self.ab_test.status, AbTest.Status.PAUSED)
+
+    def test_post_end_without_publish_permission(self):
+        self.moderators_group.page_permissions.filter(permission_type='publish').delete()
+
+        response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
+            'action-end-ab-test': 'on',
+        })
+
+        self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
+
+        self.ab_test.refresh_from_db()
+
+        self.assertEqual(self.ab_test.status, AbTest.Status.RUNNING)

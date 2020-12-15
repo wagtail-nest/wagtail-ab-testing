@@ -5,19 +5,21 @@
 {% block content %}
     {{ block.super }}
 
-    <form action="{% url 'wagtailadmin_pages:edit' page.id %}" method="POST">
-        {% csrf_token %}
+    {% if action_menu.default_item %}
+        <form action="{% url 'wagtailadmin_pages:edit' page.id %}" method="POST">
+            {% csrf_token %}
 
-        <footer>
-            <nav aria-label="{% trans 'Actions' %}">
-                <ul>
-                    <li class="actions actions--primary">
-                        <div class="dropdown dropup dropdown-button match-width">
-                            {{ action_menu.render_html }}
-                        </div>
-                    </li>
-                </ul>
-            </nav>
-        </footer>
-    </form>
+            <footer>
+                <nav aria-label="{% trans 'Actions' %}">
+                    <ul>
+                        <li class="actions actions--primary">
+                            <div class="dropdown dropup dropdown-button match-width">
+                                {{ action_menu.render_html }}
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+            </footer>
+        </form>
+    {% endif %}
 {% endblock %}
