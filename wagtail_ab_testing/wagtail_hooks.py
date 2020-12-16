@@ -123,9 +123,9 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
     if f'wagtail-ab-testing_{test.id}_version' not in request.session:
         request.session[f'wagtail-ab-testing_{test.id}_version'] = test.add_participant()
 
-    # If the user is visiting the treatment version, serve that from the revision
-    if request.session[f'wagtail-ab-testing_{test.id}_version'] == AbTest.Version.TREATMENT:
-        return test.treatment_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+    # If the user is visiting the variant version, serve that from the revision
+    if request.session[f'wagtail-ab-testing_{test.id}_version'] == AbTest.Version.VARIANT:
+        return test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
 
 
 class AbTestingReportMenuItem(MenuItem):

@@ -29,7 +29,7 @@ class TestReportView(WagtailTestUtils, TestCase):
         self.ab_test = AbTest.objects.create(
             page=self.page,
             name="Test",
-            treatment_revision=self.page.get_latest_revision(),
+            variant_revision=self.page.get_latest_revision(),
             status=AbTest.Status.RUNNING,
             sample_size=100,
         )

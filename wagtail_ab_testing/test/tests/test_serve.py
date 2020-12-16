@@ -12,15 +12,15 @@ class TestServe(TestCase):
         self.ab_test = AbTest.objects.create(
             page=self.home_page,
             name="Test",
-            treatment_revision=revision,
+            variant_revision=revision,
             goal_event="foo",
             sample_size=10,
         )
 
     def test_serves_control(self):
-        # Add a participant for treatment
+        # Add a participant for variant
         # This will make the new participant use control to balance the numbers
-        self.ab_test.add_participant(AbTest.Version.TREATMENT)
+        self.ab_test.add_participant(AbTest.Version.VARIANT)
 
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
@@ -30,9 +30,9 @@ class TestServe(TestCase):
 
         self.assertEqual(self.client.session[f'wagtail-ab-testing_{self.ab_test.id}_version'], AbTest.Version.CONTROL)
 
-    def test_serves_treatment(self):
+    def test_serves_variant(self):
         # Add a participant for control
-        # This will make the new participant use treatment to balance the numbers
+        # This will make the new participant use variant to balance the numbers
         self.ab_test.add_participant(AbTest.Version.CONTROL)
 
         response = self.client.get('/')
@@ -41,11 +41,11 @@ class TestServe(TestCase):
         self.assertNotContains(response, "Welcome to your new Wagtail site!")
         self.assertContains(response, "Changed title")
 
-        self.assertEqual(self.client.session[f'wagtail-ab-testing_{self.ab_test.id}_version'], AbTest.Version.TREATMENT)
+        self.assertEqual(self.client.session[f'wagtail-ab-testing_{self.ab_test.id}_version'], AbTest.Version.VARIANT)
 
     def test_doesnt_track_bots(self):
         # Add a participant for control
-        # This will make it serve the treatment if it does incorrectly decide to track the user
+        # This will make it serve the variant if it does incorrectly decide to track the user
         self.ab_test.add_participant(AbTest.Version.CONTROL)
 
         response = self.client.get(
@@ -61,7 +61,7 @@ class TestServe(TestCase):
 
     def test_doesnt_track_dnt_users(self):
         # Add a participant for control
-        # This will make it serve the treatment if it does incorrectly decide to track the user
+        # This will make it serve the variant if it does incorrectly decide to track the user
         self.ab_test.add_participant(AbTest.Version.CONTROL)
 
         response = self.client.get('/', HTTP_DNT='1')

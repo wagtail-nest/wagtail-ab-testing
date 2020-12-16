@@ -35,10 +35,10 @@ class CreateAbTestForm(forms.ModelForm):
             for slug, goal in EVENT_TYPES.items()
         ]
 
-    def save(self, page, treatment_revision, user):
+    def save(self, page, variant_revision, user):
         ab_test = super().save(commit=False)
         ab_test.page = page
-        ab_test.treatment_revision = treatment_revision
+        ab_test.variant_revision = variant_revision
         ab_test.created_by = user
         ab_test.save()
         return ab_test
@@ -234,15 +234,15 @@ def get_progress_and_results_common_context(request, page, ab_test):
     stats = ab_test.hourly_logs.aggregate(
         control_participants=Sum('participants', filter=Q(version=AbTest.Version.CONTROL)),
         control_conversions=Sum('conversions', filter=Q(version=AbTest.Version.CONTROL)),
-        treatment_participants=Sum('participants', filter=Q(version=AbTest.Version.TREATMENT)),
-        treatment_conversions=Sum('conversions', filter=Q(version=AbTest.Version.TREATMENT)),
+        variant_participants=Sum('participants', filter=Q(version=AbTest.Version.VARIANT)),
+        variant_conversions=Sum('conversions', filter=Q(version=AbTest.Version.VARIANT)),
     )
     control_participants = stats['control_participants'] or 0
     control_conversions = stats['control_conversions'] or 0
-    treatment_participants = stats['treatment_participants'] or 0
-    treatment_conversions = stats['treatment_conversions'] or 0
+    variant_participants = stats['variant_participants'] or 0
+    variant_conversions = stats['variant_conversions'] or 0
 
-    current_sample_size = control_participants + treatment_participants
+    current_sample_size = control_participants + variant_participants
 
     estimated_completion_date = None
     if ab_test.status == AbTest.Status.RUNNING and current_sample_size:
@@ -256,14 +256,14 @@ def get_progress_and_results_common_context(request, page, ab_test):
     # Generate time series data for the chart
     time_series = []
     control = 0
-    treatment = 0
+    variant = 0
     date = None
     for log in ab_test.hourly_logs.order_by('date', 'hour'):
         # Accumulate the conversions
         if log.version == AbTest.Version.CONTROL:
             control += log.conversions
         else:
-            treatment += log.conversions
+            variant += log.conversions
 
         while date is None or date < log.date:
             if date is None:
@@ -277,7 +277,7 @@ def get_progress_and_results_common_context(request, page, ab_test):
             time_series.append({
                 'date': date,
                 'control': control,
-                'treatment': treatment,
+                'variant': variant,
             })
 
     return {
@@ -288,11 +288,11 @@ def get_progress_and_results_common_context(request, page, ab_test):
         'control_conversions': control_conversions,
         'control_participants': control_participants,
         'control_conversions_percent': int(control_conversions / control_participants * 100) if control_participants else 0,
-        'treatment_conversions': treatment_conversions,
-        'treatment_participants': treatment_participants,
-        'treatment_conversions_percent': int(treatment_conversions / treatment_participants * 100) if treatment_participants else 0,
+        'variant_conversions': variant_conversions,
+        'variant_participants': variant_participants,
+        'variant_conversions_percent': int(variant_conversions / variant_participants * 100) if variant_participants else 0,
         'control_is_winner': ab_test.winning_version == AbTest.Version.CONTROL,
-        'treatment_is_winner': ab_test.winning_version == AbTest.Version.TREATMENT,
+        'variant_is_winner': ab_test.winning_version == AbTest.Version.VARIANT,
         'unclear_winner': ab_test.status in [AbTest.Status.FINISHED, ab_test.Status.COMPLETED] and ab_test.winning_version is None,
         'estimated_completion_date': estimated_completion_date,
         'chart_data': json.dumps({
@@ -300,7 +300,7 @@ def get_progress_and_results_common_context(request, page, ab_test):
             'columns': [
                 ['x'] + [data_point['date'].isoformat() for data_point in time_series],
                 [_("Control")] + [data_point['control'] for data_point in time_series],
-                [_("Treatment")] + [data_point['treatment'] for data_point in time_series],
+                [_("Variant")] + [data_point['variant'] for data_point in time_series],
             ],
             'type': 'spline',
         }),
@@ -355,12 +355,12 @@ def progress(request, page, ab_test):
             else:
                 messages.error(request, _("The A/B test cannot be paused because it is not running."))
 
-        elif 'action-select-treatment' in request.POST:
+        elif 'action-select-variant' in request.POST:
             if ab_test.status == AbTest.Status.FINISHED:
                 # TODO Permission check?
                 ab_test.complete(AbTest.CompletionAction.PUBLISH, user=request.user)
 
-                messages.success(request, _("The treatment version has been published."))
+                messages.success(request, _("The variant version has been published."))
 
             else:
                 messages.error(request, _("The A/B test cannot be paused because it is not running."))
