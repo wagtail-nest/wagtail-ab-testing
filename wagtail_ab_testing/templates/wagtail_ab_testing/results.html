@@ -44,27 +44,27 @@
                 </g>
             </svg>
             <div class="abtest-results">
-                <div class="abtest-results__variant abtest-results__variant--control">
-                    <div class="abtest-results__variant-heading{% if control_is_winner or unclear_winner %} abtest-results__variant-heading--winner{% endif %}">
+                <div class="abtest-results__version abtest-results__version--control">
+                    <div class="abtest-results__version-heading{% if control_is_winner or unclear_winner %} abtest-results__version-heading--winner{% endif %}">
                         {% if control_is_winner %}{% icon "crown" %} {% trans "Winner!" %}{% elif unclear_winner %}{% trans "No clear winner" %}{% endif %}
                     </div>
-                    <div class="abtest-results__variant-inner">
+                    <div class="abtest-results__version-inner">
                         <h3>{% trans "Control" %} <a href="{% pageurl page %}" target="_blank">{% icon name="link-external" %}</a></h3>
 
-                        <ul class="abtest-results__variant-stats">
+                        <ul class="abtest-results__version-stats">
                             <li>
-                                <div class="abtest-results__variant-stat">
+                                <div class="abtest-results__version-stat">
                                     {{ control_conversions_percent }}%
                                 </div>
-                                <div class="abtest-results__variant-stat-name">
+                                <div class="abtest-results__version-stat-name">
                                     {% trans "Conversion rate" %}
                                 </div>
                             </li>
                             <li>
-                                <div class="abtest-results__variant-stat">
+                                <div class="abtest-results__version-stat">
                                     {{ control_conversions }}
                                 </div>
-                                <div class="abtest-results__variant-stat-name">
+                                <div class="abtest-results__version-stat-name">
                                     {% trans "Conversions" %} <span>({% blocktrans count control_participants as count %}1 user{% plural %}{{ count }} users{% endblocktrans %})</span>
                                 </div>
                             </li>
@@ -78,27 +78,27 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="abtest-results__variant abtest-results__variant--treatment">
-                    <div class="abtest-results__variant-heading{% if treatment_is_winner or unclear_winner %} abtest-results__variant-heading--winner{% endif %}">
+                <div class="abtest-results__version abtest-results__version--treatment">
+                    <div class="abtest-results__version-heading{% if treatment_is_winner or unclear_winner %} abtest-results__version-heading--winner{% endif %}">
                         {% if treatment_is_winner %}{% icon "crown" %} {% trans "Winner!" %}{% elif unclear_winner %}{% trans "No clear winner" %}{% endif %}
                     </div>
-                    <div class="abtest-results__variant-inner">
+                    <div class="abtest-results__version-inner">
                         <h3>{% trans "Treatment" %} <a href="{% url 'wagtailadmin_pages:view_draft' page.id %}" target="_blank">{% icon name="link-external" %}</a></h3>
 
-                        <ul class="abtest-results__variant-stats">
+                        <ul class="abtest-results__version-stats">
                             <li>
-                                <div class="abtest-results__variant-stat">
+                                <div class="abtest-results__version-stat">
                                     {{ treatment_conversions_percent }}%
                                 </div>
-                                <div class="abtest-results__variant-stat-name">
+                                <div class="abtest-results__version-stat-name">
                                     {% trans "Conversion rate" %}
                                 </div>
                             </li>
                             <li>
-                                <div class="abtest-results__variant-stat">
+                                <div class="abtest-results__version-stat">
                                     {{ treatment_conversions }}
                                 </div>
-                                <div class="abtest-results__variant-stat-name">
+                                <div class="abtest-results__version-stat-name">
                                     {% trans "Conversions" %} <span>({% blocktrans count treatment_participants as count %}1 user{% plural %}{{ count }} users{% endblocktrans %})</span>
                                 </div>
                             </li>

@@ -45,7 +45,7 @@ class AbTest(models.Model):
         FINISHED = 'finished', __('Finished')
         COMPLETED = 'completed', __('Completed')
 
-    class Variant(models.TextChoices):
+    class Version(models.TextChoices):
         CONTROL = 'control', __('Control')
         TREATMENT = 'treatment', __('Treatment')
 
@@ -64,7 +64,7 @@ class AbTest(models.Model):
     sample_size = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
-    winning_variant = models.CharField(max_length=9, null=True, choices=Variant.choices)
+    winning_version = models.CharField(max_length=9, null=True, choices=Version.choices)
     first_started_at = models.DateTimeField(null=True)
 
     # Because an admin can pause/resume tests, we need to make sure we record the amount of time it has been running
@@ -154,9 +154,9 @@ class AbTest(models.Model):
         method.
         """
         self.status = self.Status.FINISHED
-        self.winning_variant = self.check_for_winner()
+        self.winning_version = self.check_for_winner()
 
-        self.save(update_fields=['status', 'winning_variant'])
+        self.save(update_fields=['status', 'winning_version'])
 
     @transaction.atomic
     def complete(self, action, user=None):
@@ -188,34 +188,34 @@ class AbTest(models.Model):
         elif action == AbTest.CompletionAction.PUBLISH:
             self.treatment_revision.publish(user=user)
 
-    def add_participant(self, variant=None):
+    def add_participant(self, version=None):
         """
-        Inserts a new participant into the log. Returns the variant that they should be shown.
+        Inserts a new participant into the log. Returns the version that they should be shown.
         """
-        # Get current numbers of participants for each variant
+        # Get current numbers of participants for each version
         stats = self.hourly_logs.aggregate(
-            control_participants=Sum('participants', filter=Q(variant=self.Variant.CONTROL)),
-            treatment_participants=Sum('participants', filter=Q(variant=self.Variant.TREATMENT)),
+            control_participants=Sum('participants', filter=Q(version=self.Version.CONTROL)),
+            treatment_participants=Sum('participants', filter=Q(version=self.Version.TREATMENT)),
         )
         control_participants = stats['control_participants'] or 0
         treatment_participants = stats['treatment_participants'] or 0
 
-        # Create an equal number of participants for each variant
-        if variant is None:
+        # Create an equal number of participants for each version
+        if version is None:
             if treatment_participants > control_participants:
-                variant = self.Variant.CONTROL
+                version = self.Version.CONTROL
 
             elif treatment_participants < control_participants:
-                variant = self.Variant.TREATMENT
+                version = self.Version.TREATMENT
 
             else:
-                variant = random.choice([
-                    self.Variant.CONTROL,
-                    self.Variant.TREATMENT,
+                version = random.choice([
+                    self.Version.CONTROL,
+                    self.Version.TREATMENT,
                 ])
 
         # Add new participant to statistics model
-        AbTestHourlyLog._increment_stats(self, variant, 1, 0)
+        AbTestHourlyLog._increment_stats(self, version, 1, 0)
 
         # If we have now reached the required sample size, end the test
         # Note: we don't care too much that the last few participants won't
@@ -225,22 +225,22 @@ class AbTest(models.Model):
         if control_participants + treatment_participants + 1 >= self.sample_size:
             self.finish()
 
-        return variant
+        return version
 
-    def log_conversion(self, variant, *, time=None):
+    def log_conversion(self, version, *, time=None):
         """
         Logs when a participant completed the goal.
 
         Note: It's up to the caller to make sure that this doesn't get called more than once
         per participant.
         """
-        AbTestHourlyLog._increment_stats(self, variant, 0, 1, time=time)
+        AbTestHourlyLog._increment_stats(self, version, 0, 1, time=time)
 
     def check_for_winner(self):
         """
         Performs a Chi-Squared test to check if there is a clear winner.
 
-        Returns Variant.CONTROL or Variant.TREATMENT if there is one. Otherwise, it returns None.
+        Returns Version.CONTROL or Version.TREATMENT if there is one. Otherwise, it returns None.
 
         For more information on what the Chi-Squared test does, see:
         https://www.evanmiller.org/ab-testing/chi-squared.html
@@ -248,10 +248,10 @@ class AbTest(models.Model):
         """
         # Fetch stats from database
         stats = self.hourly_logs.aggregate(
-            control_participants=Sum('participants', filter=Q(variant=self.Variant.CONTROL)),
-            control_conversions=Sum('conversions', filter=Q(variant=self.Variant.CONTROL)),
-            treatment_participants=Sum('participants', filter=Q(variant=self.Variant.TREATMENT)),
-            treatment_conversions=Sum('conversions', filter=Q(variant=self.Variant.TREATMENT)),
+            control_participants=Sum('participants', filter=Q(version=self.Version.CONTROL)),
+            control_conversions=Sum('conversions', filter=Q(version=self.Version.CONTROL)),
+            treatment_participants=Sum('participants', filter=Q(version=self.Version.TREATMENT)),
+            treatment_conversions=Sum('conversions', filter=Q(version=self.Version.TREATMENT)),
         )
         control_participants = stats['control_participants'] or 0
         control_conversions = stats['control_conversions'] or 0
@@ -284,9 +284,9 @@ class AbTest(models.Model):
             # There is a clear winner!
             # Return the one with the highest success rate
             if (control_conversions / control_participants) > (treatment_conversions / treatment_participants):
-                return self.Variant.CONTROL
+                return self.Version.CONTROL
             else:
-                return self.Variant.TREATMENT
+                return self.Version.TREATMENT
 
     def get_status_description(self):
         """
@@ -300,10 +300,10 @@ class AbTest(models.Model):
             return status + f" ({completeness_percentange}%)"
 
         elif self.status in [AbTest.Status.FINISHED, AbTest.Status.COMPLETED]:
-            if self.winning_variant == AbTest.Variant.CONTROL:
+            if self.winning_version == AbTest.Version.CONTROL:
                 return status + " (" + _("Control won") + ")"
 
-            elif self.winning_variant == AbTest.Variant.TREATMENT:
+            elif self.winning_version == AbTest.Version.TREATMENT:
                 return status + " (" + _("Treatment won") + ")"
 
             else:
@@ -315,7 +315,7 @@ class AbTest(models.Model):
 
 class AbTestHourlyLog(models.Model):
     ab_test = models.ForeignKey(AbTest, on_delete=models.CASCADE, related_name='hourly_logs')
-    variant = models.CharField(max_length=9, choices=AbTest.Variant.choices)
+    version = models.CharField(max_length=9, choices=AbTest.Version.choices)
     date = models.DateField()
     # UTC hour. Values range from 0 to 23
     hour = models.PositiveSmallIntegerField()
@@ -327,9 +327,9 @@ class AbTestHourlyLog(models.Model):
     conversions = models.PositiveIntegerField(default=0)
 
     @classmethod
-    def _increment_stats(cls, ab_test, variant, participants, conversions, *, time=None):
+    def _increment_stats(cls, ab_test, version, participants, conversions, *, time=None):
         """
-        Increments the participants/conversions statistics for the given ab_test/variant.
+        Increments the participants/conversions statistics for the given ab_test/version.
 
         This will create a new AbTestHourlyLog record if one doesn't exist for the current hour.
         """
@@ -342,15 +342,15 @@ class AbTestHourlyLog(models.Model):
             with connection.cursor() as cursor:
                 table_name = connection.ops.quote_name(cls._meta.db_table)
                 query = """
-                    INSERT INTO %s (ab_test_id, variant, date, hour, participants, conversions)
+                    INSERT INTO %s (ab_test_id, version, date, hour, participants, conversions)
                     VALUES (%%s, %%s, %%s, %%s, %%s, %%s)
-                    ON CONFLICT (ab_test_id, variant, date, hour)
+                    ON CONFLICT (ab_test_id, version, date, hour)
                         DO UPDATE SET participants = %s.participants + %%s, conversions = %s.conversions + %%s;
                 """ % (table_name, table_name, table_name)
 
                 cursor.execute(query, [
                     ab_test.id,
-                    variant,
+                    version,
                     date,
                     hour,
                     participants,
@@ -362,7 +362,7 @@ class AbTestHourlyLog(models.Model):
             # Fall back to running two queries (with small potential for race conditions if things run slowly)
             hourly_log, created = cls.objects.get_or_create(
                 ab_test=ab_test,
-                variant=variant,
+                version=version,
                 date=date,
                 hour=hour,
                 defaults={
@@ -377,9 +377,9 @@ class AbTestHourlyLog(models.Model):
                 hourly_log.save(update_fields=['participants', 'conversions'])
 
     class Meta:
-        ordering = ['ab_test', 'variant', 'date', 'hour']
+        ordering = ['ab_test', 'version', 'date', 'hour']
         unique_together = [
-            ('ab_test', 'variant', 'date', 'hour'),
+            ('ab_test', 'version', 'date', 'hour'),
         ]
 
 

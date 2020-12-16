@@ -20,7 +20,7 @@ class TestServe(TestCase):
     def test_serves_control(self):
         # Add a participant for treatment
         # This will make the new participant use control to balance the numbers
-        self.ab_test.add_participant(AbTest.Variant.TREATMENT)
+        self.ab_test.add_participant(AbTest.Version.TREATMENT)
 
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
@@ -28,12 +28,12 @@ class TestServe(TestCase):
         self.assertContains(response, "Welcome to your new Wagtail site!")
         self.assertNotContains(response, "Changed title")
 
-        self.assertEqual(self.client.session[f'wagtail-ab-testing_{self.ab_test.id}_variant'], AbTest.Variant.CONTROL)
+        self.assertEqual(self.client.session[f'wagtail-ab-testing_{self.ab_test.id}_version'], AbTest.Version.CONTROL)
 
     def test_serves_treatment(self):
         # Add a participant for control
         # This will make the new participant use treatment to balance the numbers
-        self.ab_test.add_participant(AbTest.Variant.CONTROL)
+        self.ab_test.add_participant(AbTest.Version.CONTROL)
 
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
@@ -41,12 +41,12 @@ class TestServe(TestCase):
         self.assertNotContains(response, "Welcome to your new Wagtail site!")
         self.assertContains(response, "Changed title")
 
-        self.assertEqual(self.client.session[f'wagtail-ab-testing_{self.ab_test.id}_variant'], AbTest.Variant.TREATMENT)
+        self.assertEqual(self.client.session[f'wagtail-ab-testing_{self.ab_test.id}_version'], AbTest.Version.TREATMENT)
 
     def test_doesnt_track_bots(self):
         # Add a participant for control
         # This will make it serve the treatment if it does incorrectly decide to track the user
-        self.ab_test.add_participant(AbTest.Variant.CONTROL)
+        self.ab_test.add_participant(AbTest.Version.CONTROL)
 
         response = self.client.get(
             '/',
@@ -57,12 +57,12 @@ class TestServe(TestCase):
         # The control should be served
         self.assertContains(response, "Welcome to your new Wagtail site!")
         self.assertNotContains(response, "Changed title")
-        self.assertNotIn(f'wagtail-ab-testing_{self.ab_test.id}_variant', self.client.session)
+        self.assertNotIn(f'wagtail-ab-testing_{self.ab_test.id}_version', self.client.session)
 
     def test_doesnt_track_dnt_users(self):
         # Add a participant for control
         # This will make it serve the treatment if it does incorrectly decide to track the user
-        self.ab_test.add_participant(AbTest.Variant.CONTROL)
+        self.ab_test.add_participant(AbTest.Version.CONTROL)
 
         response = self.client.get('/', HTTP_DNT='1')
         self.assertEqual(response.status_code, 200)
@@ -70,4 +70,4 @@ class TestServe(TestCase):
         # The control should be served
         self.assertContains(response, "Welcome to your new Wagtail site!")
         self.assertNotContains(response, "Changed title")
-        self.assertNotIn(f'wagtail-ab-testing_{self.ab_test.id}_variant', self.client.session)
+        self.assertNotIn(f'wagtail-ab-testing_{self.ab_test.id}_version', self.client.session)

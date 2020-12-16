@@ -32,31 +32,31 @@ class TestAbTestModel(TestCase):
         self.assertEqual(self.ab_test.status, AbTest.Status.CANCELLED)
 
     def test_add_participant(self):
-        variant = self.ab_test.add_participant()
+        version = self.ab_test.add_participant()
 
         # This should've created a history log
         log = self.ab_test.hourly_logs.get()
 
         self.assertEqual(log.date, datetime.date(2020, 11, 4))
         self.assertEqual(log.hour, 22)
-        self.assertEqual(log.variant, variant)
+        self.assertEqual(log.version, version)
         self.assertEqual(log.participants, 1)
         self.assertEqual(log.conversions, 0)
 
     def test_log_conversion(self):
-        self.ab_test.log_conversion(AbTest.Variant.CONTROL)
+        self.ab_test.log_conversion(AbTest.Version.CONTROL)
 
         # This should've created a history log
         log = self.ab_test.hourly_logs.get()
 
         self.assertEqual(log.date, datetime.date(2020, 11, 4))
         self.assertEqual(log.hour, 22)
-        self.assertEqual(log.variant, AbTest.Variant.CONTROL)
+        self.assertEqual(log.version, AbTest.Version.CONTROL)
         self.assertEqual(log.participants, 0)
         self.assertEqual(log.conversions, 1)
 
         # Now add another
-        self.ab_test.log_conversion(AbTest.Variant.CONTROL)
+        self.ab_test.log_conversion(AbTest.Version.CONTROL)
 
         log.refresh_from_db()
 
@@ -66,7 +66,7 @@ class TestAbTestModel(TestCase):
     def set_up_test(self, control_participants, control_conversions, treatment_participants, treatment_conversions):
         AbTestHourlyLog.objects.create(
             ab_test=self.ab_test,
-            variant=AbTest.Variant.CONTROL,
+            version=AbTest.Version.CONTROL,
             date=datetime.date(2020, 11, 4),
             hour=22,
             participants=control_participants,
@@ -75,7 +75,7 @@ class TestAbTestModel(TestCase):
 
         AbTestHourlyLog.objects.create(
             ab_test=self.ab_test,
-            variant=AbTest.Variant.TREATMENT,
+            version=AbTest.Version.TREATMENT,
             date=datetime.date(2020, 11, 4),
             hour=22,
             participants=treatment_participants,
@@ -90,22 +90,22 @@ class TestAbTestModel(TestCase):
     def test_check_control_clearly_wins(self):
         self.set_up_test(100, 80, 100, 20)
 
-        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.CONTROL)
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.CONTROL)
 
     def test_check_treatment_clearly_wins(self):
         self.set_up_test(100, 20, 100, 80)
 
-        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.TREATMENT)
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.TREATMENT)
 
     def test_control_just_wins(self):
         self.set_up_test(100, 64, 100, 50)
 
-        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.CONTROL)
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.CONTROL)
 
     def test_treatment_just_wins(self):
         self.set_up_test(100, 50, 100, 64)
 
-        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.TREATMENT)
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.TREATMENT)
 
     def test_close_leaning_control(self):
         self.set_up_test(100, 62, 100, 50)
@@ -122,7 +122,7 @@ class TestAbTestModel(TestCase):
         # we can be more confident with a slight difference if there are more paricipants
         self.set_up_test(1000, 550, 1000, 500)
 
-        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Variant.CONTROL)
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.CONTROL)
 
 
 class TestAutoCancelOnUnpublish(TestCase):
