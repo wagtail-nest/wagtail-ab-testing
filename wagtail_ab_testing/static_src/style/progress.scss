@@ -45,7 +45,7 @@ $charcoal-grey: #333;
     margin-bottom: 20px;
     overflow: auto;
 
-    &__variant {
+    &__version {
         float: left;
         width: 50%;
         box-sizing: border-box;
@@ -83,7 +83,7 @@ $charcoal-grey: #333;
         }
     }
 
-    &__variant-heading {
+    &__version-heading {
         height: 30px;
         border-bottom-width: 5px;
         border-bottom-style: solid;
@@ -102,21 +102,21 @@ $charcoal-grey: #333;
             vertical-align: -11%;
         }
     }
-    &__variant--control &__variant-heading {
+    &__version--control &__version-heading {
         border-bottom-color: $color-control;
     }
-    &__variant--treatment &__variant-heading {
+    &__version--treatment &__version-heading {
         border-bottom-color: $color-treatment;
     }
 
-    &__variant--control &__variant-heading--winner {
+    &__version--control &__version-heading--winner {
         background-color: $color-control;
     }
-    &__variant--treatment &__variant-heading--winner {
+    &__version--treatment &__version-heading--winner {
         background-color: $color-treatment;
     }
 
-    &__variant-inner {
+    &__version-inner {
         border: 1px solid #eeeeee;
         border-top: none;
         box-sizing: border-box;
@@ -134,7 +134,7 @@ $charcoal-grey: #333;
         }
     }
 
-    &__variant-stats {
+    &__version-stats {
         list-style-type: none;
         margin: 0;
         padding: 0;
@@ -147,18 +147,18 @@ $charcoal-grey: #333;
         }
     }
 
-    &__variant-stats > li {
+    &__version-stats > li {
         float: left;
         padding-right: 30px;
         margin-top: 30px;
     }
 
-    &__variant-stat {
+    &__version-stat {
         font-weight: bold;
         font-size: 50px;
     }
 
-    &__variant-stat-name {
+    &__version-stat-name {
         text-transform: uppercase;
         font-size: 20px;
         color: $charcoal-grey;

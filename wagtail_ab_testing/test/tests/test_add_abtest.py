@@ -35,7 +35,7 @@ class TestSaveAndCreateAbTestButton(WagtailTestUtils, TestCase):
 
     def test_click_on_page_edit(self):
         response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
-            'title': "Test variant",
+            'title': "Test version",
             'slug': "test",
             'create-ab-test': '',
         })
@@ -122,7 +122,7 @@ class TestAddAbTestCompareView(WagtailTestUtils, TestCase, PermissionTests):
         # Create test page with a draft revision
         self.page = Page.objects.get(id=1).add_child(instance=SimplePage(title="Test", slug="test"))
         self.page.save_revision().publish()
-        self.page.title = "Test variant"
+        self.page.title = "Test version"
         self.latest_revision = self.page.save_revision()
 
     def get(self, page_id):
@@ -148,7 +148,7 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         # Create test page with a draft revision
         self.page = Page.objects.get(id=1).add_child(instance=SimplePage(title="Test", slug="test"))
         self.page.save_revision().publish()
-        self.page.title = "Test variant"
+        self.page.title = "Test version"
         self.latest_revision = self.page.save_revision()
 
     def get(self, page_id):

@@ -232,10 +232,10 @@ class AbTestActionMenu:
 def get_progress_and_results_common_context(request, page, ab_test):
     # Fetch stats from database
     stats = ab_test.hourly_logs.aggregate(
-        control_participants=Sum('participants', filter=Q(variant=AbTest.Variant.CONTROL)),
-        control_conversions=Sum('conversions', filter=Q(variant=AbTest.Variant.CONTROL)),
-        treatment_participants=Sum('participants', filter=Q(variant=AbTest.Variant.TREATMENT)),
-        treatment_conversions=Sum('conversions', filter=Q(variant=AbTest.Variant.TREATMENT)),
+        control_participants=Sum('participants', filter=Q(version=AbTest.Version.CONTROL)),
+        control_conversions=Sum('conversions', filter=Q(version=AbTest.Version.CONTROL)),
+        treatment_participants=Sum('participants', filter=Q(version=AbTest.Version.TREATMENT)),
+        treatment_conversions=Sum('conversions', filter=Q(version=AbTest.Version.TREATMENT)),
     )
     control_participants = stats['control_participants'] or 0
     control_conversions = stats['control_conversions'] or 0
@@ -260,7 +260,7 @@ def get_progress_and_results_common_context(request, page, ab_test):
     date = None
     for log in ab_test.hourly_logs.order_by('date', 'hour'):
         # Accumulate the conversions
-        if log.variant == AbTest.Variant.CONTROL:
+        if log.version == AbTest.Version.CONTROL:
             control += log.conversions
         else:
             treatment += log.conversions
@@ -291,9 +291,9 @@ def get_progress_and_results_common_context(request, page, ab_test):
         'treatment_conversions': treatment_conversions,
         'treatment_participants': treatment_participants,
         'treatment_conversions_percent': int(treatment_conversions / treatment_participants * 100) if treatment_participants else 0,
-        'control_is_winner': ab_test.winning_variant == AbTest.Variant.CONTROL,
-        'treatment_is_winner': ab_test.winning_variant == AbTest.Variant.TREATMENT,
-        'unclear_winner': ab_test.status in [AbTest.Status.FINISHED, ab_test.Status.COMPLETED] and ab_test.winning_variant is None,
+        'control_is_winner': ab_test.winning_version == AbTest.Version.CONTROL,
+        'treatment_is_winner': ab_test.winning_version == AbTest.Version.TREATMENT,
+        'unclear_winner': ab_test.status in [AbTest.Status.FINISHED, ab_test.Status.COMPLETED] and ab_test.winning_version is None,
         'estimated_completion_date': estimated_completion_date,
         'chart_data': json.dumps({
             'x': 'x',
@@ -412,11 +412,11 @@ def add_test_participants(request, ab_test_id):
     return redirect('wagtailadmin_pages:edit', ab_test.page_id)
 
 
-def add_test_conversions(request, ab_test_id, variant):
+def add_test_conversions(request, ab_test_id, version):
     ab_test = get_object_or_404(AbTest, id=ab_test_id)
 
     for i in range(int(ab_test.sample_size / 10)):
-        ab_test.log_conversion(variant, time=timezone.now() - datetime.timedelta(days=random.randint(1, 20), hours=random.randint(0, 24)))
+        ab_test.log_conversion(version, time=timezone.now() - datetime.timedelta(days=random.randint(1, 20), hours=random.randint(0, 24)))
 
     return redirect('wagtailadmin_pages:edit', ab_test.page_id)
 
