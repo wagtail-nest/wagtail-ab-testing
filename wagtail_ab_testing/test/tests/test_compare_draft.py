@@ -20,7 +20,7 @@ class TestCompareDraftView(WagtailTestUtils, TestCase):
             page=self.page,
             name="Test",
             variant_revision=self.page.get_latest_revision(),
-            status=AbTest.Status.RUNNING,
+            status=AbTest.STATUS_RUNNING,
             sample_size=100,
         )
 

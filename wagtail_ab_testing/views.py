@@ -149,7 +149,7 @@ class StartAbTestMenuItem(ActionMenuItem):
         if not context['user_page_permissions'].for_page(context['ab_test'].page).can_publish():
             return False
 
-        return context['ab_test'].status == AbTest.Status.DRAFT
+        return context['ab_test'].status == AbTest.STATUS_DRAFT
 
 
 class RestartAbTestMenuItem(ActionMenuItem):
@@ -160,7 +160,7 @@ class RestartAbTestMenuItem(ActionMenuItem):
         if not context['user_page_permissions'].for_page(context['ab_test'].page).can_publish():
             return False
 
-        return context['ab_test'].status == AbTest.Status.PAUSED
+        return context['ab_test'].status == AbTest.STATUS_PAUSED
 
 
 class EndAbTestMenuItem(ActionMenuItem):
@@ -171,7 +171,7 @@ class EndAbTestMenuItem(ActionMenuItem):
         if not context['user_page_permissions'].for_page(context['ab_test'].page).can_publish():
             return False
 
-        return context['ab_test'].status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]
+        return context['ab_test'].status in [AbTest.STATUS_DRAFT, AbTest.STATUS_RUNNING, AbTest.STATUS_PAUSED]
 
 
 class PauseAbTestMenuItem(ActionMenuItem):
@@ -182,7 +182,7 @@ class PauseAbTestMenuItem(ActionMenuItem):
         if not context['user_page_permissions'].for_page(context['ab_test'].page).can_publish():
             return False
 
-        return context['ab_test'].status == AbTest.Status.RUNNING
+        return context['ab_test'].status == AbTest.STATUS_RUNNING
 
 
 class AbTestActionMenu:
@@ -232,10 +232,10 @@ class AbTestActionMenu:
 def get_progress_and_results_common_context(request, page, ab_test):
     # Fetch stats from database
     stats = ab_test.hourly_logs.aggregate(
-        control_participants=Sum('participants', filter=Q(version=AbTest.Version.CONTROL)),
-        control_conversions=Sum('conversions', filter=Q(version=AbTest.Version.CONTROL)),
-        variant_participants=Sum('participants', filter=Q(version=AbTest.Version.VARIANT)),
-        variant_conversions=Sum('conversions', filter=Q(version=AbTest.Version.VARIANT)),
+        control_participants=Sum('participants', filter=Q(version=AbTest.VERSION_CONTROL)),
+        control_conversions=Sum('conversions', filter=Q(version=AbTest.VERSION_CONTROL)),
+        variant_participants=Sum('participants', filter=Q(version=AbTest.VERSION_VARIANT)),
+        variant_conversions=Sum('conversions', filter=Q(version=AbTest.VERSION_VARIANT)),
     )
     control_participants = stats['control_participants'] or 0
     control_conversions = stats['control_conversions'] or 0
@@ -245,7 +245,7 @@ def get_progress_and_results_common_context(request, page, ab_test):
     current_sample_size = control_participants + variant_participants
 
     estimated_completion_date = None
-    if ab_test.status == AbTest.Status.RUNNING and current_sample_size:
+    if ab_test.status == AbTest.STATUS_RUNNING and current_sample_size:
         running_duration_days = ab_test.total_running_duration().days
 
         if running_duration_days > 0:
@@ -260,7 +260,7 @@ def get_progress_and_results_common_context(request, page, ab_test):
     date = None
     for log in ab_test.hourly_logs.order_by('date', 'hour'):
         # Accumulate the conversions
-        if log.version == AbTest.Version.CONTROL:
+        if log.version == AbTest.VERSION_CONTROL:
             control += log.conversions
         else:
             variant += log.conversions
@@ -291,9 +291,9 @@ def get_progress_and_results_common_context(request, page, ab_test):
         'variant_conversions': variant_conversions,
         'variant_participants': variant_participants,
         'variant_conversions_percent': int(variant_conversions / variant_participants * 100) if variant_participants else 0,
-        'control_is_winner': ab_test.winning_version == AbTest.Version.CONTROL,
-        'variant_is_winner': ab_test.winning_version == AbTest.Version.VARIANT,
-        'unclear_winner': ab_test.status in [AbTest.Status.FINISHED, ab_test.Status.COMPLETED] and ab_test.winning_version is None,
+        'control_is_winner': ab_test.winning_version == AbTest.VERSION_CONTROL,
+        'variant_is_winner': ab_test.winning_version == AbTest.VERSION_VARIANT,
+        'unclear_winner': ab_test.status in [AbTest.STATUS_FINISHED, ab_test.STATUS_COMPLETED] and ab_test.winning_version is None,
         'estimated_completion_date': estimated_completion_date,
         'chart_data': json.dumps({
             'x': 'x',
@@ -313,7 +313,7 @@ def progress(request, page, ab_test):
 
         if 'action-start-ab-test' in request.POST or 'action-restart-ab-test' in request.POST:
             if page_perms.can_publish():
-                if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.PAUSED]:
+                if ab_test.status in [AbTest.STATUS_DRAFT, AbTest.STATUS_PAUSED]:
                     ab_test.start()
 
                     messages.success(request, _("The A/B test has been started."))
@@ -324,12 +324,12 @@ def progress(request, page, ab_test):
 
         elif 'action-end-ab-test' in request.POST:
             if page_perms.can_publish():
-                if ab_test.status in [AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]:
+                if ab_test.status in [AbTest.STATUS_DRAFT, AbTest.STATUS_RUNNING, AbTest.STATUS_PAUSED]:
                     ab_test.cancel()
 
                     messages.success(request, _("The A/B test has been ended."))
-                elif ab_test.status == AbTest.Status.FINISHED:
-                    ab_test.complete(AbTest.CompletionAction.DO_NOTHING, user=request.user)
+                elif ab_test.status == AbTest.STATUS_FINISHED:
+                    ab_test.complete(AbTest.COMPLETION_ACTION_DO_NOTHING, user=request.user)
                 else:
                     messages.error(request, _("The A/B test has already ended."))
             else:
@@ -337,7 +337,7 @@ def progress(request, page, ab_test):
 
         elif 'action-pause-ab-test' in request.POST:
             if page_perms.can_publish():
-                if ab_test.status == AbTest.Status.RUNNING:
+                if ab_test.status == AbTest.STATUS_RUNNING:
                     ab_test.pause()
 
                     messages.success(request, _("The A/B test has been paused."))
@@ -347,8 +347,8 @@ def progress(request, page, ab_test):
                 messages.error(request, _("You must have permission to publish in order to pause an A/B test."))
 
         elif 'action-select-control' in request.POST:
-            if ab_test.status == AbTest.Status.FINISHED:
-                ab_test.complete(AbTest.CompletionAction.REVERT, user=request.user)
+            if ab_test.status == AbTest.STATUS_FINISHED:
+                ab_test.complete(AbTest.COMPLETION_ACTION_REVERT, user=request.user)
 
                 messages.success(request, _("The page has been reverted back to the control version."))
 
@@ -356,9 +356,9 @@ def progress(request, page, ab_test):
                 messages.error(request, _("The A/B test cannot be paused because it is not running."))
 
         elif 'action-select-variant' in request.POST:
-            if ab_test.status == AbTest.Status.FINISHED:
+            if ab_test.status == AbTest.STATUS_FINISHED:
                 # TODO Permission check?
-                ab_test.complete(AbTest.CompletionAction.PUBLISH, user=request.user)
+                ab_test.complete(AbTest.COMPLETION_ACTION_PUBLISH, user=request.user)
 
                 messages.success(request, _("The variant version has been published."))
 
