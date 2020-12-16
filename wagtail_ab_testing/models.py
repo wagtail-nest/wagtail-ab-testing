@@ -19,7 +19,7 @@ from .events import EVENT_TYPES
 
 class AbTestManager(models.Manager):
     def get_current_for_page(self, page):
-        return self.get_queryset().filter(page=page).exclude(status__in=[AbTest.Status.CANCELLED, AbTest.Status.COMPLETED]).first()
+        return self.get_queryset().filter(page=page).exclude(status__in=[AbTest.STATUS_CANCELLED, AbTest.STATUS_COMPLETED]).first()
 
 
 class AbTest(models.Model):
@@ -30,30 +30,45 @@ class AbTest(models.Model):
     the `.variant_revision` field contains the changes that are being tested.
     """
 
-    class Status(models.TextChoices):
-        DRAFT = 'draft', __('Draft')
-        RUNNING = 'running', __('Running')
-        PAUSED = 'paused', __('Paused')
-        CANCELLED = 'cancelled', __('Cancelled')
+    STATUS_DRAFT = 'draft'
+    STATUS_RUNNING = 'running'
+    STATUS_PAUSED = 'paused'
+    STATUS_CANCELLED = 'cancelled'
+    # These two sound similar, but there's a difference:
+    # 'Finished' means that we've reached the sample size and testing has stopped
+    # but the user still needs to decide whether to publish the variant version
+    # or revert back to the control.
+    # Once they've decided and that action has taken place, the test status is
+    # updated to 'Completed'.
+    STATUS_FINISHED = 'finished'
+    STATUS_COMPLETED = 'completed'
 
-        # These two sound similar, but there's a difference:
-        # 'Finished' means that we've reached the sample size and testing has stopped
-        # but the user still needs to decide whether to publish the variant version
-        # or revert back to the control.
-        # Once they've decided and that action has taken place, the test status is
-        # updated to 'Completed'.
-        FINISHED = 'finished', __('Finished')
-        COMPLETED = 'completed', __('Completed')
+    STATUS_CHOICES = [
+        (STATUS_DRAFT, __('Draft')),
+        (STATUS_RUNNING, __('Running')),
+        (STATUS_PAUSED, __('Paused')),
+        (STATUS_CANCELLED, __('Cancelled')),
+        (STATUS_FINISHED, __('Finished')),
+        (STATUS_COMPLETED, __('Completed')),
+    ]
 
-    class Version(models.TextChoices):
-        CONTROL = 'control', __('Control')
-        VARIANT = 'variant', __('Variant')
+    VERSION_CONTROL = 'control'
+    VERSION_VARIANT = 'variant'
 
-    class CompletionAction(models.TextChoices):
-        # See docstring of the .complete() method for descriptions
-        DO_NOTHING = 'do-nothing', "Do nothing"
-        REVERT = 'revert', "Revert to control"
-        PUBLISH = 'publisn', "Publish variant"
+    VERSION_CHOICES = [
+        (VERSION_CONTROL, __('Control')),
+        (VERSION_VARIANT, __('Variant')),
+    ]
+
+    COMPLETION_ACTION_DO_NOTHING = 'do-nothing'
+    COMPLETION_ACTION_REVERT = 'revert'
+    COMPLETION_ACTION_PUBLISH = 'publish'
+
+    COMPLETION_ACTION_CHOICES = [
+        (COMPLETION_ACTION_DO_NOTHING, "Do nothing"),
+        (COMPLETION_ACTION_REVERT, "Revert"),
+        (COMPLETION_ACTION_PUBLISH, "Publish"),
+    ]
 
     page = models.ForeignKey('wagtailcore.Page', on_delete=models.CASCADE, related_name='ab_tests')
     name = models.CharField(max_length=255)
@@ -63,8 +78,8 @@ class AbTest(models.Model):
     goal_page = models.ForeignKey('wagtailcore.Page', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
     sample_size = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
-    winning_version = models.CharField(max_length=9, null=True, choices=Version.choices)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT)
+    winning_version = models.CharField(max_length=9, null=True, choices=VERSION_CHOICES)
     first_started_at = models.DateTimeField(null=True)
 
     # Because an admin can pause/resume tests, we need to make sure we record the amount of time it has been running
@@ -87,13 +102,13 @@ class AbTest(models.Model):
         """
         Starts/unpauses the test.
         """
-        if self.status in [self.Status.DRAFT, self.Status.PAUSED]:
+        if self.status in [self.STATUS_DRAFT, self.STATUS_PAUSED]:
             self.current_run_started_at = timezone.now()
 
-            if self.status == self.Status.DRAFT:
+            if self.status == self.STATUS_DRAFT:
                 self.first_started_at = self.current_run_started_at
 
-            self.status = self.Status.RUNNING
+            self.status = self.STATUS_RUNNING
 
             self.save(update_fields=['status', 'current_run_started_at', 'first_started_at'])
 
@@ -101,8 +116,8 @@ class AbTest(models.Model):
         """
         Pauses the test.
         """
-        if self.status == self.Status.RUNNING:
-            self.status = self.Status.PAUSED
+        if self.status == self.STATUS_RUNNING:
+            self.status = self.STATUS_PAUSED
 
             if self.current_run_started_at is not None:
                 self.previous_run_duration += timezone.now() - self.current_run_started_at
@@ -118,7 +133,7 @@ class AbTest(models.Model):
         Afterwards, we need to send them to a separate view as the
         page editor returns to normal.
         """
-        if self.status in [AbTest.Status.COMPLETED, AbTest.Status.CANCELLED]:
+        if self.status in [AbTest.STATUS_COMPLETED, AbTest.STATUS_CANCELLED]:
             return reverse('wagtail_ab_testing:results', args=[self.page_id, self.id])
 
         else:
@@ -130,7 +145,7 @@ class AbTest(models.Model):
         """
         duration = self.previous_run_duration
 
-        if self.status == self.Status.RUNNING:
+        if self.status == self.STATUS_RUNNING:
             duration += timezone.now() - self.current_run_started_at
 
         return duration
@@ -139,7 +154,7 @@ class AbTest(models.Model):
         """
         Cancels the test.
         """
-        self.status = self.Status.CANCELLED
+        self.status = self.STATUS_CANCELLED
 
         self.save(update_fields=['status'])
 
@@ -153,7 +168,7 @@ class AbTest(models.Model):
         publish the variant). This decision is set using the .complete()
         method.
         """
-        self.status = self.Status.FINISHED
+        self.status = self.STATUS_FINISHED
         self.winning_version = self.check_for_winner()
 
         self.save(update_fields=['status', 'winning_version'])
@@ -164,28 +179,28 @@ class AbTest(models.Model):
         Completes the test and carries out the specificed action.
 
         Actions can be:
-         - AbTest.CompletionAction.DO_NOTHING - This just completes
+         - AbTest.COMPLETION_ACTION_DO_NOTHING - This just completes
            the test but does nothing to the page. The control will
            remain the published version and the variant will be
            in draft.
-         - AbTest.CompletionAction.REVERT - This completes the test
+         - AbTest.COMPLETION_ACTION_REVERT - This completes the test
            and also creates a new revision to revert the content back
            to what it was in the control while the test was taking
            place.
-         - AbTest.CompletionAction.PUBLISH - This completes the test
+         - AbTest.COMPLETION_ACTION_PUBLISH - This completes the test
            and also publishes the variant revision.
         """
-        self.status = self.Status.COMPLETED
+        self.status = self.STATUS_COMPLETED
         self.save(update_fields=['status'])
 
-        if action == AbTest.CompletionAction.DO_NOTHING:
+        if action == AbTest.COMPLETION_ACTION_DO_NOTHING:
             pass
 
-        elif action == AbTest.CompletionAction.REVERT:
+        elif action == AbTest.COMPLETION_ACTION_REVERT:
             # Create a new revision with the content of the live page and publish it
             self.page.save_revision(user=user, log_action='wagtail.revert').publish(user=user)
 
-        elif action == AbTest.CompletionAction.PUBLISH:
+        elif action == AbTest.COMPLETION_ACTION_PUBLISH:
             self.variant_revision.publish(user=user)
 
     def add_participant(self, version=None):
@@ -194,8 +209,8 @@ class AbTest(models.Model):
         """
         # Get current numbers of participants for each version
         stats = self.hourly_logs.aggregate(
-            control_participants=Sum('participants', filter=Q(version=self.Version.CONTROL)),
-            variant_participants=Sum('participants', filter=Q(version=self.Version.VARIANT)),
+            control_participants=Sum('participants', filter=Q(version=self.VERSION_CONTROL)),
+            variant_participants=Sum('participants', filter=Q(version=self.VERSION_VARIANT)),
         )
         control_participants = stats['control_participants'] or 0
         variant_participants = stats['variant_participants'] or 0
@@ -203,15 +218,15 @@ class AbTest(models.Model):
         # Create an equal number of participants for each version
         if version is None:
             if variant_participants > control_participants:
-                version = self.Version.CONTROL
+                version = self.VERSION_CONTROL
 
             elif variant_participants < control_participants:
-                version = self.Version.VARIANT
+                version = self.VERSION_VARIANT
 
             else:
                 version = random.choice([
-                    self.Version.CONTROL,
-                    self.Version.VARIANT,
+                    self.VERSION_CONTROL,
+                    self.VERSION_VARIANT,
                 ])
 
         # Add new participant to statistics model
@@ -240,7 +255,7 @@ class AbTest(models.Model):
         """
         Performs a Chi-Squared test to check if there is a clear winner.
 
-        Returns Version.CONTROL or Version.VARIANT if there is one. Otherwise, it returns None.
+        Returns VERSION_CONTROL or VERSION_VARIANT if there is one. Otherwise, it returns None.
 
         For more information on what the Chi-Squared test does, see:
         https://www.evanmiller.org/ab-testing/chi-squared.html
@@ -248,10 +263,10 @@ class AbTest(models.Model):
         """
         # Fetch stats from database
         stats = self.hourly_logs.aggregate(
-            control_participants=Sum('participants', filter=Q(version=self.Version.CONTROL)),
-            control_conversions=Sum('conversions', filter=Q(version=self.Version.CONTROL)),
-            variant_participants=Sum('participants', filter=Q(version=self.Version.VARIANT)),
-            variant_conversions=Sum('conversions', filter=Q(version=self.Version.VARIANT)),
+            control_participants=Sum('participants', filter=Q(version=self.VERSION_CONTROL)),
+            control_conversions=Sum('conversions', filter=Q(version=self.VERSION_CONTROL)),
+            variant_participants=Sum('participants', filter=Q(version=self.VERSION_VARIANT)),
+            variant_conversions=Sum('conversions', filter=Q(version=self.VERSION_VARIANT)),
         )
         control_participants = stats['control_participants'] or 0
         control_conversions = stats['control_conversions'] or 0
@@ -284,9 +299,9 @@ class AbTest(models.Model):
             # There is a clear winner!
             # Return the one with the highest success rate
             if (control_conversions / control_participants) > (variant_conversions / variant_participants):
-                return self.Version.CONTROL
+                return self.VERSION_CONTROL
             else:
-                return self.Version.VARIANT
+                return self.VERSION_VARIANT
 
     def get_status_description(self):
         """
@@ -294,16 +309,16 @@ class AbTest(models.Model):
         """
         status = self.get_status_display()
 
-        if self.status == AbTest.Status.RUNNING:
+        if self.status == AbTest.STATUS_RUNNING:
             participants = self.hourly_logs.aggregate(participants=Sum('participants'))['participants'] or 0
             completeness_percentange = int((participants * 100) / self.sample_size)
             return status + f" ({completeness_percentange}%)"
 
-        elif self.status in [AbTest.Status.FINISHED, AbTest.Status.COMPLETED]:
-            if self.winning_version == AbTest.Version.CONTROL:
+        elif self.status in [AbTest.STATUS_FINISHED, AbTest.STATUS_COMPLETED]:
+            if self.winning_version == AbTest.VERSION_CONTROL:
                 return status + " (" + _("Control won") + ")"
 
-            elif self.winning_version == AbTest.Version.VARIANT:
+            elif self.winning_version == AbTest.VERSION_VARIANT:
                 return status + " (" + _("Variant won") + ")"
 
             else:
@@ -315,7 +330,7 @@ class AbTest(models.Model):
 
 class AbTestHourlyLog(models.Model):
     ab_test = models.ForeignKey(AbTest, on_delete=models.CASCADE, related_name='hourly_logs')
-    version = models.CharField(max_length=9, choices=AbTest.Version.choices)
+    version = models.CharField(max_length=9, choices=AbTest.VERSION_CHOICES)
     date = models.DateField()
     # UTC hour. Values range from 0 to 23
     hour = models.PositiveSmallIntegerField()
@@ -385,8 +400,8 @@ class AbTestHourlyLog(models.Model):
 
 @receiver(page_unpublished)
 def cancel_on_page_unpublish(instance, **kwargs):
-    for ab_test in AbTest.objects.filter(page=instance, status__in=[AbTest.Status.DRAFT, AbTest.Status.RUNNING, AbTest.Status.PAUSED]):
+    for ab_test in AbTest.objects.filter(page=instance, status__in=[AbTest.STATUS_DRAFT, AbTest.STATUS_RUNNING, AbTest.STATUS_PAUSED]):
         ab_test.cancel()
 
-    for ab_test in AbTest.objects.filter(page=instance, status=AbTest.Status.FINISHED):
-        ab_test.complete(AbTest.CompletionAction.DO_NOTHING)
+    for ab_test in AbTest.objects.filter(page=instance, status=AbTest.STATUS_FINISHED):
+        ab_test.complete(AbTest.COMPLETION_ACTION_DO_NOTHING)
