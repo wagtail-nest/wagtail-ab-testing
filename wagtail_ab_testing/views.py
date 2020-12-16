@@ -1,6 +1,5 @@
 import datetime
 import json
-import random
 
 from django import forms
 from django.core.exceptions import PermissionDenied
@@ -400,25 +399,6 @@ def compare_draft(request, page_id):
         'latest_revision_as_page': latest_revision_as_page,
         'comparison': comparison,
     })
-
-
-# TEMPORARY
-def add_test_participants(request, ab_test_id):
-    ab_test = get_object_or_404(AbTest, id=ab_test_id)
-
-    for i in range(int(ab_test.sample_size / 10)):
-        ab_test.add_participant()
-
-    return redirect('wagtailadmin_pages:edit', ab_test.page_id)
-
-
-def add_test_conversions(request, ab_test_id, version):
-    ab_test = get_object_or_404(AbTest, id=ab_test_id)
-
-    for i in range(int(ab_test.sample_size / 10)):
-        ab_test.log_conversion(version, time=timezone.now() - datetime.timedelta(days=random.randint(1, 20), hours=random.randint(0, 24)))
-
-    return redirect('wagtailadmin_pages:edit', ab_test.page_id)
 
 
 class SearchPageTitleFilter(django_filters.CharFilter):

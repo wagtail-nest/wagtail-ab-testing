@@ -25,8 +25,6 @@ def register_admin_urls():
         path('add/<int:page_id>/compare/', views.add_compare, name='add_ab_test_compare'),
         path('<int:page_id>/compare-draft/', views.compare_draft, name='compare_draft'),
         path('add/<int:page_id>/', views.add_form, name='add_ab_test_form'),
-        path('add-test-participants/<int:ab_test_id>/', views.add_test_participants, name='add_test_participants'),
-        path('add-test-conversions/<int:ab_test_id>/<slug:version>', views.add_test_conversions, name='add_test_conversions'),
         path('report/', views.AbTestingReportView.as_view(), name='report'),
         path('results/<int:page_id>/<int:ab_test_id>/', views.results, name='results'),
     ]

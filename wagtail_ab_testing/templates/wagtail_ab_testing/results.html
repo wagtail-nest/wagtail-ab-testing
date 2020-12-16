@@ -13,10 +13,6 @@
         <p><b>{% trans "Goal:" %}</b> {{ ab_test.get_goal_event_display }}: {{ ab_test.goal_page }}</p>
         {% if ab_test.created_by %}<p><b>{% trans "Test by:" %}</b> {{ ab_test.created_by }}</p>{% endif %}
 
-        <a href="{% url 'wagtail_ab_testing:add_test_participants' ab_test.id %}">Add test participants</a>
-        <a href="{% url 'wagtail_ab_testing:add_test_conversions' ab_test.id 'control' %}">Add conversions for control</a>
-        <a href="{% url 'wagtail_ab_testing:add_test_conversions' ab_test.id 'variant' %}">Add conversions for variant</a>
-
         <div class="abtest-progressbar">
             <svg class="abtest-progressbar__sample-size">
                 {# Progress bar #}
