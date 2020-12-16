@@ -27,7 +27,7 @@ class AbTest(models.Model):
     Represents an A/B test that has been set up by the user.
 
     The live page content is used as the control, the revision pointed to in
-    the `.treatment_revision` field contains the changes that are being tested.
+    the `.variant_revision` field contains the changes that are being tested.
     """
 
     class Status(models.TextChoices):
@@ -38,7 +38,7 @@ class AbTest(models.Model):
 
         # These two sound similar, but there's a difference:
         # 'Finished' means that we've reached the sample size and testing has stopped
-        # but the user still needs to decide whether to publish the treatment version
+        # but the user still needs to decide whether to publish the variant version
         # or revert back to the control.
         # Once they've decided and that action has taken place, the test status is
         # updated to 'Completed'.
@@ -47,18 +47,18 @@ class AbTest(models.Model):
 
     class Version(models.TextChoices):
         CONTROL = 'control', __('Control')
-        TREATMENT = 'treatment', __('Treatment')
+        VARIANT = 'variant', __('Variant')
 
     class CompletionAction(models.TextChoices):
         # See docstring of the .complete() method for descriptions
         DO_NOTHING = 'do-nothing', "Do nothing"
         REVERT = 'revert', "Revert to control"
-        PUBLISH = 'publisn', "Publish treatment"
+        PUBLISH = 'publisn', "Publish variant"
 
     page = models.ForeignKey('wagtailcore.Page', on_delete=models.CASCADE, related_name='ab_tests')
     name = models.CharField(max_length=255)
     hypothesis = models.TextField(blank=True)
-    treatment_revision = models.ForeignKey('wagtailcore.PageRevision', on_delete=models.CASCADE, related_name='+')
+    variant_revision = models.ForeignKey('wagtailcore.PageRevision', on_delete=models.CASCADE, related_name='+')
     goal_event = models.CharField(max_length=255)
     goal_page = models.ForeignKey('wagtailcore.Page', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
     sample_size = models.PositiveIntegerField(validators=[MinValueValidator(1)])
@@ -150,7 +150,7 @@ class AbTest(models.Model):
         Note that this doesn't 'complete' the test: a finished test means
         that testing is no longer happening. The test is not complete until
         the user decides on the outcome of the test (keep the control or
-        publish the treatment). This decision is set using the .complete()
+        publish the variant). This decision is set using the .complete()
         method.
         """
         self.status = self.Status.FINISHED
@@ -166,14 +166,14 @@ class AbTest(models.Model):
         Actions can be:
          - AbTest.CompletionAction.DO_NOTHING - This just completes
            the test but does nothing to the page. The control will
-           remain the published version and the treatment will be
+           remain the published version and the variant will be
            in draft.
          - AbTest.CompletionAction.REVERT - This completes the test
            and also creates a new revision to revert the content back
            to what it was in the control while the test was taking
            place.
          - AbTest.CompletionAction.PUBLISH - This completes the test
-           and also publishes the treatment revision.
+           and also publishes the variant revision.
         """
         self.status = self.Status.COMPLETED
         self.save(update_fields=['status'])
@@ -186,7 +186,7 @@ class AbTest(models.Model):
             self.page.save_revision(user=user, log_action='wagtail.revert').publish(user=user)
 
         elif action == AbTest.CompletionAction.PUBLISH:
-            self.treatment_revision.publish(user=user)
+            self.variant_revision.publish(user=user)
 
     def add_participant(self, version=None):
         """
@@ -195,23 +195,23 @@ class AbTest(models.Model):
         # Get current numbers of participants for each version
         stats = self.hourly_logs.aggregate(
             control_participants=Sum('participants', filter=Q(version=self.Version.CONTROL)),
-            treatment_participants=Sum('participants', filter=Q(version=self.Version.TREATMENT)),
+            variant_participants=Sum('participants', filter=Q(version=self.Version.VARIANT)),
         )
         control_participants = stats['control_participants'] or 0
-        treatment_participants = stats['treatment_participants'] or 0
+        variant_participants = stats['variant_participants'] or 0
 
         # Create an equal number of participants for each version
         if version is None:
-            if treatment_participants > control_participants:
+            if variant_participants > control_participants:
                 version = self.Version.CONTROL
 
-            elif treatment_participants < control_participants:
-                version = self.Version.TREATMENT
+            elif variant_participants < control_participants:
+                version = self.Version.VARIANT
 
             else:
                 version = random.choice([
                     self.Version.CONTROL,
-                    self.Version.TREATMENT,
+                    self.Version.VARIANT,
                 ])
 
         # Add new participant to statistics model
@@ -222,7 +222,7 @@ class AbTest(models.Model):
         # get a chance to turn into conversions. It's unlikely to make a
         # significant difference to the results.
         # Note: Adding 1 to account for the new participant
-        if control_participants + treatment_participants + 1 >= self.sample_size:
+        if control_participants + variant_participants + 1 >= self.sample_size:
             self.finish()
 
         return version
@@ -240,7 +240,7 @@ class AbTest(models.Model):
         """
         Performs a Chi-Squared test to check if there is a clear winner.
 
-        Returns Version.CONTROL or Version.TREATMENT if there is one. Otherwise, it returns None.
+        Returns Version.CONTROL or Version.VARIANT if there is one. Otherwise, it returns None.
 
         For more information on what the Chi-Squared test does, see:
         https://www.evanmiller.org/ab-testing/chi-squared.html
@@ -250,30 +250,30 @@ class AbTest(models.Model):
         stats = self.hourly_logs.aggregate(
             control_participants=Sum('participants', filter=Q(version=self.Version.CONTROL)),
             control_conversions=Sum('conversions', filter=Q(version=self.Version.CONTROL)),
-            treatment_participants=Sum('participants', filter=Q(version=self.Version.TREATMENT)),
-            treatment_conversions=Sum('conversions', filter=Q(version=self.Version.TREATMENT)),
+            variant_participants=Sum('participants', filter=Q(version=self.Version.VARIANT)),
+            variant_conversions=Sum('conversions', filter=Q(version=self.Version.VARIANT)),
         )
         control_participants = stats['control_participants'] or 0
         control_conversions = stats['control_conversions'] or 0
-        treatment_participants = stats['treatment_participants'] or 0
-        treatment_conversions = stats['treatment_conversions'] or 0
+        variant_participants = stats['variant_participants'] or 0
+        variant_conversions = stats['variant_conversions'] or 0
 
-        if not control_conversions and not treatment_conversions:
+        if not control_conversions and not variant_conversions:
             return
 
-        if control_conversions > control_participants or treatment_conversions > treatment_participants:
+        if control_conversions > control_participants or variant_conversions > variant_participants:
             # Something's up. I'm sure it's already clear in the UI what's going on, so let's not crash
             return
 
         # Create a numpy array with values to pass in to Chi-Squared test
         control_failures = control_participants - control_conversions
-        treatment_failures = treatment_participants - treatment_conversions
+        variant_failures = variant_participants - variant_conversions
 
-        if control_failures == 0 and treatment_failures == 0:
+        if control_failures == 0 and variant_failures == 0:
             # Prevent this error: "The internally computed table of expected frequencies has a zero element at (0, 1)."
             return
 
-        T = np.array([[control_conversions, control_failures], [treatment_conversions, treatment_failures]])
+        T = np.array([[control_conversions, control_failures], [variant_conversions, variant_failures]])
 
         # Perform Chi-Squared test
         p = scipy.stats.chi2_contingency(T, correction=False)[1]
@@ -283,10 +283,10 @@ class AbTest(models.Model):
         if 1 - p > required_confidence_level:
             # There is a clear winner!
             # Return the one with the highest success rate
-            if (control_conversions / control_participants) > (treatment_conversions / treatment_participants):
+            if (control_conversions / control_participants) > (variant_conversions / variant_participants):
                 return self.Version.CONTROL
             else:
-                return self.Version.TREATMENT
+                return self.Version.VARIANT
 
     def get_status_description(self):
         """
@@ -303,8 +303,8 @@ class AbTest(models.Model):
             if self.winning_version == AbTest.Version.CONTROL:
                 return status + " (" + _("Control won") + ")"
 
-            elif self.winning_version == AbTest.Version.TREATMENT:
-                return status + " (" + _("Treatment won") + ")"
+            elif self.winning_version == AbTest.Version.VARIANT:
+                return status + " (" + _("Variant won") + ")"
 
             else:
                 return status + " (" + _("No clear winner") + ")"

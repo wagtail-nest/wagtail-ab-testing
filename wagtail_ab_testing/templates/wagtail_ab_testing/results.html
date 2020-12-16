@@ -15,7 +15,7 @@
 
         <a href="{% url 'wagtail_ab_testing:add_test_participants' ab_test.id %}">Add test participants</a>
         <a href="{% url 'wagtail_ab_testing:add_test_conversions' ab_test.id 'control' %}">Add conversions for control</a>
-        <a href="{% url 'wagtail_ab_testing:add_test_conversions' ab_test.id 'treatment' %}">Add conversions for treatment</a>
+        <a href="{% url 'wagtail_ab_testing:add_test_conversions' ab_test.id 'variant' %}">Add conversions for variant</a>
 
         <div class="abtest-progressbar">
             <svg class="abtest-progressbar__sample-size">
@@ -78,17 +78,17 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="abtest-results__version abtest-results__version--treatment">
-                    <div class="abtest-results__version-heading{% if treatment_is_winner or unclear_winner %} abtest-results__version-heading--winner{% endif %}">
-                        {% if treatment_is_winner %}{% icon "crown" %} {% trans "Winner!" %}{% elif unclear_winner %}{% trans "No clear winner" %}{% endif %}
+                <div class="abtest-results__version abtest-results__version--variant">
+                    <div class="abtest-results__version-heading{% if variant_is_winner or unclear_winner %} abtest-results__version-heading--winner{% endif %}">
+                        {% if variant_is_winner %}{% icon "crown" %} {% trans "Winner!" %}{% elif unclear_winner %}{% trans "No clear winner" %}{% endif %}
                     </div>
                     <div class="abtest-results__version-inner">
-                        <h3>{% trans "Treatment" %} <a href="{% url 'wagtailadmin_pages:view_draft' page.id %}" target="_blank">{% icon name="link-external" %}</a></h3>
+                        <h3>{% trans "Variant" %} <a href="{% url 'wagtailadmin_pages:view_draft' page.id %}" target="_blank">{% icon name="link-external" %}</a></h3>
 
                         <ul class="abtest-results__version-stats">
                             <li>
                                 <div class="abtest-results__version-stat">
-                                    {{ treatment_conversions_percent }}%
+                                    {{ variant_conversions_percent }}%
                                 </div>
                                 <div class="abtest-results__version-stat-name">
                                     {% trans "Conversion rate" %}
@@ -96,10 +96,10 @@
                             </li>
                             <li>
                                 <div class="abtest-results__version-stat">
-                                    {{ treatment_conversions }}
+                                    {{ variant_conversions }}
                                 </div>
                                 <div class="abtest-results__version-stat-name">
-                                    {% trans "Conversions" %} <span>({% blocktrans count treatment_participants as count %}1 user{% plural %}{{ count }} users{% endblocktrans %})</span>
+                                    {% trans "Conversions" %} <span>({% blocktrans count variant_participants as count %}1 user{% plural %}{{ count }} users{% endblocktrans %})</span>
                                 </div>
                             </li>
                         </ul>
@@ -107,7 +107,7 @@
                         {% if ab_test.status == 'finished' %}
                             <form method="post">
                                 {% csrf_token %}
-                                <button type="submit" name="action-select-treatment" value="{% trans 'Publish and end test' %}" class="button">{% trans "<span>Publish</span> and end test" %}</button>
+                                <button type="submit" name="action-select-variant" value="{% trans 'Publish and end test' %}" class="button">{% trans "<span>Publish</span> and end test" %}</button>
                             </form>
                         {% endif %}
                     </div>
@@ -116,7 +116,7 @@
         </div>
         {% url 'wagtail_ab_testing:compare_draft' page.id as compare_url%}
         {% blocktrans with compare_url=compare_url trimmed %}
-            <a href="{{ compare_url }}" target="_blank">Compare pages</a> and see how the control and treatment pages differ.
+            <a href="{{ compare_url }}" target="_blank">Compare pages</a> and see how the control and variant pages differ.
         {% endblocktrans %}
         <hr>
         <h3>{% trans "Conversions over time" %}</h3>

@@ -33,7 +33,7 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.ab_test = AbTest.objects.create(
             page=self.page,
             name="Test",
-            treatment_revision=revision,
+            variant_revision=revision,
             status=AbTest.Status.RUNNING,
             sample_size=100,
         )
@@ -181,12 +181,12 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.assertEqual(self.ab_test.page.title, "Test")
         self.assertFalse(self.ab_test.page.has_unpublished_changes)
 
-    def test_post_select_treatment(self):
+    def test_post_select_variant(self):
         self.ab_test.status = AbTest.Status.FINISHED
         self.ab_test.save()
 
         response = self.client.post(reverse('wagtailadmin_pages:edit', args=[self.page.id]), {
-            'action-select-treatment': 'on',
+            'action-select-variant': 'on',
         })
 
         self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))

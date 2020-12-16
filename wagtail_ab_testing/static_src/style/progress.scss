@@ -1,7 +1,7 @@
 @import 'vendor/c3.min.css';
 
 $color-control: #0c0073;
-$color-treatment: #ef746f;
+$color-variant: #ef746f;
 
 $light-teal: #e1f0f0;
 $dark-teal: #007273;
@@ -63,16 +63,16 @@ $charcoal-grey: #333;
             }
         }
 
-        &--treatment {
+        &--variant {
             right: 0;
             padding-left: 10px;
-            color: $color-treatment;
+            color: $color-variant;
 
             a {
-                color: $color-treatment !important;
+                color: $color-variant !important;
 
                 &:hover {
-                    color: darken($color-treatment, 10%) !important;
+                    color: darken($color-variant, 10%) !important;
                 }
             }
         }
@@ -105,15 +105,15 @@ $charcoal-grey: #333;
     &__version--control &__version-heading {
         border-bottom-color: $color-control;
     }
-    &__version--treatment &__version-heading {
-        border-bottom-color: $color-treatment;
+    &__version--variant &__version-heading {
+        border-bottom-color: $color-variant;
     }
 
     &__version--control &__version-heading--winner {
         background-color: $color-control;
     }
-    &__version--treatment &__version-heading--winner {
-        background-color: $color-treatment;
+    &__version--variant &__version-heading--winner {
+        background-color: $color-variant;
     }
 
     &__version-inner {

@@ -16,7 +16,7 @@ class TestAbTestModel(TestCase):
         self.ab_test = AbTest.objects.create(
             page=home_page,
             name="Test",
-            treatment_revision=revision,
+            variant_revision=revision,
             goal_event="foo",
             sample_size=10,
         )
@@ -63,7 +63,7 @@ class TestAbTestModel(TestCase):
         self.assertEqual(log.participants, 0)
         self.assertEqual(log.conversions, 2)
 
-    def set_up_test(self, control_participants, control_conversions, treatment_participants, treatment_conversions):
+    def set_up_test(self, control_participants, control_conversions, variant_participants, variant_conversions):
         AbTestHourlyLog.objects.create(
             ab_test=self.ab_test,
             version=AbTest.Version.CONTROL,
@@ -75,11 +75,11 @@ class TestAbTestModel(TestCase):
 
         AbTestHourlyLog.objects.create(
             ab_test=self.ab_test,
-            version=AbTest.Version.TREATMENT,
+            version=AbTest.Version.VARIANT,
             date=datetime.date(2020, 11, 4),
             hour=22,
-            participants=treatment_participants,
-            conversions=treatment_conversions,
+            participants=variant_participants,
+            conversions=variant_conversions,
         )
 
     def test_check_for_winner_no_data(self):
@@ -92,27 +92,27 @@ class TestAbTestModel(TestCase):
 
         self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.CONTROL)
 
-    def test_check_treatment_clearly_wins(self):
+    def test_check_variantarly_wins(self):
         self.set_up_test(100, 20, 100, 80)
 
-        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.TREATMENT)
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.VARIANT)
 
     def test_control_just_wins(self):
         self.set_up_test(100, 64, 100, 50)
 
         self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.CONTROL)
 
-    def test_treatment_just_wins(self):
+    def test_variantt_wins(self):
         self.set_up_test(100, 50, 100, 64)
 
-        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.TREATMENT)
+        self.assertEqual(self.ab_test.check_for_winner(), AbTest.Version.VARIANT)
 
     def test_close_leaning_control(self):
         self.set_up_test(100, 62, 100, 50)
 
         self.assertIsNone(self.ab_test.check_for_winner())
 
-    def test_close_leaning_treatment(self):
+    def test_close_leaning_variant(self):
         self.set_up_test(100, 50, 100, 62)
 
         self.assertIsNone(self.ab_test.check_for_winner())
@@ -133,7 +133,7 @@ class TestAutoCancelOnUnpublish(TestCase):
         self.ab_test = AbTest.objects.create(
             page=self.home_page,
             name="Test",
-            treatment_revision=revision,
+            variant_revision=revision,
             goal_event="foo",
             sample_size=10,
         )
