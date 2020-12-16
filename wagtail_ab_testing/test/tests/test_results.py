@@ -30,7 +30,7 @@ class TestResultsView(WagtailTestUtils, TestCase):
             page=self.page,
             name="Test",
             variant_revision=self.page.get_latest_revision(),
-            status=AbTest.Status.COMPLETED,
+            status=AbTest.STATUS_COMPLETED,
             sample_size=100,
         )
 

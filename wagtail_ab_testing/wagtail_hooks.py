@@ -111,7 +111,7 @@ def check_for_running_ab_test(request, page):
 def before_serve_page(page, request, serve_args, serve_kwargs):
     # Check if there are any running tests on the page
     try:
-        test = AbTest.objects.get(page=page, status=AbTest.Status.DRAFT)
+        test = AbTest.objects.get(page=page, status=AbTest.STATUS_DRAFT)
     except AbTest.DoesNotExist:
         return
 
@@ -124,7 +124,7 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
         request.session[f'wagtail-ab-testing_{test.id}_version'] = test.add_participant()
 
     # If the user is visiting the variant version, serve that from the revision
-    if request.session[f'wagtail-ab-testing_{test.id}_version'] == AbTest.Version.VARIANT:
+    if request.session[f'wagtail-ab-testing_{test.id}_version'] == AbTest.VERSION_VARIANT:
         return test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
 
 

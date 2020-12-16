@@ -71,37 +71,37 @@ class PermissionTests:
         )
 
     def test_with_existing_draft_abtest(self):
-        self._create_abtest(AbTest.Status.DRAFT)
+        self._create_abtest(AbTest.STATUS_DRAFT)
 
         response = self.get(self.page.id)
         self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
 
     def test_with_existing_running_abtest(self):
-        self._create_abtest(AbTest.Status.RUNNING)
+        self._create_abtest(AbTest.STATUS_RUNNING)
 
         response = self.get(self.page.id)
         self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
 
     def test_with_existing_paused_abtest(self):
-        self._create_abtest(AbTest.Status.PAUSED)
+        self._create_abtest(AbTest.STATUS_PAUSED)
 
         response = self.get(self.page.id)
         self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
 
     def test_with_existing_cancelled_abtest(self):
-        self._create_abtest(AbTest.Status.CANCELLED)
+        self._create_abtest(AbTest.STATUS_CANCELLED)
 
         response = self.get(self.page.id)
         self.assertEqual(response.status_code, 200)
 
     def test_with_existing_finished_abtest(self):
-        self._create_abtest(AbTest.Status.FINISHED)
+        self._create_abtest(AbTest.STATUS_FINISHED)
 
         response = self.get(self.page.id)
         self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
 
     def test_with_existing_completed_abtest(self):
-        self._create_abtest(AbTest.Status.COMPLETED)
+        self._create_abtest(AbTest.STATUS_COMPLETED)
 
         response = self.get(self.page.id)
         self.assertEqual(response.status_code, 200)
@@ -183,7 +183,7 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         self.assertIsNone(ab_test.goal_page)
         self.assertEqual(ab_test.sample_size, 100)
         self.assertEqual(ab_test.created_by, self.user)
-        self.assertEqual(ab_test.status, AbTest.Status.DRAFT)
+        self.assertEqual(ab_test.status, AbTest.STATUS_DRAFT)
 
     def test_post_add_form_start(self):
         response = self.client.post(reverse('wagtail_ab_testing:add_ab_test_form', args=[self.page.id]), {
@@ -197,7 +197,7 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
 
         ab_test = AbTest.objects.get()
-        self.assertEqual(ab_test.status, AbTest.Status.RUNNING)
+        self.assertEqual(ab_test.status, AbTest.STATUS_RUNNING)
 
     def test_post_add_form_start_without_publish_permission(self):
         self.moderators_group.page_permissions.filter(permission_type='publish').delete()
@@ -213,4 +213,4 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         self.assertRedirects(response, reverse('wagtailadmin_pages:edit', args=[self.page.id]))
 
         ab_test = AbTest.objects.get()
-        self.assertEqual(ab_test.status, AbTest.Status.DRAFT)
+        self.assertEqual(ab_test.status, AbTest.STATUS_DRAFT)
