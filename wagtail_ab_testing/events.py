@@ -1,5 +1,7 @@
 from django.utils.translation import gettext_lazy as __
 
+from wagtail.core import hooks
+
 
 class BaseEvent:
     """
@@ -51,7 +53,17 @@ class VisitPageEvent(BaseEvent):
 #         ]
 
 
-EVENT_TYPES = {
+BUILTIN_EVENT_TYPES = {
     'visit-page': VisitPageEvent(),
     # 'submit-form': SubmitFormPageEvent(),
 }
+
+
+def get_event_types():
+    event_types = {}
+    event_types.update(BUILTIN_EVENT_TYPES)
+
+    for fn in hooks.get_hooks('register_ab_testing_event_types'):
+        event_types.update(fn())
+
+    return event_types
