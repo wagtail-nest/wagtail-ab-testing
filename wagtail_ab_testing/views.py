@@ -19,7 +19,7 @@ from wagtail.admin.views.reports import ReportView
 from wagtail.core.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
 
 from .models import AbTest
-from .events import EVENT_TYPES
+from .events import get_event_types
 
 
 class CreateAbTestForm(forms.ModelForm):
@@ -31,7 +31,7 @@ class CreateAbTestForm(forms.ModelForm):
 
         self.fields['goal_event'].choices = [
             (slug, goal.name)
-            for slug, goal in EVENT_TYPES.items()
+            for slug, goal in get_event_types().items()
         ]
 
     def save(self, page, variant_revision, user):
@@ -131,7 +131,7 @@ def add_form(request, page_id):
                         'slug': slug,
                         'name': event_type.name,
                     }
-                    for slug, event_type in EVENT_TYPES.items()
+                    for slug, event_type in get_event_types().items()
                     if event_type.can_be_triggered_on_page_type(page_type)
                 ]
                 for page_type in PAGE_MODEL_CLASSES

@@ -14,7 +14,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy as __
 from wagtail.core.signals import page_unpublished
 
-from .events import EVENT_TYPES
+from .events import get_event_types
 
 
 class AbTestManager(models.Manager):
@@ -92,7 +92,7 @@ class AbTest(models.Model):
         """
         Returns the display name of the goal event.
         """
-        for event_type_slug, event_type in EVENT_TYPES.items():
+        for event_type_slug, event_type in get_event_types().items():
             if event_type_slug == self.goal_event:
                 return event_type.name
 
