@@ -41,17 +41,74 @@ INSTALLED_APPS = [
 
 ## Goal events
 
-Each A/B test has a goal that is measured after a user visits the page where the A/B test is running.
+Each A/B test has a goal that is measured after a user visits the page that the A/B test is running on.
 
-The goal is defined on the A/B test with a page and and event type. For example, if the A/B test needs to measure how a change on the page affects the number of users who go on to submit a "Contact us" form, then the goal page would be "Contact us" and the goal event would be "Submit form".
+The goal is defined by a destination page and and event type. For example, if the A/B test needs to measure how a change on the page affects the number of users who go on to submit a "Contact us" form, then the 'destination page' would be the "Contact us" page and the 'event type' would be "Submit form".
 
-Out of the box, Wagtail A/B testing only supports visting another page as a goal event. If you need to measure something else, for example, submitting a form, purchasing someting, or just clicking a link you can implement a custom "goal event type".
+Out of the box, the only 'event type' that Wagtail A/B testing supports is visiting the destination page.
+If you need to measure something else (such as submitting a form, purchasing someting, or just clicking a link), you can implement a custom 'event type'.
 
 ### Implementing a custom goal event type
 
-In this example, we will add a "Submit form" goal event for a ``ContactUsFormPage`` type.
+Custom event types are implemented for specific types of destination page.
 
-Firstly, we need to register the goal event type. To do this, implement a ``register_ab_testing_event_types`` in ``wagtail_hooks.py`` in your app:
+Firstly, you need to register the 'event type' using the `register_ab_testing_event_types` hook,
+this displays the goal 'event type' in the list of options when an A/B test is being created:
+
+
+```python
+# myapp/wagtail_hooks.py
+
+from wagtail.core import hooks
+from wagtail_ab_testing.events import BaseEvent
+
+
+class CustomEvent(BaseEvent):
+    name = "Name of the event type"
+
+    def get_page_types(self):
+        return [
+            # Return a list of page models that can be used as destination pages for this event type
+            # For example, if this 'event type' is for a 'call to action' button that only appears on
+            # the homepage, put your `HomePage` model here.
+        ]
+
+
+@hooks.register('register_ab_testing_event_types')
+def register_submit_form_event_type():
+    return {
+        'slug-of-the-event-type': CustomEvent,
+    }
+
+```
+
+Next you need to add logic in that logs a conversion when the user reaches that goal.
+To do this, you can copy/adapt the following code snippet:
+
+```python
+# Check if the user is trackable
+if request_is_trackable(request):
+    # Check if the page is the goal of any running tests
+    tests = AbTest.objects.filter(goal_event='slug-of-the-event-type', goal_page=the_page, status=AbTest.STATUS_RUNNING)
+    for test in tests:
+        # Is the user a participant in this test?
+        if f'wagtail-ab-testing_{test.id}_version' not in request.session:
+            continue
+
+        # Has the user already completed the test?
+        if f'wagtail-ab-testing_{test.id}_completed' in request.session:
+            continue
+
+        # Log a conversion
+        test.log_conversion(request.session[f'wagtail-ab-testing_{test.id}_version'])
+        request.session[f'wagtail-ab-testing_{test.id}_completed'] = 'yes'
+```
+
+#### Example: Adding a "Submit form" event type
+
+In this example, we will add a "Submit form" event type for a ``ContactUsFormPage`` page type.
+
+Firstly, we need to register the event type. To do this, implement a handler for the ``register_ab_testing_event_types`` hook in your app:
 
 ```python
 # myapp/wagtail_hooks.py
@@ -78,9 +135,43 @@ def register_submit_form_event_type():
     return {
         'submit-contact-us-form': SubmitFormPageEvent,
     }
-
 ```
 
-This allows users to select the "Submit form page" event type when their goal page is set to any instance of ``ContactUsFormPage``. Next, we need to allow it to record a conversion when a user submits a form using that type.
+This allows users to select the "Submit form page" event type when their goal page is set to any instance of ``ContactUsFormPage``.
 
-TODO: Finish this
+Next, we need to add some code to record conversions for this event type.
+To do this, we will customise the ``.render_landing_page()`` method that is inherited from the ``AbstractForm`` model.
+This method is a view that returns the "thank you" page to the user. It's ideal for this use because user's will can
+only get there by submitting the form, and we have the ``request`` object available which is required for some of the logic.:
+
+```python
+# myapp/models.py
+
+from wagtail.contrib.forms.models import AbstractFormPage
+
+from wagtail_ab_testing.models import AbTest
+from wagtail_ab_testing.utils import request_is_trackable
+
+
+class ContactUsFormPage(AbstractForm):
+
+    def render_landing_page(self, request, *args, **kwargs):
+        # Check if the user is trackable
+        if request_is_trackable(request):
+            # Check if submitting this form is the goal of any running tests
+            tests = AbTest.objects.filter(goal_event='submit-contact-us-form', goal_page=self, status=AbTest.STATUS_RUNNING)
+            for test in tests:
+                # Is the user a participant in this test?
+                if f'wagtail-ab-testing_{test.id}_version' not in request.session:
+                    continue
+
+                # Has the user already completed the test?
+                if f'wagtail-ab-testing_{test.id}_completed' in request.session:
+                    continue
+
+                # Log a conversion
+                test.log_conversion(request.session[f'wagtail-ab-testing_{test.id}_version'])
+                request.session[f'wagtail-ab-testing_{test.id}_completed'] = 'yes'
+
+        return super().render_landing_page(request, *args, **kwargs)
+```
