@@ -43,7 +43,8 @@ class TestAbTestsListingAPI(APITestCase):
                         'path': '/'
                     },
                     'event': 'visit-page'
-                }
+                },
+                'variant_html_url': f'/abtestingapi/tests/{self.ab_test.id}/serve_variant/'
             }
         ])
 
@@ -66,7 +67,8 @@ class TestAbTestsListingAPI(APITestCase):
                     'path': '/'
                 },
                 'event': 'visit-page'
-            }
+            },
+            'variant_html_url': f'/abtestingapi/tests/{self.ab_test.id}/serve_variant/'
         })
 
     def test_doesnt_show_draft(self):
@@ -100,3 +102,28 @@ class TestAbTestsListingAPI(APITestCase):
         response = self.client.get(reverse('ab_testing_api:abtest-list'))
 
         self.assertEqual(response.json(), [])
+
+
+class TestServeVariantAPI(APITestCase):
+    def setUp(self):
+        # Create test page with a draft revision
+        self.page = Page.objects.get(id=2).add_child(instance=Page(title="Test", slug="test"))
+        self.page.title = "Changed title"
+        self.page.save_revision()
+
+        # Create an A/B test
+        self.ab_test = AbTest.objects.create(
+            page=self.page,
+            name="Test",
+            variant_revision=self.page.get_latest_revision(),
+            status=AbTest.STATUS_RUNNING,
+            goal_page_id=2,
+            goal_event='visit-page',
+            sample_size=100,
+        )
+
+    def test_serve_variant(self):
+        response = self.client.get(reverse('ab_testing_api:abtest-serve-variant', args=[self.ab_test.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Changed title")
