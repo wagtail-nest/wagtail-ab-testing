@@ -1,6 +1,7 @@
 from django.urls import reverse
-from rest_framework import fields, routers, serializers, viewsets
+from rest_framework import fields, routers, serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.response import Response
 from wagtail.core.models import Page, Site
 
 from .models import AbTest
@@ -37,12 +38,20 @@ class AbTestSerializer(serializers.ModelSerializer):
     page = PageSerializer()
     goal = AbTestGoalSerializer(source='*')
     variant_html_url = fields.SerializerMethodField()
+    add_participant_url = fields.SerializerMethodField()
+    log_conversion_url = fields.SerializerMethodField()
 
     def get_variant_html_url(self, test):
         return reverse('wagtail_ab_testing_api:abtest-serve-variant', args=[test.id])
 
+    def get_add_participant_url(self, test):
+        return reverse('wagtail_ab_testing_api:abtest-add-participant', args=[test.id])
+
+    def get_log_conversion_url(self, test):
+        return reverse('wagtail_ab_testing_api:abtest-log-conversion', args=[test.id])
+
     class Meta:
-        fields = ['id', 'site', 'page', 'goal', 'variant_html_url']
+        fields = ['id', 'site', 'page', 'goal', 'variant_html_url', 'add_participant_url', 'log_conversion_url']
         model = AbTest
 
 
@@ -54,6 +63,25 @@ class AbTestViewSet(viewsets.ReadOnlyModelViewSet):
     def serve_variant(self, request, pk=None):
         test = self.get_object()
         return test.variant_revision.as_page_object().serve(request)
+
+    @action(detail=True, methods=['post'])
+    def add_participant(self, request, pk=None):
+        test = self.get_object()
+        variant = test.add_participant()
+        return Response({
+            'version': variant,
+            'test_finished': test.status != AbTest.STATUS_RUNNING,
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def log_conversion(self, request, pk=None):
+        test = self.get_object()
+
+        if request.data['version'] not in dict(AbTest.VERSION_CHOICES).keys():
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+        test.log_conversion(request.data['version'])
+        return Response({}, status=status.HTTP_201_CREATED)
 
 
 router = routers.SimpleRouter()
