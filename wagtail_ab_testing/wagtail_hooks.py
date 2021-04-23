@@ -14,6 +14,7 @@ from wagtail.core import hooks
 
 from . import views
 from .compat import DATE_FORMAT
+from .conf import get_conf
 from .models import AbTest
 from .utils import request_is_trackable
 
@@ -107,6 +108,10 @@ def check_for_running_ab_test(request, page):
 
 @hooks.register('before_serve_page')
 def before_serve_page(page, request, serve_args, serve_kwargs):
+    # Check if we're running in 'internal' mode
+    if not get_conf()['MODE'] == 'internal':
+        return
+
     # Check if the user is trackable
     if not request_is_trackable(request):
         return

@@ -175,3 +175,171 @@ class ContactUsFormPage(AbstractForm):
 
         return super().render_landing_page(request, *args, **kwargs)
 ```
+
+## Running A/B tests on a site that uses Cloudflare caching
+
+To run Wagtail A/B testing on a site that uses Cloudflare:
+
+Set the A/B testing mode to "external". This disables Wagtail A/B testing's hooks that will generate unnecessary cookies.
+
+```python
+WAGTAIL_AB_TESTING = {
+    'MODE': 'external',
+}
+```
+
+Next, register the API, the worker will call this to figure out what tests are running.
+
+```python
+from wagtail_ab_testing import api as ab_testing_api
+
+urlpatterns = [
+    ...
+
+    url(r'^abtestingapi/', include(ab_testing_api)),
+]
+```
+
+Finally, set up a Cloudflare Worker based on the following JavaScript. Don't forget to set ``WAGTAIL_DOMAIN`` and ``API_BASE``:
+
+```javascript
+// Set this to the domain name of your backend server
+const WAGTAIL_DOMAIN = "mysite.herokuapp.com";
+
+// Set this to the URL of the A/B testing API on your backend server. Don't forget the / at the end!
+const API_BASE = `https://${WAGTAIL_DOMAIN}/abtestingapi/`;
+
+async function getRunningTests() {
+  const response = await fetch(API_BASE + 'tests/');
+  return await response.json();
+}
+
+async function addParticipant(test) {
+  const response = await fetch(API_BASE + `tests/${test.id}/add_participant/`, {
+    method: 'POST'
+  });
+  return await response.json();
+}
+
+async function logConversion(test, version) {
+  const response = await fetch(API_BASE + `tests/${test.id}/log_conversion/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      'version': version
+    })
+  });
+  return await response.json();
+}
+
+async function getControlResponse(request) {
+  const url = new URL(request.url);
+  url.hostname = WAGTAIL_DOMAIN;
+  return await fetch(url.toString(), request);
+}
+
+async function getVariantResponse(request, test) {
+  return await fetch(API_BASE + `tests/${test.id}/serve_variant/`, request);
+}
+
+async function handleTest(request, test) {
+  // Called when a page being visited has an A/B test running on it
+  const cookieName = `experiment-${test.id}`;
+
+  // Determine which group this requester is in.
+  const cookie = request.headers.get("cookie");
+  if (cookie && cookie.includes(`${cookieName}=control`)) {
+    // User is in the control group
+    return await getControlResponse(request);
+  } else if (cookie && cookie.includes(`${cookieName}=variant`)) {
+    // User is in the variant group
+    return await getVariantResponse(request, test);
+  } else {
+    // User is not in any group yet
+
+    // Add a participant
+    const {version, test_finished} = await addParticipant(test);
+
+    let response;
+    if (version == 'control') {
+      response = await getControlResponse(request);
+    } else {
+      response = await getVariantResponse(request, test);
+    }
+
+    // Set cookie in response
+    response = response = new Response(response.body, response);
+    response.headers.append("Set-Cookie", `${cookieName}=${version}; path=/`);
+
+    return response;
+  }
+}
+
+async function handleVisitPageGoal(request, response, tests) {
+  // Checks if the current page that is being visited is a goal of any experiments that the user is participating in
+  const url = new URL(request.url);
+
+  // Find tests with a visit-page goal on the current page
+  for (const test of tests) {
+    if (test.goal.event === 'visit-page' && test.site.hostname === url.hostname && test.page.path === url.pathname) {
+      const cookieName = `experiment-${test.id}`;
+
+      const cookie = request.headers.get("cookie");
+      if (cookie) {
+        // Check if the user is a participant in this test
+        const isParticipant = cookie.includes(`${cookieName}=control`) || cookie.includes(`${cookieName}=variant`);
+        if (!isParticipant) {
+          continue;
+        }
+
+        // Check if the user has already reached the goal so we don't count them twice
+        const reachedGoalAlready = cookie.includes(`${cookieName}=variant`);
+        if (reachedGoalAlready) {
+          continue;
+        }
+
+        // Log the conversion
+        const version = cookie.includes(`${cookieName}=control`) ? 'control' : 'variant';
+        await logConversion(test, version);
+
+        // Set cookie in response
+        response = response = new Response(response.body, response);
+        response.headers.append("Set-Cookie", `${cookieName}-reached-goal=yes; path=/`);
+      }
+    }
+  }
+}
+
+async function handleRequest(request) {
+  const tests = await getRunningTests();
+
+  // Check if there is a running test on the visited page
+  const getRunningTest = () => {
+    const url = new URL(request.url);
+    for (const test of tests) {
+      if (test.site.hostname === url.hostname && test.page.path === url.pathname) {
+        return test;
+      }
+    }
+  };
+  const test = getRunningTest();
+
+  // Handle the test if there is one, or just return the page
+  let response;
+  if (test) {
+    response = await handleTest(request, test);
+  } else {
+    response = await getControlResponse(request);
+  }
+
+  await handleVisitPageGoal(request, response, tests);
+
+  return response;
+}
+
+addEventListener("fetch", event => {
+  event.respondWith(handleRequest(event.request));
+});
+```

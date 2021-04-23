@@ -1,5 +1,5 @@
 from django.db.models import Sum, Q
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from wagtail.core.models import Page
 
 from wagtail_ab_testing.models import AbTest
@@ -50,6 +50,20 @@ class TestServe(TestCase):
         self.ab_test.status = AbTest.STATUS_PAUSED
         self.ab_test.save()
 
+        # Add a participant for control
+        # This time, the next viewer will still see the control as the test is not running
+        self.ab_test.add_participant(AbTest.VERSION_CONTROL)
+
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(response, "Welcome to your new Wagtail site!")
+        self.assertNotContains(response, "Changed title")
+
+        self.assertNotIn(f'wagtail-ab-testing_{self.ab_test.id}_version', self.client.session)
+
+    @override_settings(WAGTAIL_AB_TESTING={'MODE': 'external'})
+    def test_serves_control_when_in_external_mode(self):
         # Add a participant for control
         # This time, the next viewer will still see the control as the test is not running
         self.ab_test.add_participant(AbTest.VERSION_CONTROL)
