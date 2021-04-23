@@ -10,3 +10,5 @@
 /site
 /test_wagtail_ab_testing.db
 /node_modules
+
+.DS_Store
