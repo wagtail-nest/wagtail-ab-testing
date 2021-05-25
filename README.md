@@ -295,7 +295,7 @@ async function handleVisitPageGoal(request, response, tests) {
         }
 
         // Check if the user has already reached the goal so we don't count them twice
-        const reachedGoalAlready = cookie.includes(`${cookieName}=variant`);
+        const reachedGoalAlready = cookie.includes(`${cookieName}-reached-goal=yes`);
         if (reachedGoalAlready) {
           continue;
         }
