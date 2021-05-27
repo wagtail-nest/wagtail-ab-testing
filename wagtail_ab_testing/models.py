@@ -198,7 +198,7 @@ class AbTest(models.Model):
 
         elif action == AbTest.COMPLETION_ACTION_REVERT:
             # Create a new revision with the content of the live page and publish it
-            self.page.specific.save_revision(user=user, log_action='wagtail.revert').publish(user=user)
+            self.page.specific.save_revision(user=user, previous_revision=self.page.live_revision).publish(user=user)
 
         elif action == AbTest.COMPLETION_ACTION_PUBLISH:
             self.variant_revision.publish(user=user)
