@@ -15,7 +15,7 @@ except ImportError:
 
 setup(
     name="wagtail-ab-testing",
-    version="0.2.1",
+    version="0.2.2",
     description="A/B Testing for Wagtail",
     author="Karl Hobley",
     author_email="karl@torchbox.com",
