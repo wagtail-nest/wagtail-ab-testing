@@ -25,6 +25,6 @@ class TestCompareDraftView(WagtailTestUtils, TestCase):
         )
 
     def test_get_compare_draft(self):
-        response = self.client.get(reverse('wagtail_ab_testing:compare_draft', args=[self.page.id]))
+        response = self.client.get(reverse('wagtail_ab_testing_admin:compare_draft', args=[self.page.id]))
 
         self.assertTemplateUsed(response, "wagtail_ab_testing/compare.html")

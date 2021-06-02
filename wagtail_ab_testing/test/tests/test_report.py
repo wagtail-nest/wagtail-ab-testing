@@ -35,6 +35,6 @@ class TestReportView(WagtailTestUtils, TestCase):
         )
 
     def test_get_report(self):
-        response = self.client.get(reverse('wagtail_ab_testing:report'))
+        response = self.client.get(reverse('wagtail_ab_testing_admin:report'))
 
         self.assertTemplateUsed(response, "wagtail_ab_testing/report.html")

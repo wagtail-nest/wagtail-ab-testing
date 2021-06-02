@@ -181,6 +181,9 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.assertEqual(self.ab_test.page.title, "Test")
         self.assertFalse(self.ab_test.page.has_unpublished_changes)
 
+        # Check log
+        import pdb; pdb.set_trace()
+
     def test_post_select_variant(self):
         self.ab_test.status = AbTest.STATUS_FINISHED
         self.ab_test.save()

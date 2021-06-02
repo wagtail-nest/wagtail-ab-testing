@@ -39,7 +39,7 @@ class TestSaveAndCreateAbTestButton(WagtailTestUtils, TestCase):
             'slug': "test",
             'create-ab-test': '',
         })
-        self.assertRedirects(response, reverse('wagtail_ab_testing:add_ab_test_compare', args=[self.page.id]))
+        self.assertRedirects(response, reverse('wagtail_ab_testing_admin:add_ab_test_compare', args=[self.page.id]))
 
     def test_doesnt_show_on_page_create(self):
         response = self.client.get(reverse('wagtailadmin_pages:add', args=["wagtail_ab_testing_test", "simplepage", self.page.id]))
@@ -126,7 +126,7 @@ class TestAddAbTestCompareView(WagtailTestUtils, TestCase, PermissionTests):
         self.latest_revision = self.page.save_revision()
 
     def get(self, page_id):
-        return self.client.get(reverse('wagtail_ab_testing:add_ab_test_compare', args=[page_id]))
+        return self.client.get(reverse('wagtail_ab_testing_admin:add_ab_test_compare', args=[page_id]))
 
     def test_get_add_compare(self):
         response = self.get(self.page.id)
@@ -152,7 +152,7 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         self.latest_revision = self.page.save_revision()
 
     def get(self, page_id):
-        return self.client.get(reverse('wagtail_ab_testing:add_ab_test_form', args=[page_id]))
+        return self.client.get(reverse('wagtail_ab_testing_admin:add_ab_test_form', args=[page_id]))
 
     def test_get_add_form(self):
         response = self.get(self.page.id)
@@ -165,7 +165,7 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         })
 
     def test_post_add_form(self):
-        response = self.client.post(reverse('wagtail_ab_testing:add_ab_test_form', args=[self.page.id]), {
+        response = self.client.post(reverse('wagtail_ab_testing_admin:add_ab_test_form', args=[self.page.id]), {
             'name': 'Test',
             'hypothesis': 'Does changing the title to "Donate now!" increase donations?',
             'goal_event': 'visit-page',
@@ -186,7 +186,7 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         self.assertEqual(ab_test.status, AbTest.STATUS_DRAFT)
 
     def test_post_add_form_start(self):
-        response = self.client.post(reverse('wagtail_ab_testing:add_ab_test_form', args=[self.page.id]), {
+        response = self.client.post(reverse('wagtail_ab_testing_admin:add_ab_test_form', args=[self.page.id]), {
             'name': 'Test',
             'hypothesis': 'Does changing the title to "Donate now!" increase donations?',
             'goal_event': 'visit-page',
@@ -202,7 +202,7 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
     def test_post_add_form_start_without_publish_permission(self):
         self.moderators_group.page_permissions.filter(permission_type='publish').delete()
 
-        response = self.client.post(reverse('wagtail_ab_testing:add_ab_test_form', args=[self.page.id]), {
+        response = self.client.post(reverse('wagtail_ab_testing_admin:add_ab_test_form', args=[self.page.id]), {
             'name': 'Test',
             'hypothesis': 'Does changing the title to "Donate now!" increase donations?',
             'goal_event': 'visit-page',

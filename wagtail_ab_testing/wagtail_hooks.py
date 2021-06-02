@@ -34,8 +34,8 @@ def register_admin_urls():
         path(
             "abtests/",
             include(
-                (urls, "wagtail_ab_testing"),
-                namespace="wagtail_ab_testing",
+                (urls, "wagtail_ab_testing_admin"),
+                namespace="wagtail_ab_testing_admin",
             ),
         )
     ]
@@ -68,7 +68,7 @@ class AbTestingTabActionMenuItem(ActionMenuItem):
         if 'page' in context:
             return format_html(
                 '<script src="{}"></script><script src="{}"></script><script>window.abTestingTabProps = JSON.parse("{}");</script>',
-                reverse('wagtail_ab_testing:javascript_catalog'),
+                reverse('wagtail_ab_testing_admin:javascript_catalog'),
                 versioned_static('wagtail_ab_testing/js/wagtail-ab-testing.js'),
                 escapejs(json.dumps({
                     'tests': [
@@ -77,7 +77,7 @@ class AbTestingTabActionMenuItem(ActionMenuItem):
                             'name': ab_test.name,
                             'started_at': ab_test.first_started_at.strftime(DATE_FORMAT) if ab_test.first_started_at else _("Not started"),
                             'status': ab_test.get_status_description(),
-                            'results_url': reverse('wagtail_ab_testing:results', args=[ab_test.page_id, ab_test.id]),
+                            'results_url': reverse('wagtail_ab_testing_admin:results', args=[ab_test.page_id, ab_test.id]),
                         }
                         for ab_test in AbTest.objects.filter(page=context['page']).order_by('-id')
                     ],
@@ -96,7 +96,7 @@ def register_ab_testing_tab_action_menu_item():
 @hooks.register('after_edit_page')
 def redirect_to_create_ab_test(request, page):
     if 'create-ab-test' in request.POST:
-        return redirect('wagtail_ab_testing:add_ab_test_compare', page.id)
+        return redirect('wagtail_ab_testing_admin:add_ab_test_compare', page.id)
 
 
 @hooks.register('before_edit_page')
@@ -116,33 +116,27 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
     if not request_is_trackable(request):
         return
 
-    # Check if visiting the page is the goal of any running tests
-    tests = AbTest.objects.filter(goal_event='visit-page', goal_page=page, status=AbTest.STATUS_RUNNING)
-    for test in tests:
-        # Is the user a participant in this test?
-        if f'wagtail-ab-testing_{test.id}_version' not in request.session:
-            continue
-
-        # Has the user already completed the test?
-        if f'wagtail-ab-testing_{test.id}_completed' in request.session:
-            continue
-
-        # Log a conversion
-        test.log_conversion(request.session[f'wagtail-ab-testing_{test.id}_version'])
-        request.session[f'wagtail-ab-testing_{test.id}_completed'] = 'yes'
-
-    # Check if the page itself is running any tests
+    # Check for a running A/B test on the requested page
     try:
         test = AbTest.objects.get(page=page, status=AbTest.STATUS_RUNNING)
     except AbTest.DoesNotExist:
         return
 
-    # Make the user a participant if they're not already
-    if f'wagtail-ab-testing_{test.id}_version' not in request.session:
-        request.session[f'wagtail-ab-testing_{test.id}_version'] = test.add_participant()
+    # Save reference to test on request object so it can be found by the {% wagtail_ab_testing_script %} template tag
+    request.wagtail_ab_testing_test = test
 
-    # If the user is visiting the variant version, serve that from the revision
-    if request.session[f'wagtail-ab-testing_{test.id}_version'] == AbTest.VERSION_VARIANT:
+    # If the user visiting is a participant, show them the same version they saw before
+    if f'wagtail-ab-testing_{test.id}_version' in request.COOKIES:
+        version = request.COOKIES[f'wagtail-ab-testing_{test.id}_version']
+    else:
+        # Otherwise, show them the version of the page that the next participant should see.
+        # Note: In order to exclude bots, the browser must call a JavaScript API to sign up as a participant
+        # Once they've signed up, they'll get a cookie which keeps them on the same version
+        version = test.get_new_participant_version()
+
+    # If the user should be shown the variant, serve that from the revision. Otherwise return to keep the control
+    if version == AbTest.VERSION_VARIANT:
+        request.wagtail_ab_testing_serving_variant = True
         return test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
 
 
@@ -154,7 +148,7 @@ class AbTestingReportMenuItem(MenuItem):
 
 @hooks.register('register_reports_menu_item')
 def register_ab_testing_report_menu_item():
-    return AbTestingReportMenuItem(_('A/B testing'), reverse('wagtail_ab_testing:report'), icon_name='people-arrows', order=1000)
+    return AbTestingReportMenuItem(_('A/B testing'), reverse('wagtail_ab_testing_admin:report'), icon_name='people-arrows', order=1000)
 
 
 @hooks.register('register_icons')

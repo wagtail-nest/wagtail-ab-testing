@@ -1,0 +1,30 @@
+{% load static %}
+
+{% if track %}
+    <script>
+        window.wagtailAbTesting = {
+            {# Is this a Wagtail Page? #}
+            {# This value is used to check if a goal has been reached #}
+            {% if page %}
+            pageId: {{ page.id }},
+            {% endif %}
+
+            {# Is there a test running on the current page? #}
+            {% if test and version %}
+            testId: {{ test.id }},
+            version: '{{ version|escapejs }}',
+            goalEvent: '{{ test.goal_event|escapejs }}',
+            goalPageId: {% if test.goal_page %}{{ test.goal_page.id }}{% else %}null{% endif %},
+            {% endif %}
+
+            urls: {
+                {% url 'wagtail_ab_testing:register_participant' as register_participant_url %}
+                registerParticipant: '{{ register_participant_url|escapejs }}',
+                {% url 'wagtail_ab_testing:goal_reached' as goal_reached_url %}
+                goalReached: '{{ goal_reached_url|escapejs }}',
+            }
+        };
+    </script>
+
+    <script src="{% static 'wagtail_ab_testing/js/tracker.js' %}" defer async></script>
+{% endif %}

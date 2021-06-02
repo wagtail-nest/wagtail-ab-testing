@@ -134,7 +134,7 @@ class AbTest(models.Model):
         page editor returns to normal.
         """
         if self.status in [AbTest.STATUS_COMPLETED, AbTest.STATUS_CANCELLED]:
-            return reverse('wagtail_ab_testing:results', args=[self.page_id, self.id])
+            return reverse('wagtail_ab_testing_admin:results', args=[self.page_id, self.id])
 
         else:
             return reverse('wagtailadmin_pages:edit', args=[self.page_id])
@@ -203,11 +203,10 @@ class AbTest(models.Model):
         elif action == AbTest.COMPLETION_ACTION_PUBLISH:
             self.variant_revision.publish(user=user)
 
-    def add_participant(self, version=None):
+    def get_participation_numbers(self):
         """
-        Inserts a new participant into the log. Returns the version that they should be shown.
+        Returns a 2-tuple containing the number of participants who were given the control or variant version of the page respectively.
         """
-        # Get current numbers of participants for each version
         stats = self.hourly_logs.aggregate(
             control_participants=Sum('participants', filter=Q(version=self.VERSION_CONTROL)),
             variant_participants=Sum('participants', filter=Q(version=self.VERSION_VARIANT)),
@@ -215,19 +214,42 @@ class AbTest(models.Model):
         control_participants = stats['control_participants'] or 0
         variant_participants = stats['variant_participants'] or 0
 
+        return control_participants, variant_participants
+
+    def get_new_participant_version(self, participation_numbers=None):
+        """
+        Returns the version of the page to display to a new participant.
+
+        This balances the number of participants between the two variants.
+        """
+        if participation_numbers is None:
+            participation_numbers = self.get_participation_numbers()
+
+        control_participants, variant_participants = participation_numbers
+
+        if variant_participants > control_participants:
+            return self.VERSION_CONTROL
+
+        elif variant_participants < control_participants:
+            return self.VERSION_VARIANT
+
+        else:
+            return random.choice([
+                self.VERSION_CONTROL,
+                self.VERSION_VARIANT,
+            ])
+
+    def add_participant(self, version=None):
+        """
+        Inserts a new participant into the log. Returns the version that they should be shown.
+        """
+        # Get current numbers of participants for each version
+        control_participants, variant_participants = self.get_participation_numbers()
+
         # Create an equal number of participants for each version
         if version is None:
-            if variant_participants > control_participants:
-                version = self.VERSION_CONTROL
-
-            elif variant_participants < control_participants:
-                version = self.VERSION_VARIANT
-
-            else:
-                version = random.choice([
-                    self.VERSION_CONTROL,
-                    self.VERSION_VARIANT,
-                ])
+            # Note, pass participation numbers we already have to save a database query
+            version = self.get_new_participant_version(participation_numbers=(control_participants, variant_participants))
 
         # Add new participant to statistics model
         AbTestHourlyLog._increment_stats(self, version, 1, 0)

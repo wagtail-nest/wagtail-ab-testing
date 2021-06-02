@@ -62,6 +62,8 @@ class AbTestViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['get'])
     def serve_variant(self, request, pk=None):
         test = self.get_object()
+        request.wagtail_ab_testing_test = test
+        request.wagtail_ab_testing_serving_variant = True
         return test.variant_revision.as_page_object().serve(request)
 
     @action(detail=True, methods=['post'])

@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from django.utils.functional import cached_property
 from user_agents import parse
 
 
