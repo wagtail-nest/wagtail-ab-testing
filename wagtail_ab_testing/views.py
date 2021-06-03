@@ -10,8 +10,12 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import gettext as _, gettext_lazy
+from django.views.decorators.csrf import csrf_exempt
 import django_filters
 from django_filters.constants import EMPTY_VALUES
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from wagtail.admin import messages
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
@@ -427,3 +431,60 @@ class AbTestingReportView(ReportView):
 
     def get_queryset(self):
         return AbTest.objects.all().order_by(F('first_started_at').desc(nulls_first=True))
+
+
+@csrf_exempt
+@api_view(['POST'])
+def register_participant(request):
+    test_id = request.data.get('test_id', None)
+    if test_id is None:
+        return Response("test_id not provided", status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        test_id = int(test_id)
+        if test_id < 1:
+            raise ValueError
+    except ValueError:
+        return Response("test_id must be a positive integer", status=status.HTTP_400_BAD_REQUEST)
+
+    test = get_object_or_404(AbTest, id=test_id)
+
+    version = request.data.get('version', None)
+    if version is None:
+        return Response("version not provided", status=status.HTTP_400_BAD_REQUEST)
+
+    if version not in [AbTest.VERSION_CONTROL, AbTest.VERSION_VARIANT]:
+        return Response(
+            "version must be either '{}' or '{}'".format(AbTest.VERSION_CONTROL, AbTest.VERSION_VARIANT),
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Add participant
+    test.add_participant(version=version)
+
+    return Response()
+
+
+@csrf_exempt
+@api_view(['POST'])
+def goal_reached(request):
+    test_id = request.data.get('test_id', None)
+    if test_id is None:
+        return Response("test_id not provided", status=status.HTTP_400_BAD_REQUEST)
+
+    test = get_object_or_404(AbTest, id=test_id)
+
+    version = request.data.get('version', None)
+    if version is None:
+        return Response("version not provided", status=status.HTTP_400_BAD_REQUEST)
+
+    if version not in [AbTest.VERSION_CONTROL, AbTest.VERSION_VARIANT]:
+        return Response(
+            "version must be either '{}' or '{}'".format(AbTest.VERSION_CONTROL, AbTest.VERSION_VARIANT),
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Log conversion
+    test.log_conversion(version)
+
+    return Response()
