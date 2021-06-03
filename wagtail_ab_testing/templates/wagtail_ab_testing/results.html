@@ -110,7 +110,7 @@
                 </div>
             </div>
         </div>
-        {% url 'wagtail_ab_testing:compare_draft' page.id as compare_url%}
+        {% url 'wagtail_ab_testing_admin:compare_draft' page.id as compare_url%}
         {% blocktrans with compare_url=compare_url trimmed %}
             <a href="{{ compare_url }}" target="_blank">Compare pages</a> and see how the control and variant pages differ.
         {% endblocktrans %}
@@ -124,7 +124,7 @@
 
 {% block extra_js %}
     {% include "wagtailadmin/pages/_editor_js.html" %}
-    <script src="{% url 'wagtail_ab_testing:javascript_catalog' %}"></script>
+    <script src="{% url 'wagtail_ab_testing_admin:javascript_catalog' %}"></script>
     <script type="text/javascript" src="{% versioned_static 'wagtailadmin/js/page-chooser-modal.js' %}"></script>
     <script src="{% versioned_static 'wagtail_ab_testing/js/wagtail-ab-testing.js' %}"></script>
 {% endblock %}

@@ -134,7 +134,7 @@ class AbTest(models.Model):
         page editor returns to normal.
         """
         if self.status in [AbTest.STATUS_COMPLETED, AbTest.STATUS_CANCELLED]:
-            return reverse('wagtail_ab_testing:results', args=[self.page_id, self.id])
+            return reverse('wagtail_ab_testing_admin:results', args=[self.page_id, self.id])
 
         else:
             return reverse('wagtailadmin_pages:edit', args=[self.page_id])

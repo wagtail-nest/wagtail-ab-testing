@@ -34,8 +34,8 @@ def register_admin_urls():
         path(
             "abtests/",
             include(
-                (urls, "wagtail_ab_testing"),
-                namespace="wagtail_ab_testing",
+                (urls, "wagtail_ab_testing_admin"),
+                namespace="wagtail_ab_testing_admin",
             ),
         )
     ]
@@ -68,7 +68,7 @@ class AbTestingTabActionMenuItem(ActionMenuItem):
         if 'page' in context:
             return format_html(
                 '<script src="{}"></script><script src="{}"></script><script>window.abTestingTabProps = JSON.parse("{}");</script>',
-                reverse('wagtail_ab_testing:javascript_catalog'),
+                reverse('wagtail_ab_testing_admin:javascript_catalog'),
                 versioned_static('wagtail_ab_testing/js/wagtail-ab-testing.js'),
                 escapejs(json.dumps({
                     'tests': [
@@ -77,7 +77,7 @@ class AbTestingTabActionMenuItem(ActionMenuItem):
                             'name': ab_test.name,
                             'started_at': ab_test.first_started_at.strftime(DATE_FORMAT) if ab_test.first_started_at else _("Not started"),
                             'status': ab_test.get_status_description(),
-                            'results_url': reverse('wagtail_ab_testing:results', args=[ab_test.page_id, ab_test.id]),
+                            'results_url': reverse('wagtail_ab_testing_admin:results', args=[ab_test.page_id, ab_test.id]),
                         }
                         for ab_test in AbTest.objects.filter(page=context['page']).order_by('-id')
                     ],
@@ -96,7 +96,7 @@ def register_ab_testing_tab_action_menu_item():
 @hooks.register('after_edit_page')
 def redirect_to_create_ab_test(request, page):
     if 'create-ab-test' in request.POST:
-        return redirect('wagtail_ab_testing:add_ab_test_compare', page.id)
+        return redirect('wagtail_ab_testing_admin:add_ab_test_compare', page.id)
 
 
 @hooks.register('before_edit_page')
@@ -154,7 +154,7 @@ class AbTestingReportMenuItem(MenuItem):
 
 @hooks.register('register_reports_menu_item')
 def register_ab_testing_report_menu_item():
-    return AbTestingReportMenuItem(_('A/B testing'), reverse('wagtail_ab_testing:report'), icon_name='people-arrows', order=1000)
+    return AbTestingReportMenuItem(_('A/B testing'), reverse('wagtail_ab_testing_admin:report'), icon_name='people-arrows', order=1000)
 
 
 @hooks.register('register_icons')
