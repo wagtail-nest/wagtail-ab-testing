@@ -1,6 +1,9 @@
 import json
 
+from django.conf import settings
 from django.contrib.auth.models import Permission
+from django.core.exceptions import PermissionDenied
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import path, include, reverse
 from django.utils.html import format_html, escapejs
@@ -14,7 +17,6 @@ from wagtail.core import hooks
 
 from . import views
 from .compat import DATE_FORMAT
-from .conf import get_conf
 from .models import AbTest
 from .utils import request_is_trackable
 
@@ -108,10 +110,6 @@ def check_for_running_ab_test(request, page):
 
 @hooks.register('before_serve_page')
 def before_serve_page(page, request, serve_args, serve_kwargs):
-    # Check if we're running in 'internal' mode
-    if not get_conf()['MODE'] == 'internal':
-        return
-
     # Check if the user is trackable
     if not request_is_trackable(request):
         return
@@ -124,6 +122,33 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
 
     # Save reference to test on request object so it can be found by the {% wagtail_ab_testing_script %} template tag
     request.wagtail_ab_testing_test = test
+
+    # If this request is coming from a frontend worker, return both the control and variant versions
+    # The worker will decide which version to serve to the user
+    if request.META.get('HTTP_X_REQUESTED_WITH') == 'WagtailAbTestingWorker':
+        if request.META.get('HTTP_AUTHORIZATION', '') != 'Token ' + settings.WAGTAIL_AB_TESTING_WORKER_TOKEN:
+            raise PermissionDenied
+
+        control_response = page.serve(request, *serve_args, **serve_kwargs)
+
+        # Note: we must render the control response before setting `wagtail_ab_testing_serving_variant`
+        if hasattr(control_response, "render"):
+            control_response.render()
+
+        request.wagtail_ab_testing_serving_variant = True
+
+        variant_response = test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+        if hasattr(variant_response, "render"):
+            variant_response.render()
+
+        response = JsonResponse({
+            'control': control_response.content.decode('utf-8'),
+            'variant': variant_response.content.decode('utf-8'),
+        })
+
+        response['X-WagtailAbTesting-Test'] = str(test.id)
+
+        return response
 
     # If the user visiting is a participant, show them the same version they saw before
     if f'wagtail-ab-testing_{test.id}_version' in request.COOKIES:

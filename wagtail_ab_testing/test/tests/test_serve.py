@@ -75,20 +75,6 @@ class TestServe(TestCase):
 
         self.assertNotIn(f'wagtail-ab-testing_{self.ab_test.id}_version', self.client.session)
 
-    @override_settings(WAGTAIL_AB_TESTING={'MODE': 'external'})
-    def test_serves_control_when_in_external_mode(self):
-        # Add a participant for control
-        # This time, the next viewer will still see the control as the test is not running
-        self.ab_test.add_participant(AbTest.VERSION_CONTROL)
-
-        response = self.client.get('/')
-        self.assertEqual(response.status_code, 200)
-
-        self.assertContains(response, "Welcome to your new Wagtail site!")
-        self.assertNotContains(response, "Changed title")
-
-        self.assertNotIn(f'wagtail-ab-testing_{self.ab_test.id}_version', self.client.session)
-
     def test_doesnt_track_bots(self):
         # Add a participant for control
         # This will make it serve the variant if it does incorrectly decide to track the user
@@ -117,3 +103,25 @@ class TestServe(TestCase):
         self.assertContains(response, "Welcome to your new Wagtail site!")
         self.assertNotContains(response, "Changed title")
         self.assertNotIn(f'wagtail-ab-testing_{self.ab_test.id}_version', self.client.session)
+
+    @override_settings(WAGTAIL_AB_TESTING_WORKER_TOKEN='abc123')
+    def test_serves_dual_response_for_worker(self):
+        response = self.client.get('/', HTTP_X_REQUESTED_WITH='WagtailAbTestingWorker', HTTP_AUTHORIZATION='Token abc123')
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(response['X-WagtailAbTesting-Test'], str(self.ab_test.id))
+        response_data = response.json()
+
+        self.assertIn("Welcome to your new Wagtail site!", response_data['control'])
+        self.assertIn("Changed title", response_data['variant'])
+
+    @override_settings(WAGTAIL_AB_TESTING_WORKER_TOKEN='abc123')
+    def test_worker_requires_token(self):
+        response = self.client.get('/', HTTP_X_REQUESTED_WITH='WagtailAbTestingWorker')
+
+        self.assertEqual(response.status_code, 403)
+
+    @override_settings(WAGTAIL_AB_TESTING_WORKER_TOKEN='abc123')
+    def test_worker_requires_correct_token(self):
+        response = self.client.get('/', HTTP_X_REQUESTED_WITH='WagtailAbTestingWorker', HTTP_AUTHORIZATION='Token wrongtoken')
+        self.assertEqual(response.status_code, 403)
