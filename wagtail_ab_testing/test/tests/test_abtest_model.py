@@ -31,6 +31,46 @@ class TestAbTestModel(TestCase):
         self.ab_test.refresh_from_db()
         self.assertEqual(self.ab_test.status, AbTest.STATUS_CANCELLED)
 
+    def test_get_participation_numbers(self):
+        control, variant = self.ab_test.get_participation_numbers()
+        self.assertEqual(control, 0)
+        self.assertEqual(variant, 0)
+
+        AbTestHourlyLog.objects.create(
+            ab_test=self.ab_test,
+            version=AbTest.VERSION_CONTROL,
+            date=datetime.date(2020, 11, 4),
+            hour=22,
+            participants=1,
+            conversions=0,
+        )
+
+        control, variant = self.ab_test.get_participation_numbers()
+        self.assertEqual(control, 1)
+        self.assertEqual(variant, 0)
+
+        AbTestHourlyLog.objects.create(
+            ab_test=self.ab_test,
+            version=AbTest.VERSION_VARIANT,
+            date=datetime.date(2020, 11, 4),
+            hour=22,
+            participants=1,
+            conversions=0,
+        )
+
+        control, variant = self.ab_test.get_participation_numbers()
+        self.assertEqual(control, 1)
+        self.assertEqual(variant, 1)
+
+    def test_get_new_participant_version(self):
+        # Test with more control than variant
+        version = self.ab_test.get_new_participant_version(participation_numbers=(2, 1))
+        self.assertEqual(version, AbTest.VERSION_VARIANT)
+
+        # Test with more variant than control
+        version = self.ab_test.get_new_participant_version(participation_numbers=(1, 2))
+        self.assertEqual(version, AbTest.VERSION_CONTROL)
+
     def test_add_participant(self):
         version = self.ab_test.add_participant()
 
