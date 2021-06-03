@@ -206,6 +206,9 @@ Finally, set up a Cloudflare Worker based on the following JavaScript. Don't for
 // Set this to the domain name of your backend server
 const WAGTAIL_DOMAIN = "mysite.herokuapp.com";
 
+// Set to false if Cloudflare shouldn't automatically redirect requests to use HTTPS
+const ENFORCE_HTTPS = true;
+
 // Set this to the URL of the A/B testing API on your backend server. Don't forget the / at the end!
 const API_BASE = `https://${WAGTAIL_DOMAIN}/abtestingapi/`;
 
@@ -313,11 +316,17 @@ async function handleVisitPageGoal(request, response, tests) {
 }
 
 async function handleRequest(request) {
+  const url = new URL(request.url)
+  
+  if(url.protocol == "http:" && ENFORCE_HTTPS) {
+    url.protocol == "https:";
+    return Response.redirect(url, 301);
+  }
+
   const tests = await getRunningTests();
 
   // Check if there is a running test on the visited page
   const getRunningTest = () => {
-    const url = new URL(request.url);
     for (const test of tests) {
       if (test.site.hostname === url.hostname && test.page.path === url.pathname) {
         return test;
