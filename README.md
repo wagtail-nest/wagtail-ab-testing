@@ -39,6 +39,30 @@ INSTALLED_APPS = [
 ]
 ```
 
+Then add the following to your URLconf:
+
+```python
+from wagtail_ab_testing import urls as ab_testing_urls
+
+urlpatterns = [
+    ...
+
+    url(r'^abtesting/', include(ab_testing_urls)),
+]
+```
+
+Finally, add the tracking script to your base HTML template:
+
+```django+HTML
+{# Insert this at the top of the template #}
+{% load wagtail_ab_testing_tags %}
+
+...
+
+{# Insert this where you would normally insert a <script> tag #}
+{% wagtail_ab_testing_script %}
+```
+
 ## Goal events
 
 Each A/B test has a goal that is measured after a user visits the page that the A/B test is running on.
@@ -178,29 +202,13 @@ class ContactUsFormPage(AbstractForm):
 
 ## Running A/B tests on a site that uses Cloudflare caching
 
-To run Wagtail A/B testing on a site that uses Cloudflare:
-
-Set the A/B testing mode to "external". This disables Wagtail A/B testing's hooks that will generate unnecessary cookies.
+To run Wagtail A/B testing on a site that uses Cloudflare, firstly generate a secure random string to use as a token, and configure that token in your Django settings file:
 
 ```python
-WAGTAIL_AB_TESTING = {
-    'MODE': 'external',
-}
+WAGTAIL_AB_TESTING_WORKER_TOKEN = '<token here>'
 ```
 
-Next, register the API, the worker will call this to figure out what tests are running.
-
-```python
-from wagtail_ab_testing import api as ab_testing_api
-
-urlpatterns = [
-    ...
-
-    url(r'^abtestingapi/', include(ab_testing_api)),
-]
-```
-
-Finally, set up a Cloudflare Worker based on the following JavaScript. Don't forget to set ``WAGTAIL_DOMAIN`` and ``API_BASE``:
+Then set up a Cloudflare Worker based on the following JavaScript. Don't forget to set ``WAGTAIL_DOMAIN``:
 
 ```javascript
 // Set this to the domain name of your backend server
