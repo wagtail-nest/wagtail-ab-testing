@@ -221,7 +221,7 @@ async function handleRequest(request) {
   const url = new URL(request.url)
 
   if (url.protocol == 'http:' && ENFORCE_HTTPS) {
-    url.protocol == 'https:';
+    url.protocol = 'https:';
     return Response.redirect(url, 301);
   }
 
