@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2021-07-08
+
+### Fixed
+
+ - [API endpoints no longer give CSRF errors when authenticated users visit an A/B testing page](https://github.com/torchbox/wagtail-ab-testing/pull/35)
+ - [Fixed incorrect cookie name causing wrong variant to be served to participants](https://github.com/torchbox/wagtail-ab-testing/pull/34)
+
 ## [0.3] - 2021-07-08
 
 ### Added
@@ -40,5 +47,6 @@ WAGTAIL_AB_TESTING = {
 }
 ```
 
+[0.3.1]: https://github.com/torchbox/wagtail-ab-testing/compare/v0.3...v0.3.1
 [0.3]: https://github.com/torchbox/wagtail-ab-testing/compare/v0.2...v0.3
 
