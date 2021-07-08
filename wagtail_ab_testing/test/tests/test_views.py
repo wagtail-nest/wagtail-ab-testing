@@ -1,8 +1,9 @@
 import datetime
 
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from freezegun import freeze_time
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
 from wagtail.core.models import Page
 
 from wagtail_ab_testing.models import AbTest
@@ -72,6 +73,26 @@ class TestRegisterParticipant(APITestCase):
 
         self.ab_test.refresh_from_db()
         self.assertEqual(self.ab_test.status, AbTest.STATUS_FINISHED)
+
+    def test_register_participant_authenticated_user(self):
+        # By default, Django REST framework will enforce CSRF checks on authenticated users
+        # We disable these by removing all authentication/permission classes from the view
+        client = APIClient(enforce_csrf_checks=True)
+
+        User = get_user_model()
+        User.objects.create_user('foo', 'myemail@test.com', 'bar')
+        client.login(username='foo', password='bar')
+
+        response = client.post(
+            reverse('wagtail_ab_testing:register_participant'),
+            {
+                'test_id': self.ab_test.id,
+                'version': 'control',
+            }
+        )
+
+        # Shouldn't give 403 error
+        self.assertEqual(response.status_code, 200)
 
 
 @freeze_time('2020-11-04T22:37:00Z')
@@ -146,3 +167,23 @@ class TestGoalReached(APITestCase):
 
         # This shouldn't create a history log
         self.assertFalse(self.ab_test.hourly_logs.exists())
+
+    def test_log_conversion_authenticated_user(self):
+        # By default, Django REST framework will enforce CSRF checks on authenticated users
+        # We disable these by removing all authentication/permission classes from the view
+        client = APIClient(enforce_csrf_checks=True)
+
+        User = get_user_model()
+        User.objects.create_user('foo', 'myemail@test.com', 'bar')
+        client.login(username='foo', password='bar')
+
+        response = client.post(
+            reverse('wagtail_ab_testing:goal_reached', args=[]),
+            {
+                'test_id': self.ab_test.id,
+                'version': 'control'
+            }
+        )
+
+        # Shouldn't give 403 error
+        self.assertEqual(response.status_code, 200)

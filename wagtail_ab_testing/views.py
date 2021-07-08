@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 import django_filters
 from django_filters.constants import EMPTY_VALUES
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from wagtail.admin import messages
 from wagtail.admin.action_menu import ActionMenuItem
@@ -435,6 +435,8 @@ class AbTestingReportView(ReportView):
 
 @csrf_exempt
 @api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
 def register_participant(request):
     test_id = request.data.get('test_id', None)
     if test_id is None:
@@ -467,6 +469,8 @@ def register_participant(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
 def goal_reached(request):
     test_id = request.data.get('test_id', None)
     if test_id is None:
