@@ -25,7 +25,7 @@
     if (window.wagtailAbTesting) {
         // Register the user as a participant if they haven't registered yet
         if (window.wagtailAbTesting.testId) {
-            var cookieName = 'abtesting-' + window.wagtailAbTesting.testId + '-version';
+            var cookieName = 'wagtail-ab-testing_' + window.wagtailAbTesting.testId + '_version';
             if (!document.cookie.includes(cookieName)) {
                 fetch(
                     window.wagtailAbTesting.urls.registerParticipant,
@@ -88,7 +88,8 @@
                 }
 
                 goalsForEvent.forEach(function (testId) {
-                    var version = getCookie('abtesting-' + testId + '-version');
+                    var cookieName = 'wagtail-ab-testing_' + testId + '_version';
+                    var version = getCookie(cookieName);
 
                     if (version) {
                         fetch(
