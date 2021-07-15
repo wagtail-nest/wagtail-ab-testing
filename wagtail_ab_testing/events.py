@@ -9,8 +9,12 @@ class BaseEvent:
     """
     name = None
 
+    # When False, the user won't be asked to select a goal page
+    requires_page = True
+
     # A list of page model classes that this event can be triggered on.
     # This may be overridden by the .get_page_types() method
+    # Leave this as None to allow any page
     page_types = None
 
     def get_page_types(self):

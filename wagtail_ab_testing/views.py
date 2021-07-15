@@ -125,6 +125,7 @@ def add_form(request, page_id):
     else:
         form = CreateAbTestForm()
 
+    event_types = get_event_types().items()
     return render(request, 'wagtail_ab_testing/add_form.html', {
         'page': page,
         'form': form,
@@ -135,11 +136,19 @@ def add_form(request, page_id):
                         'slug': slug,
                         'name': event_type.name,
                     }
-                    for slug, event_type in get_event_types().items()
-                    if event_type.can_be_triggered_on_page_type(page_type)
+                    for slug, event_type in event_types
+                    if event_type.requires_page and event_type.can_be_triggered_on_page_type(page_type)
                 ]
                 for page_type in PAGE_MODEL_CLASSES
-            }
+            },
+            'globalGoalTypes': [
+                {
+                    'slug': slug,
+                    'name': event_type.name,
+                }
+                for slug, event_type in event_types
+                if not event_type.requires_page
+            ]
         }, cls=DjangoJSONEncoder)
     })
 
