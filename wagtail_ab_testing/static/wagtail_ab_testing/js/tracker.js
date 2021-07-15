@@ -25,48 +25,55 @@
     if (window.wagtailAbTesting) {
         // Register the user as a participant if they haven't registered yet
         if (window.wagtailAbTesting.testId) {
-            var cookieName = 'wagtail-ab-testing_' + window.wagtailAbTesting.testId + '_version';
-            if (!document.cookie.includes(cookieName)) {
-                fetch(
-                    window.wagtailAbTesting.urls.registerParticipant,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            test_id: window.wagtailAbTesting.testId,
-                            version: window.wagtailAbTesting.version
-                        })
-                    }
-                ).then(function (response) {
-                    if (response.status === 200) {
-                        // Put the version into a cookie so that Wagtail continues to serve this version
-                        var expires = new Date();
-                        expires.setFullYear(expires.getFullYear() + 1);
-                        document.cookie = cookieName + '=' + window.wagtailAbTesting.version + '; expires=' + expires.toUTCString();
+            // Fetch the goal info from local storage
+            // This data structure looks like:
+            // {
+            //   <id of goal page> : {
+            //     <goal event>: [<ids of tests with this goal page/event>]
+            //   }
+            // }
+            var goals = window.localStorage.getItem('abtesting-goals');
+            if (goals) {
+                goals = JSON.parse(goals);
+            } else {
+                goals = {};
+            }
 
-                        // Save the goal info into local storage
-                        // This data structure looks like:
-                        // {
-                        //   <id of goal page> : {
-                        //     <goal event>: [<ids of tests with this goal page/event>]
-                        //   }
-                        // }
-                        var goals = window.localStorage.getItem('abtesting-goals');
-                        if (goals) {
-                            goals = JSON.parse(goals);
-                        } else {
-                            goals = {};
+            // Add this goal page/event into the goals data structure
+            goals[window.wagtailAbTesting.goalPageId] = goals[window.wagtailAbTesting.goalPageId] || {}
+            goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent] = goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent] || [];
+
+            // Check if this user is already a participant in this test
+            // We could check the cookie instead, but it's possible that the user has cleared their cookies but not local storage
+            if (goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent].indexOf(window.wagtailAbTesting.testId) === -1) {
+                var cookieName = 'wagtail-ab-testing_' + window.wagtailAbTesting.testId + '_version';
+                if (!document.cookie.includes(cookieName)) {
+                    fetch(
+                        window.wagtailAbTesting.urls.registerParticipant,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                test_id: window.wagtailAbTesting.testId,
+                                version: window.wagtailAbTesting.version
+                            })
                         }
+                    ).then(function (response) {
+                        if (response.status === 200) {
+                            // Put the version into a cookie so that Wagtail continues to serve this version
+                            var expires = new Date();
+                            expires.setFullYear(expires.getFullYear() + 1);
+                            document.cookie = cookieName + '=' + window.wagtailAbTesting.version + '; expires=' + expires.toUTCString();
 
-                        goals[window.wagtailAbTesting.goalPageId] = goals[window.wagtailAbTesting.goalPageId] || {}
-                        goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent] = goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent] || [];
-                        goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent].push(window.wagtailAbTesting.testId);
-
-                        window.localStorage.setItem('abtesting-goals', JSON.stringify(goals));
-                    }
-                });
+                            // Store the test ID against the goal event in the goals data structure
+                            // We will use this for knowing when to call the goal reached API later
+                            goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent].push(window.wagtailAbTesting.testId);
+                            window.localStorage.setItem('abtesting-goals', JSON.stringify(goals));
+                        }
+                    });
+                }
             }
         }
 
