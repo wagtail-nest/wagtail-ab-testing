@@ -42,7 +42,9 @@
                 ).then(function (response) {
                     if (response.status === 200) {
                         // Put the version into a cookie so that Wagtail continues to serve this version
-                        document.cookie = cookieName + ' = ' + window.wagtailAbTesting.version;
+                        var expires = new Date();
+                        expires.setFullYear(expires.getFullYear() + 1);
+                        document.cookie = cookieName + '=' + window.wagtailAbTesting.version + '; expires=' + expires.toUTCString();
 
                         // Save the goal info into local storage
                         // This data structure looks like:
