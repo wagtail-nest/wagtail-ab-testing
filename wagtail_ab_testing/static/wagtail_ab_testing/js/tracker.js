@@ -119,7 +119,9 @@
             }
 
             // Check non-page-specific goals
-            checkGoalReached(null);
+            // Note: we need to check for the string 'null' as nulls are converted to strings
+            // when they are used as keys in JSON
+            checkGoalReached('null');
         };
 
         // Trigger visit page event

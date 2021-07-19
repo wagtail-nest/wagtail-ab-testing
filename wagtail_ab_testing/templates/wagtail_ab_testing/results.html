@@ -10,7 +10,7 @@
         <h2>{{ ab_test.name }}</h2>
         <p><b>{% trans "Page:" %}</b> {{ page.title }}</p>
         {% if ab_test.hypothesis %}<p><b>{% trans "Hypothesis:" %}</b> {{ ab_test.hypothesis }}</p>{% endif %}
-        <p><b>{% trans "Goal:" %}</b> {{ ab_test.get_goal_event_display }}: {{ ab_test.goal_page }}</p>
+        <p><b>{% trans "Goal:" %}</b> {{ ab_test.get_goal_event_display }}{% if ab_test.goal_page_id %}: {{ ab_test.goal_page }}{% endif %}</p>
         {% if ab_test.created_by %}<p><b>{% trans "Test by:" %}</b> {{ ab_test.created_by }}</p>{% endif %}
 
         <div class="abtest-progressbar">

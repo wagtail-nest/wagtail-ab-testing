@@ -161,7 +161,10 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
             "goalTypesByPageType": {
                 "wagtailcore.page": [{"slug": "visit-page", "name": "Visit page"}],
                 "wagtail_ab_testing_test.simplepage": [{"slug": "visit-page", "name": "Visit page"}]
-            }
+            },
+            "globalGoalTypes": [
+                {'name': 'Global Event', 'slug': 'global-event'}
+            ]
         })
 
     def test_post_add_form(self):

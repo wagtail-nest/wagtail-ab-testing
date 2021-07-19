@@ -89,6 +89,7 @@ from wagtail_ab_testing.events import BaseEvent
 
 class CustomEvent(BaseEvent):
     name = "Name of the event type"
+    requires_page = True  # Set to False to create a "Global" event type that could be reached on any page
 
     def get_page_types(self):
         return [

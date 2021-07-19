@@ -68,6 +68,11 @@ const GoalPageSelector: FunctionComponent<GoalPageSelectorProps> = ({
         });
     };
 
+    const onClickClear = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        setSelectedPageId(null);
+    };
+
     return (
         <GoalPageSelectorDiv>
             {selectedPageInfo && (
@@ -83,6 +88,14 @@ const GoalPageSelector: FunctionComponent<GoalPageSelectorProps> = ({
                     ? gettext('Choose a different page')
                     : gettext('Choose a page')}
             </button>
+            {selectedPageInfo && (
+                <button
+                    className="button button-primary"
+                    onClick={onClickClear}
+                >
+                    {gettext('Clear')}
+                </button>
+            )}
             <input
                 type="hidden"
                 name="goal_page"
@@ -109,10 +122,15 @@ interface GoalSelectorProps {
             name: string;
         }[];
     };
+    globalGoalTypes: {
+        slug: string;
+        name: string;
+    }[];
 }
 
 const GoalSelector: FunctionComponent<GoalSelectorProps> = ({
-    goalTypesByPageType
+    goalTypesByPageType,
+    globalGoalTypes
 }) => {
     const [selectedPageType, setSelectedPageType] = React.useState<
         string | null
@@ -128,7 +146,7 @@ const GoalSelector: FunctionComponent<GoalSelectorProps> = ({
 
     const goalTypes = selectedPageType
         ? goalTypesByPageType[selectedPageType.toLowerCase()] || []
-        : [];
+        : globalGoalTypes;
 
     return (
         <div>
@@ -138,9 +156,12 @@ const GoalSelector: FunctionComponent<GoalSelectorProps> = ({
                 </SunkenLabel>
                 <GoalPageSelector onChangeSelectedPage={onChangeSelectedPage} />
             </Field>
-            <Field visible={!!selectedPageType}>
+            <Field visible={!!goalTypes}>
                 <SunkenLabel>{gettext('What is the goal?')}</SunkenLabel>
-                <select name="goal_event" disabled={goalTypes.length === 0}>
+                <select name="goal_event">
+                    <option key="" value="">
+                        Choose a goal
+                    </option>
                     {goalTypes.map(({ slug, name }) => (
                         <option key={slug} value={slug}>
                             {name}
