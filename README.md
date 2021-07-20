@@ -1,5 +1,10 @@
 # Wagtail A/B Testing
 
+[![Version](https://img.shields.io/pypi/v/wagtail-localize.svg?style=flat)](https://pypi.python.org/pypi/wagtail-localize/)
+[![License](https://img.shields.io/badge/license-BSD-blue.svg?style=flat)](https://opensource.org/licenses/BSD-3-Clause)
+[![codecov](https://img.shields.io/codecov/c/github/torchbox/wagtail-ab-testing?style=flat)](https://codecov.io/gh/torchbox/wagtail-ab-testing)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/torchbox/wagtail-ab-testing.svg?logo=lgtm&logoWidth=18&style=flat)](https://lgtm.com/projects/g/torchbox/wagtail-ab-testing/context:python)
+
 Wagtail A/B Testing is an A/B testing package for Wagtail that allows users to create and manage A/B tests on pages through the Wagtail admin.
 
 Key features:
@@ -8,6 +13,8 @@ Key features:
  - Tests using page revisions (no need to create separate pages for the variants)
  - It prevents users from editing the page while a test is in progress
  - Calculates confidence using a Pearson's chi-squared test
+
+[Changelog](https://github.com/torchbox/wagtail-ab-testing/blob/main/CHANGELOG.md)
 
 ## Usage
 
