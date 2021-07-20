@@ -90,20 +90,13 @@ Finally, add the tracking script to your base HTML template:
 
 ## Goal events
 
-Each A/B test has a goal that is measured after a user visits the page that the A/B test is running on.
+## Implementing custom goal event types
 
-The goal is defined by a destination page and and event type. For example, if the A/B test needs to measure how a change on the page affects the number of users who go on to submit a "Contact us" form, then the 'destination page' would be the "Contact us" page and the 'event type' would be "Submit form".
+Out of the box, Wagtail A/B testing provides a "Visit page" goal event type which you can use to track when users visit a goal page.
+It also supports custom goal types, which can be used for tracking other events such as making a purchase, submitting a form, or clicking a link.
 
-Out of the box, the only 'event type' that Wagtail A/B testing supports is visiting the destination page.
-If you need to measure something else (such as submitting a form, purchasing something, or just clicking a link), you can implement a custom 'event type'.
-
-### Implementing a custom goal event type
-
-Custom event types are implemented for specific types of destination page.
-
-Firstly, you need to register the 'event type' using the `register_ab_testing_event_types` hook,
-this displays the goal 'event type' in the list of options when an A/B test is being created:
-
+To implement a custom goal event type, firstly register your type using the ``register_ab_testing_event_types`` hook, this would
+add your goal type to the list of options shown to users when they create A/B tests:
 
 ```python
 # myapp/wagtail_hooks.py
@@ -132,31 +125,20 @@ def register_submit_form_event_type():
 
 ```
 
-Next you need to add logic in that logs a conversion when the user reaches that goal.
-To do this, you can copy/adapt the following code snippet:
+Next, you need to tell Wagtail A/B testing whenever a user triggers the goal. This can be done by calling ``wagtailAbTesting.triggerEvent()``
+in the browser:
 
-```python
-# Check if the user is trackable
-if request_is_trackable(request):
-    # Check if the page is the goal of any running tests
-    tests = AbTest.objects.filter(goal_event='slug-of-the-event-type', goal_page=the_page, status=AbTest.STATUS_RUNNING)
-    for test in tests:
-        # Is the user a participant in this test?
-        if f'wagtail-ab-testing_{test.id}_version' not in request.session:
-            continue
-
-        # Has the user already completed the test?
-        if f'wagtail-ab-testing_{test.id}_completed' in request.session:
-            continue
-
-        # Log a conversion
-        test.log_conversion(request.session[f'wagtail-ab-testing_{test.id}_version'])
-        request.session[f'wagtail-ab-testing_{test.id}_completed'] = 'yes'
+```javascript
+if (window.wagtailAbTesting) {
+    wagtailAbTesting.triggerEvent('slug-of-the-event-type');
+}
 ```
+
+The JavaScript library tracks A/B tests using ``localStorage``, so this will only call the server if the user is participating in an A/B test with the provided goal type and the current page is the goal page.
 
 #### Example: Adding a "Submit form" event type
 
-In this example, we will add a "Submit form" event type for a ``ContactUsFormPage`` page type.
+We will add a "Submit form" event type for a ``ContactUsFormPage`` page type in this example.
 
 Firstly, we need to register the event type. To do this, implement a handler for the ``register_ab_testing_event_types`` hook in your app:
 
@@ -187,43 +169,22 @@ def register_submit_form_event_type():
     }
 ```
 
-This allows users to select the "Submit form page" event type when their goal page is set to any instance of ``ContactUsFormPage``.
+Next, we need to add some code to the frontend to trigger this event whenever a user submits the form:
 
-Next, we need to add some code to record conversions for this event type.
-To do this, we will customise the ``.render_landing_page()`` method that is inherited from the ``AbstractForm`` model.
-This method is a view that returns the "thank you" page to the user. It's ideal for this use because user's will can
-only get there by submitting the form, and we have the ``request`` object available which is required for some of the logic.:
+```django+HTML
+# templates/forms/contact_us_form_page.html
 
-```python
-# myapp/models.py
+<form id="form">
+    ...
+</form>
 
-from wagtail.contrib.forms.models import AbstractFormPage
-
-from wagtail_ab_testing.models import AbTest
-from wagtail_ab_testing.utils import request_is_trackable
-
-
-class ContactUsFormPage(AbstractForm):
-
-    def render_landing_page(self, request, *args, **kwargs):
-        # Check if the user is trackable
-        if request_is_trackable(request):
-            # Check if submitting this form is the goal of any running tests
-            tests = AbTest.objects.filter(goal_event='submit-contact-us-form', goal_page=self, status=AbTest.STATUS_RUNNING)
-            for test in tests:
-                # Is the user a participant in this test?
-                if f'wagtail-ab-testing_{test.id}_version' not in request.session:
-                    continue
-
-                # Has the user already completed the test?
-                if f'wagtail-ab-testing_{test.id}_completed' in request.session:
-                    continue
-
-                # Log a conversion
-                test.log_conversion(request.session[f'wagtail-ab-testing_{test.id}_version'])
-                request.session[f'wagtail-ab-testing_{test.id}_completed'] = 'yes'
-
-        return super().render_landing_page(request, *args, **kwargs)
+<script>
+    if (window.wagtailAbTesting) {
+        document.getElementById('form').addEventListener('submit', function() {
+            wagtailAbTesting.triggerEvent('submit-contact-us-form');
+        });
+    }
+</script>
 ```
 
 ## Running A/B tests on a site that uses Cloudflare caching
@@ -305,6 +266,6 @@ addEventListener('fetch', event => {
 });
 ```
 
-Add a variable to the worker called ``WAGTAIL_AB_TESTING_WORKER_TOKEN`` giving it the same token value that you generated earlier.
+Add a variable to the worker called ``WAGTAIL_AB_TESTING_WORKER_TOKEN``, giving it the same token value that you generated earlier.
 
 Finally, add a route into Cloudflare so that it routes all traffic through this worker.
