@@ -1,6 +1,6 @@
 # Wagtail A/B Testing
 
-An A/B testing package for Wagtail that allows creating A/B tests using revisions.
+Wagtail A/B Testing is an A/B testing package for Wagtail that allows users to create and manage A/B tests on pages through the Wagtail admin.
 
 Key features:
 
