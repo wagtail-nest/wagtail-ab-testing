@@ -6,22 +6,40 @@ Key features:
 
  - Create an A/B test on any page from within Wagtail
  - Tests using page revisions (no need to create separate pages for the variants)
- - Prevents users from editing the page while a test is in progress
- - Calculates confidence using a Pearson's chi squared test
-
-![Screenshot of Wagtail A/B Testing](/screenshot.png)
+ - It prevents users from editing the page while a test is in progress
+ - Calculates confidence using a Pearson's chi-squared test
 
 ## Usage
 
-Any user with the "Create A/B test" permission (given to admins and moderators by default) should be able to create an A/B test by clicking "Save and create A/B test" from the page's action menu.
+### Creating an A/B test
 
-This will show a diff of the content in the latest draft against the current live version of the page (as these will be tested). Once they've confirmed that, the user is taken to a form to insert the test name/hypothesis, select a goal, and a sample size.
+Any user with the "Create A/B test" permission can create an A/B test by clicking "Save and create A/B test" from the page's action menu.
 
-While the test is running, user's can pause/restart and end the test at any time. While the test is running/paused, nobody can edit the page as this may affect the accuracy of the test results. If you absolutely must edit the page while a test is running, you should cancel the test, edit the page, and start a new test.
+The first page shows the user the difference between the content in the latest draft against the live version of the page.
+This allows them to check what changes on the page are going to be tested.
 
-When the number of participants reaches the desired sample size, the test is stopped and the results are displayed to the user. At this point, the user may choose to publish the latest draft (aka the "variant") or revert back to the existing live version (aka the "control").
+Once they've confirmed that, the user is taken to a form to insert the test name/hypothesis, select a goal, and sample size.
 
-Wagtail A/B testing will also tell the user if one of the results is a clear winner or if there is no clear winner, this is worked out using a Chi Squared test that takes into account the total sample size (higher sample size means it will accept a smaller difference as a clear result) as well as the conversion rates.
+![Screenshot of Wagtail A/B Testing create page](/screenshot-create.png)
+
+### Monitoring test progress
+
+While the test is running, the page's edit view gets replaced with a dashboard showing the current test progress.
+Users cannot edit the page until the test is completed or cancelled.
+
+Any user with permission to publish the page can start, pause, resume or end A/B tests on that page.
+
+![Screenshot of Wagtail A/B Testing](/screenshot.png)
+
+### Finishing the test
+
+The test stops automatically when the number of participants reaches the sample size.
+Based on the results shown, a user must decide whether to publish the new changes or revert to the old version of the page.
+
+Once they've chosen, the page edit view returns to normal.
+The results from this A/B test remain accessible under the A/B testing tab or from the A/B testing report.
+
+![Screenshot of Wagtail A/B Testing](/screenshot-finish.png)
 
 ## Installation
 
@@ -70,7 +88,7 @@ Each A/B test has a goal that is measured after a user visits the page that the 
 The goal is defined by a destination page and and event type. For example, if the A/B test needs to measure how a change on the page affects the number of users who go on to submit a "Contact us" form, then the 'destination page' would be the "Contact us" page and the 'event type' would be "Submit form".
 
 Out of the box, the only 'event type' that Wagtail A/B testing supports is visiting the destination page.
-If you need to measure something else (such as submitting a form, purchasing someting, or just clicking a link), you can implement a custom 'event type'.
+If you need to measure something else (such as submitting a form, purchasing something, or just clicking a link), you can implement a custom 'event type'.
 
 ### Implementing a custom goal event type
 

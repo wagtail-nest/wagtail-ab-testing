@@ -24,14 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The tracking code has been moved into JavaScript to reduce the number of false-positives caused by bots
 - The Cloudflare worker has been massively simplified
 
-### Upgrading from, 0.2.2
+### Upgrading from 0.2.2
 
 Following the [installation guide](https://github.com/torchbox/wagtail-ab-testing/#installation), add the new URL pattern into your ``urls.py`` (note this is a separate URL to the one used by the old Cloudflare worker).
 And add the tracking script HTML tag to your base template
 
-#### If you use the CloudFlare worker
+#### If you use the Cloudflare worker
 
-Before deploying the update to 0.3, yoou must first update the code to match the [latest version in the readme](https://github.com/torchbox/wagtail-ab-testing/#running-ab-tests-on-a-site-that-uses-cloudflare-caching). Note that your A/B tests will temporarily stop working but this shouldn't have any other impact on your site. They should start working again once you've deployed 0.3.
+Before deploying the update to 0.3, you must first update the code to match the [latest version in the readme](https://github.com/torchbox/wagtail-ab-testing/#running-ab-tests-on-a-site-that-uses-cloudflare-caching). Note that your A/B tests will temporarily stop working, but this shouldn't have any other impact on your site. They should start working again once you've deployed 0.3.
 
 Remove the following URL pattern from your ``urls.py`` (note this is not the same pattern we added in the previous step!):
 
