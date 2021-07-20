@@ -88,8 +88,6 @@ Finally, add the tracking script to your base HTML template:
 {% wagtail_ab_testing_script %}
 ```
 
-## Goal events
-
 ## Implementing custom goal event types
 
 Out of the box, Wagtail A/B testing provides a "Visit page" goal event type which you can use to track when users visit a goal page.
