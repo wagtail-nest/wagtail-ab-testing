@@ -9,17 +9,17 @@
 
     function getCookie(cookieName) {
         var cookies = document.cookie.split(';');
-        for(var i = 0; i < cookies.length; i++) {
-          var cookie = cookies[i];
-          while (cookie.charAt(0) == ' ') {
-            cookie = cookie.substring(1);
-          }
-          if (cookie.indexOf(cookieName + '=') == 0) {
-            return cookie.substring(cookieName.length + 1, cookie.length);
-          }
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i];
+            while (cookie.charAt(0) == ' ') {
+                cookie = cookie.substring(1);
+            }
+            if (cookie.indexOf(cookieName + '=') == 0) {
+                return cookie.substring(cookieName.length + 1, cookie.length);
+            }
         }
         return '';
-      }
+    }
 
     // Does the current page have an A/B test running?
     if (window.wagtailAbTesting) {
@@ -29,7 +29,7 @@
             // This data structure looks like:
             // {
             //   <id of goal page> : {
-            //     <goal event>: [<ids of tests with this goal page/event>]
+            //     <goal event>: [<ids of tests with this goal page/eveqnt>]
             //   }
             // }
             var goals = window.localStorage.getItem('abtesting-goals');
@@ -49,8 +49,7 @@
                 var cookieName = 'wagtail-ab-testing_' + window.wagtailAbTesting.testId + '_version';
                 if (!document.cookie.includes(cookieName)) {
                     fetch(
-                        window.wagtailAbTesting.urls.registerParticipant,
-                        {
+                        window.wagtailAbTesting.urls.registerParticipant, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -60,7 +59,7 @@
                                 version: window.wagtailAbTesting.version
                             })
                         }
-                    ).then(function (response) {
+                    ).then(function(response) {
                         if (response.status === 200) {
                             // Put the version into a cookie so that Wagtail continues to serve this version
                             var expires = new Date();
@@ -77,7 +76,7 @@
             }
         }
 
-        window.wagtailAbTesting.triggerEvent = function (event) {
+        window.wagtailAbTesting.triggerEvent = function(event) {
             // Check if any goals were reached
             var goalsJson = window.localStorage.getItem('abtesting-goals');
             if (!goalsJson) {
@@ -86,7 +85,7 @@
 
             var goals = JSON.parse(goalsJson);
 
-            var checkGoalReached = function (pageId) {
+            var checkGoalReached = function(pageId) {
                 var goalsForPage = goals[pageId];
                 if (!goalsForPage) {
                     return;
@@ -96,14 +95,13 @@
                     return;
                 }
 
-                goalsForEvent.forEach(function (testId) {
+                goalsForEvent.forEach(function(testId) {
                     var cookieName = 'wagtail-ab-testing_' + testId + '_version';
                     var version = getCookie(cookieName);
 
                     if (version) {
                         fetch(
-                            window.wagtailAbTesting.urls.goalReached,
-                            {
+                            window.wagtailAbTesting.urls.goalReached, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json'
