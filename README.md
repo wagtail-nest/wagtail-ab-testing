@@ -1,6 +1,6 @@
 # Wagtail A/B Testing
 
-[![Version](https://img.shields.io/pypi/v/wagtail-localize.svg?style=flat)](https://pypi.python.org/pypi/wagtail-localize/)
+[![Version](https://img.shields.io/pypi/v/wagtail-ab-testing.svg?style=flat)](https://pypi.python.org/pypi/wagtail-ab-testing/)
 [![License](https://img.shields.io/badge/license-BSD-blue.svg?style=flat)](https://opensource.org/licenses/BSD-3-Clause)
 [![codecov](https://img.shields.io/codecov/c/github/torchbox/wagtail-ab-testing?style=flat)](https://codecov.io/gh/torchbox/wagtail-ab-testing)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/torchbox/wagtail-ab-testing.svg?logo=lgtm&logoWidth=18&style=flat)](https://lgtm.com/projects/g/torchbox/wagtail-ab-testing/context:python)
