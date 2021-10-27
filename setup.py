@@ -15,7 +15,7 @@ except ImportError:
 
 setup(
     name="wagtail-ab-testing",
-    version="0.5",
+    version="0.6",
     description="A/B Testing for Wagtail",
     author="Karl Hobley",
     author_email="karl@torchbox.com",
@@ -32,10 +32,11 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Framework :: Django",
         "Framework :: Django :: 2.2",
         "Framework :: Django :: 3.0",
-        "Framework :: Django :: 3.1",
+        "Framework :: Django :: 3.2",
         "Framework :: Wagtail",
         "Framework :: Wagtail :: 2",
     ],

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6] - 2021-10-27
+
+ - [Support for Wagtail 2.15](https://github.com/torchbox/wagtail-ab-testing/pull/41)
 
 ## [0.5] - 2021-09-30
 
@@ -70,7 +73,8 @@ WAGTAIL_AB_TESTING = {
 }
 ```
 
-[Unreleased]: https://github.com/torchbox/wagtail-ab-testing/compare/v0.5...main
+[Unreleased]: https://github.com/torchbox/wagtail-ab-testing/compare/v0.6...main
+[0.6]: https://github.com/torchbox/wagtail-ab-testing/compare/v0.5...v0.6
 [0.5]: https://github.com/torchbox/wagtail-ab-testing/compare/v0.4...v0.5
 [0.4]: https://github.com/torchbox/wagtail-ab-testing/compare/v0.3.1...v0.4
 [0.3.1]: https://github.com/torchbox/wagtail-ab-testing/compare/v0.3...v0.3.1
