@@ -42,7 +42,7 @@ setup(
     ],
     install_requires=[
         "Django>=2.2,<3.3",
-        "Wagtail>=2.11,<2.16",
+        "Wagtail>=2.11,<2.17",
         "user-agents>=2.2,<2.3",
         "numpy>=1.19.4,<1.20",
         "scipy>=1.5.4,<1.6",
