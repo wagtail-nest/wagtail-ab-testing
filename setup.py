@@ -44,7 +44,7 @@ setup(
         "Django>=2.2,<3.3",
         "Wagtail>=2.11,<2.16",
         "user-agents>=2.2,<2.3",
-        "numpy>=1.19.4,<1.20",
+        "numpy>=1.22.0,<1.22.1",
         "scipy>=1.5.4,<1.6",
     ],
     extras_require={
