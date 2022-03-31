@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7] - 2022-03-31
+
+ - [Add default_auto_field](https://github.com/torchbox/wagtail-ab-testing/pull/42)
+ - [Add reuqest obejct to AbTestActionMenu context](https://github.com/torchbox/wagtail-ab-testing/pull/43)]
+
 ## [0.6] - 2021-10-27
 
  - [Support for Wagtail 2.15](https://github.com/torchbox/wagtail-ab-testing/pull/41)
