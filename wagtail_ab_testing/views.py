@@ -204,7 +204,9 @@ class AbTestActionMenu:
         self.request = request
         self.context = kwargs
         self.context['user_page_permissions'] = UserPagePermissionsProxy(self.request.user)
-
+        # The ActionMenuItem request object is available in the context dictionary as context['request'].
+        # https://docs.wagtail.io/en/stable/releases/2.15.html#admin-homepage-panels-summary-items-and-action-menu-items-now-use-components
+        self.context['request'] = request
         self.menu_items = [
             StartAbTestMenuItem(order=0),
             RestartAbTestMenuItem(order=1),
