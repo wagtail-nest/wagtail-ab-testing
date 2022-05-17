@@ -2,7 +2,11 @@ import datetime
 
 from django.test import TestCase
 from freezegun import freeze_time
-from wagtail.core.models import Page
+
+try:
+    from wagtail.models import Page
+except ImportError:
+    from wagtail.core.models import Page
 
 from wagtail_ab_testing.models import AbTest, AbTestHourlyLog
 
