@@ -13,7 +13,11 @@ from django.views.i18n import JavaScriptCatalog
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.menu import MenuItem
 from wagtail.admin.staticfiles import versioned_static
-from wagtail.core import hooks
+
+try:
+    from wagtail import hooks
+except ImportError:
+    from wagtail.core import hooks
 
 from . import views
 from .compat import DATE_FORMAT

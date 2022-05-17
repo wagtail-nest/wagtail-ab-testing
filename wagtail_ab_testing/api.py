@@ -2,7 +2,11 @@ from django.urls import reverse
 from rest_framework import fields, routers, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from wagtail.core.models import Page, Site
+
+try:
+    from wagtail.models import Page, Site
+except ImportError:
+    from wagtail.core.models import Page, Site
 
 from .models import AbTest
 

@@ -1,7 +1,15 @@
 from django.test import TestCase
 from django.urls import reverse
-from wagtail.core.models import Page
-from wagtail.tests.utils import WagtailTestUtils
+
+try:
+    from wagtail.models import Page
+except ImportError:
+    from wagtail.core.models import Page
+
+try:
+    from wagtail.test.utils import WagtailTestUtils
+except ImportError:
+    from wagtail.tests.utils import WagtailTestUtils
 
 from wagtail_ab_testing.models import AbTest
 from wagtail_ab_testing.test.models import SimplePage

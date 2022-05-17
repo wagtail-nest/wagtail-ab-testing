@@ -3,7 +3,11 @@ from django.contrib import admin
 
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
-from wagtail.core import urls as wagtail_urls
+
+try:
+    from wagtail import urls as wagtail_urls
+except ImportError:
+    from wagtail.core import urls as wagtail_urls
 
 from wagtail_ab_testing import api as ab_testing_api
 from wagtail_ab_testing import urls as ab_testing_urls
