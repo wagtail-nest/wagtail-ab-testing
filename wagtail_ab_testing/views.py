@@ -26,6 +26,8 @@ try:
 except ImportError:
     from wagtail.core.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
 
+from wagtail import VERSION as WAGTAIL_VERSION
+
 from .models import AbTest
 from .events import get_event_types
 
@@ -87,7 +89,12 @@ def add_compare(request, page_id):
         return response
 
     latest_revision_as_page = page.get_latest_revision().as_page_object()
-    comparison = page.get_edit_handler().get_comparison()
+
+    if WAGTAIL_VERSION >= (3, 0):
+        comparison = page.get_edit_handler().get_bound_panel(page, request=request, form=None).get_comparison()
+    else:
+        comparison = page.get_edit_handler().get_comparison()
+
     comparison = [comp(page, latest_revision_as_page) for comp in comparison]
     comparison = [comp for comp in comparison if comp.has_changed()]
 
@@ -423,7 +430,12 @@ def compare_draft(request, page_id):
     page = get_object_or_404(Page, id=page_id).specific
 
     latest_revision_as_page = page.get_latest_revision().as_page_object()
-    comparison = page.get_edit_handler().get_comparison()
+    
+    if WAGTAIL_VERSION >= (3, 0):
+        comparison = page.get_edit_handler().get_bound_panel(page, request=request, form=None).get_comparison()
+    else:
+        comparison = page.get_edit_handler().get_comparison()
+
     comparison = [comp(page, latest_revision_as_page) for comp in comparison]
     comparison = [comp for comp in comparison if comp.has_changed()]
 
