@@ -55,14 +55,13 @@ class CreateAbTestActionMenuItem(ActionMenuItem):
     icon_name = 'people-arrows'
 
     if WAGTAIL_VERSION >= (2, 15):
-        # v2.15 and later only requires the context object
         def is_shown(self, context):
+            # v2.15 and later only requires the context object
             if context['view'] != 'edit':
                 return False
 
             # User must have permission to add A/B tests
-            user = context['request'].user
-            if not self.check_user_permissions(user):
+            if not self.check_user_permissions(context['request'].user):
                 return False
 
             return True
@@ -73,8 +72,7 @@ class CreateAbTestActionMenuItem(ActionMenuItem):
                 return False
 
             # User must have permission to add A/B tests
-            user = request.user
-            if not self.check_user_permissions(user):
+            if not self.check_user_permissions(request.user):
                 return False
 
             return True
@@ -95,16 +93,14 @@ class AbTestingTabActionMenuItem(ActionMenuItem):
         def render_html(self, context):
             # v2.15 and later only requires the context object
             if 'page' in context:
-                user = context['request'].user
-                return self.format_html(user, context)
+                return self.format_html(context['request'].user, context)
 
             return ''
     else:
         def render_html(self, request, context):
             # v2.14 and earlier requires the request object in addition to the context
             if 'page' in context:
-                user = request.user
-                return self.format_html(user, context)
+                return self.format_html(request.user, context)
 
             return ''
 
