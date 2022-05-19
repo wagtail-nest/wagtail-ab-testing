@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- [Wagtail 3.0 compatibility](https://github.com/torchbox/wagtail-ab-testing/pull/48)
+
 ## [0.7] - 2022-03-31
 
  - [Add default_auto_field](https://github.com/torchbox/wagtail-ab-testing/pull/42)
