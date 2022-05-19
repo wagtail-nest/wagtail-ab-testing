@@ -55,13 +55,14 @@ class CreateAbTestActionMenuItem(ActionMenuItem):
     icon_name = 'people-arrows'
 
     if WAGTAIL_VERSION >= (2, 15):
-        # see if this is a pre-2.15 
+        # v2.15 and later only requires the context object
         def is_shown(self, context):
             if context['view'] != 'edit':
                 return False
 
             # User must have permission to add A/B tests
-            if not context["request"].user.has_perm('wagtail_ab_testing.add_abtest'):
+            user = context['request'].user
+            if not self.check_user_permissions(user):
                 return False
 
             return True
@@ -72,10 +73,15 @@ class CreateAbTestActionMenuItem(ActionMenuItem):
                 return False
 
             # User must have permission to add A/B tests
-            if not request.user.has_perm('wagtail_ab_testing.add_abtest'):
+            user = request.user
+            if not self.check_user_permissions(user):
                 return False
 
             return True
+
+    @staticmethod
+    def check_user_permissions(user):
+        return user.has_perm('wagtail_ab_testing.add_abtest')
 
 
 @hooks.register('register_page_action_menu_item')
