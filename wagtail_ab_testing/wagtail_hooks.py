@@ -24,6 +24,8 @@ from .compat import DATE_FORMAT
 from .models import AbTest
 from .utils import request_is_trackable
 
+from wagtail import VERSION as WAGTAIL_VERSION
+
 
 @hooks.register("register_admin_urls")
 def register_admin_urls():
@@ -52,15 +54,28 @@ class CreateAbTestActionMenuItem(ActionMenuItem):
     label = __("Save and create A/B Test")
     icon_name = 'people-arrows'
 
-    def is_shown(self, request, context):
-        if context['view'] != 'edit':
-            return False
+    if WAGTAIL_VERSION >= (2, 15):
+        # see if this is a pre-2.15 
+        def is_shown(self, context):
+            if context['view'] != 'edit':
+                return False
 
-        # User must have permission to add A/B tests
-        if not request.user.has_perm('wagtail_ab_testing.add_abtest'):
-            return False
+            # User must have permission to add A/B tests
+            if not context["request"].user.has_perm('wagtail_ab_testing.add_abtest'):
+                return False
 
-        return True
+            return True
+    else:
+        def is_shown(self, request, context):
+            # v2.14 and earlier requires the request object in addition to the context
+            if context['view'] != 'edit':
+                return False
+
+            # User must have permission to add A/B tests
+            if not request.user.has_perm('wagtail_ab_testing.add_abtest'):
+                return False
+
+            return True
 
 
 @hooks.register('register_page_action_menu_item')
@@ -70,28 +85,54 @@ def register_create_abtest_action_menu_item():
 
 # This is the only way to inject custom JS into the editor with knowledge of the page being edited
 class AbTestingTabActionMenuItem(ActionMenuItem):
-    def render_html(self, request, context):
-        if 'page' in context:
-            return format_html(
-                '<script src="{}"></script><script src="{}"></script><script>window.abTestingTabProps = JSON.parse("{}");</script>',
-                reverse('wagtail_ab_testing_admin:javascript_catalog'),
-                versioned_static('wagtail_ab_testing/js/wagtail-ab-testing.js'),
-                escapejs(json.dumps({
-                    'tests': [
-                        {
-                            'id': ab_test.id,
-                            'name': ab_test.name,
-                            'started_at': ab_test.first_started_at.strftime(DATE_FORMAT) if ab_test.first_started_at else _("Not started"),
-                            'status': ab_test.get_status_description(),
-                            'results_url': reverse('wagtail_ab_testing_admin:results', args=[ab_test.page_id, ab_test.id]),
-                        }
-                        for ab_test in AbTest.objects.filter(page=context['page']).order_by('-id')
-                    ],
-                    'can_create_abtest': request.user.has_perm('wagtail_ab_testing.add_abtest'),
-                }))
-            )
+    if WAGTAIL_VERSION >= (2, 15):
+        # see if this is a pre-2.15 
+        def render_html(self, context):
+            if 'page' in context:
+                return format_html(
+                    '<script src="{}"></script><script src="{}"></script><script>window.abTestingTabProps = JSON.parse("{}");</script>',
+                    reverse('wagtail_ab_testing_admin:javascript_catalog'),
+                    versioned_static('wagtail_ab_testing/js/wagtail-ab-testing.js'),
+                    escapejs(json.dumps({
+                        'tests': [
+                            {
+                                'id': ab_test.id,
+                                'name': ab_test.name,
+                                'started_at': ab_test.first_started_at.strftime(DATE_FORMAT) if ab_test.first_started_at else _("Not started"),
+                                'status': ab_test.get_status_description(),
+                                'results_url': reverse('wagtail_ab_testing_admin:results', args=[ab_test.page_id, ab_test.id]),
+                            }
+                            for ab_test in AbTest.objects.filter(page=context['page']).order_by('-id')
+                        ],
+                        'can_create_abtest': context["request"].user.has_perm('wagtail_ab_testing.add_abtest'),
+                    }))
+                )
 
-        return ''
+            return ''
+    else:
+        def render_html(self, request, context):
+            # v2.14 and earlier requires the request object in addition to the context
+            if 'page' in context:
+                return format_html(
+                    '<script src="{}"></script><script src="{}"></script><script>window.abTestingTabProps = JSON.parse("{}");</script>',
+                    reverse('wagtail_ab_testing_admin:javascript_catalog'),
+                    versioned_static('wagtail_ab_testing/js/wagtail-ab-testing.js'),
+                    escapejs(json.dumps({
+                        'tests': [
+                            {
+                                'id': ab_test.id,
+                                'name': ab_test.name,
+                                'started_at': ab_test.first_started_at.strftime(DATE_FORMAT) if ab_test.first_started_at else _("Not started"),
+                                'status': ab_test.get_status_description(),
+                                'results_url': reverse('wagtail_ab_testing_admin:results', args=[ab_test.page_id, ab_test.id]),
+                            }
+                            for ab_test in AbTest.objects.filter(page=context['page']).order_by('-id')
+                        ],
+                        'can_create_abtest': request.user.has_perm('wagtail_ab_testing.add_abtest'),
+                    }))
+                )
+
+            return ''
 
 
 @hooks.register('register_page_action_menu_item')
