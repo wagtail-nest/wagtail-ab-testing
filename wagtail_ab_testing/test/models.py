@@ -1,6 +1,8 @@
-try:
+from wagtail import VERSION as WAGTAIL_VERSION
+
+if WAGTAIL_VERSION >= (3, 0):
     from wagtail.models import Page
-except ImportError:
+else:
     from wagtail.core.models import Page
 
 

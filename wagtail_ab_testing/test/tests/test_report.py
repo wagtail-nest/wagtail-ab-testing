@@ -3,14 +3,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
 
-try:
-    from wagtail.models import Page
-except ImportError:
-    from wagtail.core.models import Page
+from wagtail import VERSION as WAGTAIL_VERSION
 
-try:
+if WAGTAIL_VERSION >= (3, 0):
+    from wagtail.models import Page
     from wagtail.test.utils import WagtailTestUtils
-except ImportError:
+else:
+    from wagtail.core.models import Page
     from wagtail.tests.utils import WagtailTestUtils
 
 from wagtail_ab_testing.models import AbTest
