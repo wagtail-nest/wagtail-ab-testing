@@ -10,21 +10,20 @@ from django.utils.html import format_html, escapejs
 from django.utils.translation import gettext as _, gettext_lazy as __
 from django.views.i18n import JavaScriptCatalog
 
+from wagtail import VERSION as WAGTAIL_VERSION
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.menu import MenuItem
 from wagtail.admin.staticfiles import versioned_static
 
-try:
+if WAGTAIL_VERSION >= (3, 0):
     from wagtail import hooks
-except ImportError:
+else:
     from wagtail.core import hooks
 
 from . import views
 from .compat import DATE_FORMAT
 from .models import AbTest
 from .utils import request_is_trackable
-
-from wagtail import VERSION as WAGTAIL_VERSION
 
 
 @hooks.register("register_admin_urls")

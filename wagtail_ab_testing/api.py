@@ -3,9 +3,11 @@ from rest_framework import fields, routers, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-try:
+from wagtail import VERSION as WAGTAIL_VERSION
+
+if WAGTAIL_VERSION >= (3, 0):
     from wagtail.models import Page, Site
-except ImportError:
+else:
     from wagtail.core.models import Page, Site
 
 from .models import AbTest

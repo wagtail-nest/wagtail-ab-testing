@@ -13,9 +13,11 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy as __
 
-try:
+from wagtail import VERSION as WAGTAIL_VERSION
+
+if WAGTAIL_VERSION >= (3, 0):
     from wagtail.signals import page_unpublished
-except ImportError:
+else:
     from wagtail.core.signals import page_unpublished
 
 from .events import get_event_types

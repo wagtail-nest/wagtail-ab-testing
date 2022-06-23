@@ -5,9 +5,11 @@ from django.urls import reverse
 from freezegun import freeze_time
 from rest_framework.test import APIClient, APITestCase
 
-try:
+from wagtail import VERSION as WAGTAIL_VERSION
+
+if WAGTAIL_VERSION >= (3, 0):
     from wagtail.models import Page
-except ImportError:
+else:
     from wagtail.core.models import Page
 
 from wagtail_ab_testing.models import AbTest
