@@ -63,9 +63,10 @@
 {% endblock %}
 
 {% block extra_css %}
+{% if not is_wagtail_4 %}
     {% include "wagtailadmin/pages/_editor_css.html" %}
+{% endif %}
 {% endblock %}
-
 {% block extra_js %}
     {% include "wagtailadmin/pages/_editor_js.html" %}
     <script>

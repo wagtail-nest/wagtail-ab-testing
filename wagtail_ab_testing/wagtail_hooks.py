@@ -172,7 +172,11 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
 
         request.wagtail_ab_testing_serving_variant = True
 
-        variant_response = test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+        if WAGTAIL_VERSION >= (4, 0):
+            variant_response = test.variant_revision.as_object().serve(request, *serve_args, **serve_kwargs)
+        else:
+            variant_response = test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+
         if hasattr(variant_response, "render"):
             variant_response.render()
 
@@ -197,7 +201,10 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
     # If the user should be shown the variant, serve that from the revision. Otherwise return to keep the control
     if version == AbTest.VERSION_VARIANT:
         request.wagtail_ab_testing_serving_variant = True
-        return test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+        if WAGTAIL_VERSION >= (4, 0):
+            return test.variant_revision.as_object().serve(request, *serve_args, **serve_kwargs)
+        else:
+            return test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
 
 
 class AbTestingReportMenuItem(MenuItem):

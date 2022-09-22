@@ -93,7 +93,10 @@ def add_compare(request, page_id):
     if response:
         return response
 
-    latest_revision_as_page = page.get_latest_revision().as_page_object()
+    if WAGTAIL_VERSION >= (4, 0):
+        latest_revision_as_page = page.get_latest_revision_as_object()
+    else:
+        latest_revision_as_page = page.get_latest_revision().as_page_object()
 
     if WAGTAIL_VERSION >= (3, 0):
         comparison = (
@@ -157,6 +160,15 @@ def add_form(request, page_id):
         form = CreateAbTestForm()
 
     event_types = get_event_types().items()
+
+    """
+    Template: wagtail_ab_testing/add_form.html is rendered here
+
+    Passing this to the template so we can test for it where an include is used because we can't use
+    "wagtailadmin/pages/_editor_css.html" as it's not available in Wagtail 4+ 
+    """
+    is_wagtail_4 = WAGTAIL_VERSION >= (4, 0)
+    
     return render(
         request,
         "wagtail_ab_testing/add_form.html",
@@ -188,6 +200,7 @@ def add_form(request, page_id):
                 },
                 cls=DjangoJSONEncoder,
             ),
+            "is_wagtail_4": is_wagtail_4,
         },
     )
 
@@ -562,7 +575,10 @@ def results(request, page_id, ab_test_id):
 def compare_draft(request, page_id):
     page = get_object_or_404(Page, id=page_id).specific
 
-    latest_revision_as_page = page.get_latest_revision().as_page_object()
+    if WAGTAIL_VERSION >= (4, 0):
+        latest_revision_as_page = page.get_latest_revision_as_object()
+    else:
+        latest_revision_as_page = page.get_latest_revision().as_page_object()
 
     if WAGTAIL_VERSION >= (3, 0):
         comparison = (
