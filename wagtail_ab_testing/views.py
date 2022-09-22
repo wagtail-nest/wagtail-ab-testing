@@ -300,35 +300,18 @@ class AbTestActionMenu:
             self.default_item = None
 
     def render_html(self):
-        if WAGTAIL_VERSION >= (2, 15):
-            return render_to_string(
-                self.template,
-                {
-                    "default_menu_item": self.default_item.render_html(self.context),
-                    "show_menu": bool(self.menu_items),
-                    "rendered_menu_items": [
-                        menu_item.render_html(self.context)
-                        for menu_item in self.menu_items
-                    ],
-                },
-                request=self.request,
-            )
-        else:
-            return render_to_string(
-                # In version <=2.14 render_html needs the request object
-                self.template,
-                {
-                    "default_menu_item": self.default_item.render_html(
-                        self.request, self.context
-                    ),
-                    "show_menu": bool(self.menu_items),
-                    "rendered_menu_items": [
-                        menu_item.render_html(self.request, self.context)
-                        for menu_item in self.menu_items
-                    ],
-                },
-                request=self.request,
-            )
+        return render_to_string(
+            self.template,
+            {
+                "default_menu_item": self.default_item.render_html(self.context),
+                "show_menu": bool(self.menu_items),
+                "rendered_menu_items": [
+                    menu_item.render_html(self.context)
+                    for menu_item in self.menu_items
+                ],
+            },
+            request=self.request,
+        )
 
     @cached_property
     def media(self):

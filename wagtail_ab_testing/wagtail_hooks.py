@@ -53,28 +53,15 @@ class CreateAbTestActionMenuItem(ActionMenuItem):
     label = __("Save and create A/B Test")
     icon_name = 'people-arrows'
 
-    if WAGTAIL_VERSION >= (2, 15):
-        def is_shown(self, context):
-            # v2.15 and later only requires the context object
-            if context['view'] != 'edit':
-                return False
+    def is_shown(self, context):
+        if context['view'] != 'edit':
+            return False
 
-            # User must have permission to add A/B tests
-            if not self.check_user_permissions(context['request'].user):
-                return False
+        # User must have permission to add A/B tests
+        if not self.check_user_permissions(context['request'].user):
+            return False
 
-            return True
-    else:
-        def is_shown(self, request, context):
-            # v2.14 and earlier requires the request object in addition to the context
-            if context['view'] != 'edit':
-                return False
-
-            # User must have permission to add A/B tests
-            if not self.check_user_permissions(request.user):
-                return False
-
-            return True
+        return True
 
     @staticmethod
     def check_user_permissions(user):
@@ -88,20 +75,12 @@ def register_create_abtest_action_menu_item():
 
 # This is the only way to inject custom JS into the editor with knowledge of the page being edited
 class AbTestingTabActionMenuItem(ActionMenuItem):
-    if WAGTAIL_VERSION >= (2, 15):
-        def render_html(self, context):
-            # v2.15 and later only requires the context object
-            if 'page' in context:
-                return self.format_html(context['request'].user, context)
 
-            return ''
-    else:
-        def render_html(self, request, context):
-            # v2.14 and earlier requires the request object in addition to the context
-            if 'page' in context:
-                return self.format_html(request.user, context)
+    def render_html(self, context):
+        if 'page' in context:
+            return self.format_html(context['request'].user, context)
 
-            return ''
+        return ''
 
     @staticmethod
     def format_html(user, context):
