@@ -35,7 +35,6 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Framework :: Django",
-        "Framework :: Django :: 2.2",
         "Framework :: Django :: 3.0",
         "Framework :: Django :: 3.2",
         "Framework :: Django :: 4.0",
@@ -46,8 +45,8 @@ setup(
         "Framework :: Wagtail :: 4.0",
     ],
     install_requires=[
-        "Django>=2.2",
-        "Wagtail>=2.11",
+        "Django>=3.0,<4.2",
+        "Wagtail>=2.15,<4.1",
         "user-agents>=2.2,<2.3",
         "numpy>=1.19.4,<1.23",
         "scipy>=1.5.4,<1.9",
