@@ -2,10 +2,11 @@ import datetime
 
 from django.test import TestCase
 from freezegun import freeze_time
+from wagtail import VERSION as WAGTAIL_VERSION
 
-try:
+if WAGTAIL_VERSION >= (3, 0):
     from wagtail.models import Page
-except ImportError:
+else:
     from wagtail.core.models import Page
 
 from wagtail_ab_testing.models import AbTest, AbTestHourlyLog

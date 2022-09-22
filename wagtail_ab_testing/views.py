@@ -24,13 +24,12 @@ from wagtail.admin import messages
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
 from wagtail.admin.views.reports import ReportView
-
-try:
-    from wagtail.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
-except ImportError:
-    from wagtail.core.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
-
 from wagtail import VERSION as WAGTAIL_VERSION
+
+if WAGTAIL_VERSION >= (3, 0):
+    from wagtail.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
+else:
+    from wagtail.core.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
 
 from .models import AbTest
 from .events import get_event_types
