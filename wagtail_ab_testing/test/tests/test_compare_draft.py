@@ -1,7 +1,5 @@
 from django.test import TestCase
 from django.urls import reverse
-from pytz import VERSION
-
 from wagtail import VERSION as WAGTAIL_VERSION
 
 if WAGTAIL_VERSION >= (3, 0):
