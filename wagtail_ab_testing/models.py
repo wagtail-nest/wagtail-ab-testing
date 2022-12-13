@@ -2,8 +2,6 @@ import random
 
 from datetime import datetime, timedelta, timezone as tz
 
-import scipy.stats
-import numpy as np
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import connection, models, transaction
@@ -273,56 +271,7 @@ class AbTest(models.Model):
         AbTestHourlyLog._increment_stats(self, version, 0, 1, time=time)
 
     def check_for_winner(self):
-        """
-        Performs a Chi-Squared test to check if there is a clear winner.
-
-        Returns VERSION_CONTROL or VERSION_VARIANT if there is one. Otherwise, it returns None.
-
-        For more information on what the Chi-Squared test does, see:
-        https://www.evanmiller.org/ab-testing/chi-squared.html
-        https://towardsdatascience.com/a-b-testing-with-chi-squared-test-to-maximize-conversions-and-ctrs-6599271a2c31
-        """
-        # Fetch stats from database
-        stats = self.hourly_logs.aggregate(
-            control_participants=Sum('participants', filter=Q(version=self.VERSION_CONTROL)),
-            control_conversions=Sum('conversions', filter=Q(version=self.VERSION_CONTROL)),
-            variant_participants=Sum('participants', filter=Q(version=self.VERSION_VARIANT)),
-            variant_conversions=Sum('conversions', filter=Q(version=self.VERSION_VARIANT)),
-        )
-        control_participants = stats['control_participants'] or 0
-        control_conversions = stats['control_conversions'] or 0
-        variant_participants = stats['variant_participants'] or 0
-        variant_conversions = stats['variant_conversions'] or 0
-
-        if not control_conversions and not variant_conversions:
-            return
-
-        if control_conversions > control_participants or variant_conversions > variant_participants:
-            # Something's up. I'm sure it's already clear in the UI what's going on, so let's not crash
-            return
-
-        # Create a numpy array with values to pass in to Chi-Squared test
-        control_failures = control_participants - control_conversions
-        variant_failures = variant_participants - variant_conversions
-
-        if control_failures == 0 and variant_failures == 0:
-            # Prevent this error: "The internally computed table of expected frequencies has a zero element at (0, 1)."
-            return
-
-        T = np.array([[control_conversions, control_failures], [variant_conversions, variant_failures]])
-
-        # Perform Chi-Squared test
-        p = scipy.stats.chi2_contingency(T, correction=False)[1]
-
-        # Check if there is a clear winner
-        required_confidence_level = 0.95  # 95%
-        if 1 - p > required_confidence_level:
-            # There is a clear winner!
-            # Return the one with the highest success rate
-            if (control_conversions / control_participants) > (variant_conversions / variant_participants):
-                return self.VERSION_CONTROL
-            else:
-                return self.VERSION_VARIANT
+	return None
 
     def get_status_description(self):
         """
