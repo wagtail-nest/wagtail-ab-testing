@@ -41,9 +41,7 @@
             </svg>
             <div class="abtest-results">
                 <div class="abtest-results__version abtest-results__version--control">
-                    <div class="abtest-results__version-heading{% if control_is_winner or unclear_winner %} abtest-results__version-heading--winner{% endif %}">
-                        {% if control_is_winner %}{% icon "crown" %} {% trans "Winner!" %}{% elif unclear_winner %}{% trans "No clear winner" %}{% endif %}
-                    </div>
+                    <div class="abtest-results__version-heading"></div>
                     <div class="abtest-results__version-inner">
                         <h3>{% trans "Control" %} <a href="{% pageurl page %}" target="_blank">{% icon name="link-external" %}</a></h3>
 
@@ -75,9 +73,7 @@
                     </div>
                 </div>
                 <div class="abtest-results__version abtest-results__version--variant">
-                    <div class="abtest-results__version-heading{% if variant_is_winner or unclear_winner %} abtest-results__version-heading--winner{% endif %}">
-                        {% if variant_is_winner %}{% icon "crown" %} {% trans "Winner!" %}{% elif unclear_winner %}{% trans "No clear winner" %}{% endif %}
-                    </div>
+                    <div class="abtest-results__version-heading"></div>
                     <div class="abtest-results__version-inner">
                         <h3>{% trans "Variant" %} <a href="{% url 'wagtailadmin_pages:view_draft' page.id %}" target="_blank">{% icon name="link-external" %}</a></h3>
 

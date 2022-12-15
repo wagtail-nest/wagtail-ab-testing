@@ -271,7 +271,7 @@ class AbTest(models.Model):
         AbTestHourlyLog._increment_stats(self, version, 0, 1, time=time)
 
     def check_for_winner(self):
-	return None
+	    return None
 
     def get_status_description(self):
         """
@@ -292,7 +292,7 @@ class AbTest(models.Model):
                 return status + " (" + _("Variant won") + ")"
 
             else:
-                return status + " (" + _("No clear winner") + ")"
+                return status
 
         else:
             return status
