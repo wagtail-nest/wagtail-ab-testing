@@ -268,31 +268,12 @@ def get_progress_and_results_common_context(request, page, ab_test):
             estimated_completion_date = timezone.now().date() + datetime.timedelta(days=estimated_days_remaining)
 
     # Generate time series data for the chart
-    time_series = []
-    control = 0
-    variant = 0
-    date = None
+    counters = {"control": 0, "variant": 0}
+    time_series_dict = {}
     for log in ab_test.hourly_logs.order_by('date', 'hour'):
-        # Accumulate the conversions
-        if log.version == AbTest.VERSION_CONTROL:
-            control += log.conversions
-        else:
-            variant += log.conversions
-
-        while date is None or date < log.date:
-            if date is None:
-                # First record
-                date = log.date
-            else:
-                # Move time forward to match log record
-                date += datetime.timedelta(days=1)
-
-            # Generate a log for this time
-            time_series.append({
-                'date': date,
-                'control': control,
-                'variant': variant,
-            })
+        counters[log.version] += log.conversions
+        time_series_dict[log.date] = {'date': log.date, **counters}
+    time_series = time_series_dict.values()
 
     return {
         'page': page,
