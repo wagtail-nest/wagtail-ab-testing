@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- [Wagtail 3.0 compatibility](https://github.com/torchbox/wagtail-ab-testing/pull/48)
+- Wagtail 4.2 compatibility
+- Old PR's for Wagtail 3.0 and Wagtail 4.0 are merged here
 
 ## [0.7] - 2022-03-31
 
