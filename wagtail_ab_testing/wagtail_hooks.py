@@ -10,15 +10,11 @@ from django.utils.html import format_html, escapejs
 from django.utils.translation import gettext as _, gettext_lazy as __
 from django.views.i18n import JavaScriptCatalog
 
-from wagtail import VERSION as WAGTAIL_VERSION
+
+from wagtail import hooks
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.menu import MenuItem
 from wagtail.admin.staticfiles import versioned_static
-
-if WAGTAIL_VERSION >= (3, 0):
-    from wagtail import hooks
-else:
-    from wagtail.core import hooks
 
 from . import views
 from .compat import DATE_FORMAT
@@ -151,10 +147,7 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
 
         request.wagtail_ab_testing_serving_variant = True
 
-        if WAGTAIL_VERSION >= (4, 0):
-            variant_response = test.variant_revision.as_object().serve(request, *serve_args, **serve_kwargs)
-        else:
-            variant_response = test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+        variant_response = test.variant_revision.as_object().serve(request, *serve_args, **serve_kwargs)
 
         if hasattr(variant_response, "render"):
             variant_response.render()
@@ -180,10 +173,7 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
     # If the user should be shown the variant, serve that from the revision. Otherwise return to keep the control
     if version == AbTest.VERSION_VARIANT:
         request.wagtail_ab_testing_serving_variant = True
-        if WAGTAIL_VERSION >= (4, 0):
-            return test.variant_revision.as_object().serve(request, *serve_args, **serve_kwargs)
-        else:
-            return test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+        return test.variant_revision.as_object().serve(request, *serve_args, **serve_kwargs)
 
 
 class AbTestingReportMenuItem(MenuItem):

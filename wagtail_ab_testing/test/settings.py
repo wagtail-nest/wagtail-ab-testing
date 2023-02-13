@@ -13,8 +13,6 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 import dj_database_url
 
-from wagtail import VERSION as WAGTAIL_VERSION
-
 # Build paths inside the project like this: os.path.join(PROJECT_DIR, ...)
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
@@ -51,7 +49,7 @@ INSTALLED_APPS = [
     "wagtail.contrib.routable_page",
     "wagtail.contrib.styleguide",
     "wagtail.sites",
-    "wagtail.core",
+    "wagtail",
     "taggit",
     "rest_framework",
     "django.contrib.admin",
@@ -168,5 +166,4 @@ MEDIA_ROOT = os.path.join(PROJECT_DIR, "media")
 
 WAGTAIL_SITE_NAME = "Wagtail A/B Testing test site"
 
-if WAGTAIL_VERSION >= (3, 0):
-    WAGTAILADMIN_BASE_URL = "http://example.com"
+WAGTAILADMIN_BASE_URL = "http://example.com"

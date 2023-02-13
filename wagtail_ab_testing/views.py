@@ -24,12 +24,7 @@ from wagtail.admin import messages
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
 from wagtail.admin.views.reports import ReportView
-from wagtail import VERSION as WAGTAIL_VERSION
-
-if WAGTAIL_VERSION >= (3, 0):
-    from wagtail.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
-else:
-    from wagtail.core.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
+from wagtail.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
 
 from .models import AbTest
 from .events import get_event_types
@@ -93,20 +88,14 @@ def add_compare(request, page_id):
     if response:
         return response
 
-    if WAGTAIL_VERSION >= (4, 0):
-        latest_revision_as_page = page.get_latest_revision_as_object()
-    else:
-        latest_revision_as_page = page.get_latest_revision().as_page_object()
+    latest_revision_as_page = page.get_latest_revision_as_object()
 
-    if WAGTAIL_VERSION >= (3, 0):
-        comparison = (
-            page.get_edit_handler()
-            .get_bound_panel(page, request=request, form=None)
-            .get_comparison()
-        )
-    else:
-        comparison = page.get_edit_handler().get_comparison()
-
+    comparison = (
+        page.get_edit_handler()
+        .get_bound_panel(page, request=request, form=None)
+        .get_comparison()
+    )
+    
     comparison = [comp(page, latest_revision_as_page) for comp in comparison]
     comparison = [comp for comp in comparison if comp.has_changed()]
 
@@ -167,7 +156,6 @@ def add_form(request, page_id):
     Passing this to the template so we can test for it where an include is used because we can't use
     "wagtailadmin/pages/_editor_css.html" as it's not available in Wagtail 4+ 
     """
-    is_wagtail_4 = WAGTAIL_VERSION >= (4, 0)
     
     return render(
         request,
@@ -200,7 +188,6 @@ def add_form(request, page_id):
                 },
                 cls=DjangoJSONEncoder,
             ),
-            "is_wagtail_4": is_wagtail_4,
         },
     )
 
@@ -558,19 +545,13 @@ def results(request, page_id, ab_test_id):
 def compare_draft(request, page_id):
     page = get_object_or_404(Page, id=page_id).specific
 
-    if WAGTAIL_VERSION >= (4, 0):
-        latest_revision_as_page = page.get_latest_revision_as_object()
-    else:
-        latest_revision_as_page = page.get_latest_revision().as_page_object()
+    latest_revision_as_page = page.get_latest_revision_as_object()
 
-    if WAGTAIL_VERSION >= (3, 0):
-        comparison = (
-            page.get_edit_handler()
-            .get_bound_panel(page, request=request, form=None)
-            .get_comparison()
-        )
-    else:
-        comparison = page.get_edit_handler().get_comparison()
+    comparison = (
+        page.get_edit_handler()
+        .get_bound_panel(page, request=request, form=None)
+        .get_comparison()
+    )
 
     comparison = [comp(page, latest_revision_as_page) for comp in comparison]
     comparison = [comp for comp in comparison if comp.has_changed()]
