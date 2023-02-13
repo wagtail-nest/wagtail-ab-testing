@@ -103,6 +103,13 @@ CACHES = {
     }
 }
 
+# while search isn't used in the tests, wagtail.core checks for the presence of it
+# because it's in INSTALLED_APPS
+WAGTAILSEARCH_BACKENDS = {
+    'default': {
+        'BACKEND': 'wagtail.search.backends.database',
+    }
+}
 
 # don't use the intentionally slow default password hasher
 PASSWORD_HASHERS = ("django.contrib.auth.hashers.MD5PasswordHasher",)

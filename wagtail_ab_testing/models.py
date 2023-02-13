@@ -23,6 +23,12 @@ else:
 from .events import get_event_types
 
 
+def get_revision_model():
+    if WAGTAIL_VERSION >= (4, 0):
+        return "wagtailcore.Revision"
+    return "wagtailcore.PageRevision"
+
+
 class AbTestManager(models.Manager):
     def get_current_for_page(self, page):
         return self.get_queryset().filter(page=page).exclude(status__in=[AbTest.STATUS_CANCELLED, AbTest.STATUS_COMPLETED]).first()
@@ -79,7 +85,7 @@ class AbTest(models.Model):
     page = models.ForeignKey('wagtailcore.Page', on_delete=models.CASCADE, related_name='ab_tests')
     name = models.CharField(max_length=255)
     hypothesis = models.TextField(blank=True)
-    variant_revision = models.ForeignKey('wagtailcore.PageRevision', on_delete=models.CASCADE, related_name='+')
+    variant_revision = models.ForeignKey(get_revision_model(), on_delete=models.CASCADE, related_name='+')
     goal_event = models.CharField(max_length=255)
     goal_page = models.ForeignKey('wagtailcore.Page', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
     sample_size = models.PositiveIntegerField(validators=[MinValueValidator(1)])

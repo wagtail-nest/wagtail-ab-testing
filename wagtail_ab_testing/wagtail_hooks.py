@@ -53,28 +53,15 @@ class CreateAbTestActionMenuItem(ActionMenuItem):
     label = __("Save and create A/B Test")
     icon_name = 'people-arrows'
 
-    if WAGTAIL_VERSION >= (2, 15):
-        def is_shown(self, context):
-            # v2.15 and later only requires the context object
-            if context['view'] != 'edit':
-                return False
+    def is_shown(self, context):
+        if context['view'] != 'edit':
+            return False
 
-            # User must have permission to add A/B tests
-            if not self.check_user_permissions(context['request'].user):
-                return False
+        # User must have permission to add A/B tests
+        if not self.check_user_permissions(context['request'].user):
+            return False
 
-            return True
-    else:
-        def is_shown(self, request, context):
-            # v2.14 and earlier requires the request object in addition to the context
-            if context['view'] != 'edit':
-                return False
-
-            # User must have permission to add A/B tests
-            if not self.check_user_permissions(request.user):
-                return False
-
-            return True
+        return True
 
     @staticmethod
     def check_user_permissions(user):
@@ -88,20 +75,12 @@ def register_create_abtest_action_menu_item():
 
 # This is the only way to inject custom JS into the editor with knowledge of the page being edited
 class AbTestingTabActionMenuItem(ActionMenuItem):
-    if WAGTAIL_VERSION >= (2, 15):
-        def render_html(self, context):
-            # v2.15 and later only requires the context object
-            if 'page' in context:
-                return self.format_html(context['request'].user, context)
 
-            return ''
-    else:
-        def render_html(self, request, context):
-            # v2.14 and earlier requires the request object in addition to the context
-            if 'page' in context:
-                return self.format_html(request.user, context)
+    def render_html(self, context):
+        if 'page' in context:
+            return self.format_html(context['request'].user, context)
 
-            return ''
+        return ''
 
     @staticmethod
     def format_html(user, context):
@@ -172,7 +151,11 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
 
         request.wagtail_ab_testing_serving_variant = True
 
-        variant_response = test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+        if WAGTAIL_VERSION >= (4, 0):
+            variant_response = test.variant_revision.as_object().serve(request, *serve_args, **serve_kwargs)
+        else:
+            variant_response = test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+
         if hasattr(variant_response, "render"):
             variant_response.render()
 
@@ -197,7 +180,10 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
     # If the user should be shown the variant, serve that from the revision. Otherwise return to keep the control
     if version == AbTest.VERSION_VARIANT:
         request.wagtail_ab_testing_serving_variant = True
-        return test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+        if WAGTAIL_VERSION >= (4, 0):
+            return test.variant_revision.as_object().serve(request, *serve_args, **serve_kwargs)
+        else:
+            return test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
 
 
 class AbTestingReportMenuItem(MenuItem):

@@ -70,7 +70,10 @@ class AbTestViewSet(viewsets.ReadOnlyModelViewSet):
         test = self.get_object()
         request.wagtail_ab_testing_test = test
         request.wagtail_ab_testing_serving_variant = True
-        return test.variant_revision.as_page_object().serve(request)
+        if WAGTAIL_VERSION >= (4, 0):
+            return test.variant_revision.as_object().serve(request)
+        else:
+            return test.variant_revision.as_page_object().serve(request)
 
     @action(detail=True, methods=['post'])
     def add_participant(self, request, pk=None):
