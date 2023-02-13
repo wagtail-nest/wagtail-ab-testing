@@ -13,21 +13,13 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy as __
 
-from wagtail import VERSION as WAGTAIL_VERSION
-
-if WAGTAIL_VERSION >= (3, 0):
-    from wagtail.signals import page_unpublished
-else:
-    from wagtail.core.signals import page_unpublished
+from wagtail.signals import page_unpublished
 
 from .events import get_event_types
 
 
 def get_revision_model():
-    if WAGTAIL_VERSION >= (4, 0):
-        return "wagtailcore.Revision"
-    return "wagtailcore.PageRevision"
-
+    return "wagtailcore.Revision"
 
 class AbTestManager(models.Manager):
     def get_current_for_page(self, page):

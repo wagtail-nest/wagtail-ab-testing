@@ -1,9 +1,4 @@
-from wagtail import VERSION as WAGTAIL_VERSION
-
-if WAGTAIL_VERSION >= (3, 0):
-    from wagtail import hooks
-else:
-    from wagtail.core import hooks
+from wagtail import hooks
     
 from wagtail_ab_testing.events import BaseEvent
 

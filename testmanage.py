@@ -8,12 +8,7 @@ import warnings
 
 from django.core.management import execute_from_command_line
 
-from wagtail import VERSION as WAGTAIL_VERSION
-
-if WAGTAIL_VERSION >= (3, 0):
-    from wagtail.test.settings import STATIC_ROOT, MEDIA_ROOT
-else:
-    from wagtail.tests.settings import STATIC_ROOT, MEDIA_ROOT
+from wagtail.test.settings import STATIC_ROOT, MEDIA_ROOT
 
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "wagtail_ab_testing.test.settings"
