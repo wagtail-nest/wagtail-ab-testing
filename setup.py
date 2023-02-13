@@ -45,8 +45,7 @@ setup(
         "Framework :: Wagtail :: 4.0",
     ],
     install_requires=[
-        "Django>=3.0,<4.2",
-        "Wagtail>=2.15,<4.1",
+        "Wagtail>=4.1",
         "user-agents>=2.2,<2.3",
         "numpy>=1.19.4,<1.23",
         "scipy>=1.5.4,<1.9",
