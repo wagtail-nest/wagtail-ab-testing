@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('draft', 'Draft'), ('running', 'Running'), ('paused', 'Paused'), ('cancelled', 'Cancelled'), ('completed', 'Completed')], default='draft', max_length=20)),
                 ('goal_page', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='wagtailcore.page')),
                 ('page', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='ab_tests', to='wagtailcore.page')),
-                ('treatment_revision', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailcore.pagerevision')),
+                ('treatment_revision', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailcore.revision')),
             ],
         ),
     ]
