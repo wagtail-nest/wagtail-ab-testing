@@ -18,9 +18,7 @@ Key features:
 
 ## Usage
 
-**The code examples below assume you are using Wagtail v3.0+** If you need information for an earlier version of Wagtail see the [Release notes](https://docs.wagtail.org/en/stable/releases/upgrading.html) for guidance.
-
-Wagtail A/B Testing works with Django 2.2+, Wagtail 2.11+ on Python 3.7+ environments.
+Wagtail A/B Testing works with Django 3.2+, Wagtail 4.1+ on Python 3.7+ environments.
 
 ### Creating an A/B test
 
