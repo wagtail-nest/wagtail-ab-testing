@@ -95,7 +95,7 @@ def add_compare(request, page_id):
         .get_bound_panel(page, request=request, form=None)
         .get_comparison()
     )
-    
+
     comparison = [comp(page, latest_revision_as_page) for comp in comparison]
     comparison = [comp for comp in comparison if comp.has_changed()]
 
@@ -154,9 +154,9 @@ def add_form(request, page_id):
     Template: wagtail_ab_testing/add_form.html is rendered here
 
     Passing this to the template so we can test for it where an include is used because we can't use
-    "wagtailadmin/pages/_editor_css.html" as it's not available in Wagtail 4+ 
+    "wagtailadmin/pages/_editor_css.html" as it's not available in Wagtail 4+
     """
-    
+
     return render(
         request,
         "wagtail_ab_testing/add_form.html",

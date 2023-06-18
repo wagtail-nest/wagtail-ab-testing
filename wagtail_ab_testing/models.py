@@ -17,6 +17,7 @@ from wagtail.signals import page_unpublished
 
 from .events import get_event_types
 
+
 class AbTestManager(models.Manager):
     def get_current_for_page(self, page):
         return self.get_queryset().filter(page=page).exclude(status__in=[AbTest.STATUS_CANCELLED, AbTest.STATUS_COMPLETED]).first()
