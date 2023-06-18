@@ -7,14 +7,14 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wagtailcore', '0083_workflowcontenttype'),
+        ('wagtailcore', '0078_referenceindex'),
         ('wagtail_ab_testing', '0011_rename_treatment_to_variant_data'),
     ]
 
     operations = [
-        migrations.AddField(
+        migrations.AlterField(
             model_name='abtest',
-            name='treatment_revision',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailcore.revision'),
+            name='variant_revision',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailcore.revision'),
         ),
     ]
