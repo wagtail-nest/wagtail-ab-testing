@@ -12,6 +12,12 @@ class Migration(migrations.Migration):
         ('wagtailcore', '0052_pagelogentry'),
     ]
 
+    # Added for compatibility with Wagtail 4+
+    # This migration references the old PageRevision model and must run before it was migrated to a generic Revision model
+    run_before = [
+        ("wagtailcore", "0070_rename_pagerevision_revision")
+    ]
+
     operations = [
         migrations.CreateModel(
             name='AbTest',
