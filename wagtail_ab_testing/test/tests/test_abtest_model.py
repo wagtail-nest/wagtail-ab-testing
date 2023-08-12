@@ -170,8 +170,7 @@ class TestAbTestModel(TestCase):
         Test to check if ProtectedError is raised when associated revision is deleted
         """
         with self.assertRaises(ProtectedError):
-            revision = self.ab_test.variant_revision
-            revision.delete()
+            self.ab_test.variant_revision.delete()
 
 
 class TestAutoCancelOnUnpublish(TestCase):
