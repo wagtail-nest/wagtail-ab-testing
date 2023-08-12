@@ -272,18 +272,19 @@ Finally, add a route into Cloudflare so that it routes all traffic through this 
 
 # Install
 
-To make changes to this project, first clone this repository:
+To make changes to this project, first fork this repository and clone it to your local system:
 
 ```shell
-git clone https://github.com/wagtail-nest/wagtail-ab-testing.git
+git clone link-to-your-forked-repo
 cd wagtail-ab-testing
 ```
-https://github.com/wagtail-nest/wagtail-ab-testing.git
+
+With your preferred virtualenv activated, install testing dependencies:
 
 # Using pip to install the project in editable mode
 
 ```shell
-python -m pip install -e .[testing] -U
+python -m pip install -e .[testing]
 ```
 
 # How to run tests
