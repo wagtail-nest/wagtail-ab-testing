@@ -270,7 +270,7 @@ Finally, add a route into Cloudflare so that it routes all traffic through this 
 
 ## Contribution
 
-# Install
+### Install
 
 To make changes to this project, first fork this repository and clone it to your local system:
 
