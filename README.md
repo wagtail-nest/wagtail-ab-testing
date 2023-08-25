@@ -281,7 +281,6 @@ cd wagtail-ab-testing
 
 With your preferred virtualenv activated, install testing dependencies:
 
-# Using pip to install the project in editable mode along the its dependencies
 
 ```shell
 python -m pip install -e .[testing]
