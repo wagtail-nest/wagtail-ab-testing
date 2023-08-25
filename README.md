@@ -286,7 +286,7 @@ With your preferred virtualenv activated, install testing dependencies:
 python -m pip install -e .[testing]
 ```
 
-# How to run tests
+### How to run tests
 
 ```shell
 python testmanage.py test
