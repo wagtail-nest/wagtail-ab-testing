@@ -267,3 +267,27 @@ addEventListener('fetch', event => {
 Add a variable to the worker called ``WAGTAIL_AB_TESTING_WORKER_TOKEN``, giving it the same token value that you generated earlier.
 
 Finally, add a route into Cloudflare so that it routes all traffic through this worker.
+
+## Contribution
+
+### Install
+
+To make changes to this project, first fork this repository and clone it to your local system:
+
+```shell
+git clone link-to-your-forked-repo
+cd wagtail-ab-testing
+```
+
+With your preferred virtualenv activated, install testing dependencies:
+
+
+```shell
+python -m pip install -e .[testing]
+```
+
+### How to run tests
+
+```shell
+python testmanage.py test
+```
