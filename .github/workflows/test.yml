@@ -59,7 +59,10 @@ jobs:
             experimental: false
             # Future Wagtail release from main branch (allowed to fail)
           - python: "3.11"
-            toxenv: wagtailmain
+            toxenv: wagtailmain-sqlite
+            experimental: true
+          - python: "3.11"
+            toxenv: wagtailmain-postgres
             experimental: true
     steps:
       - uses: actions/checkout@v4
