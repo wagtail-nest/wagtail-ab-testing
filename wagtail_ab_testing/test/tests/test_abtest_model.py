@@ -2,7 +2,7 @@ import datetime
 
 from django.test import TestCase
 from freezegun import freeze_time
-
+from django.db.models.deletion import ProtectedError
 from wagtail.models import Page
 
 from wagtail_ab_testing.models import AbTest, AbTestHourlyLog
@@ -164,6 +164,13 @@ class TestAbTestModel(TestCase):
         self.set_up_test(1000, 550, 1000, 500)
 
         self.assertEqual(self.ab_test.check_for_winner(), AbTest.VERSION_CONTROL)
+
+    def test_check_raise_protect_error(self):
+        """
+        Test to check if ProtectedError is raised when associated revision is deleted
+        """
+        with self.assertRaises(ProtectedError):
+            self.ab_test.variant_revision.delete()
 
 
 class TestAutoCancelOnUnpublish(TestCase):
