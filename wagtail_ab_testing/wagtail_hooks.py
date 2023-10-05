@@ -10,10 +10,11 @@ from django.utils.html import format_html, escapejs
 from django.utils.translation import gettext as _, gettext_lazy as __
 from django.views.i18n import JavaScriptCatalog
 
+
+from wagtail import hooks
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.menu import MenuItem
 from wagtail.admin.staticfiles import versioned_static
-from wagtail.core import hooks
 
 from . import views
 from .compat import DATE_FORMAT
@@ -48,15 +49,19 @@ class CreateAbTestActionMenuItem(ActionMenuItem):
     label = __("Save and create A/B Test")
     icon_name = 'people-arrows'
 
-    def is_shown(self, request, context):
+    def is_shown(self, context):
         if context['view'] != 'edit':
             return False
 
         # User must have permission to add A/B tests
-        if not request.user.has_perm('wagtail_ab_testing.add_abtest'):
+        if not self.check_user_permissions(context['request'].user):
             return False
 
         return True
+
+    @staticmethod
+    def check_user_permissions(user):
+        return user.has_perm('wagtail_ab_testing.add_abtest')
 
 
 @hooks.register('register_page_action_menu_item')
@@ -66,28 +71,33 @@ def register_create_abtest_action_menu_item():
 
 # This is the only way to inject custom JS into the editor with knowledge of the page being edited
 class AbTestingTabActionMenuItem(ActionMenuItem):
-    def render_html(self, request, context):
+
+    def render_html(self, context):
         if 'page' in context:
-            return format_html(
-                '<script src="{}"></script><script src="{}"></script><script>window.abTestingTabProps = JSON.parse("{}");</script>',
-                reverse('wagtail_ab_testing_admin:javascript_catalog'),
-                versioned_static('wagtail_ab_testing/js/wagtail-ab-testing.js'),
-                escapejs(json.dumps({
-                    'tests': [
-                        {
-                            'id': ab_test.id,
-                            'name': ab_test.name,
-                            'started_at': ab_test.first_started_at.strftime(DATE_FORMAT) if ab_test.first_started_at else _("Not started"),
-                            'status': ab_test.get_status_description(),
-                            'results_url': reverse('wagtail_ab_testing_admin:results', args=[ab_test.page_id, ab_test.id]),
-                        }
-                        for ab_test in AbTest.objects.filter(page=context['page']).order_by('-id')
-                    ],
-                    'can_create_abtest': request.user.has_perm('wagtail_ab_testing.add_abtest'),
-                }))
-            )
+            return self.format_html(context['request'].user, context)
 
         return ''
+
+    @staticmethod
+    def format_html(user, context):
+        return format_html(
+            '<script src="{}"></script><script src="{}"></script><script>window.abTestingTabProps = JSON.parse("{}");</script>',
+            reverse('wagtail_ab_testing_admin:javascript_catalog'),
+            versioned_static('wagtail_ab_testing/js/wagtail-ab-testing.js'),
+            escapejs(json.dumps({
+                'tests': [
+                    {
+                        'id': ab_test.id,
+                        'name': ab_test.name,
+                        'started_at': ab_test.first_started_at.strftime(DATE_FORMAT) if ab_test.first_started_at else _("Not started"),
+                        'status': ab_test.get_status_description(),
+                        'results_url': reverse('wagtail_ab_testing_admin:results', args=[ab_test.page_id, ab_test.id]),
+                    }
+                    for ab_test in AbTest.objects.filter(page=context['page']).order_by('-id')
+                ],
+                'can_create_abtest': user.has_perm('wagtail_ab_testing.add_abtest'),
+            }))
+        )
 
 
 @hooks.register('register_page_action_menu_item')
@@ -137,7 +147,8 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
 
         request.wagtail_ab_testing_serving_variant = True
 
-        variant_response = test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+        variant_response = test.variant_revision.as_object().serve(request, *serve_args, **serve_kwargs)
+
         if hasattr(variant_response, "render"):
             variant_response.render()
 
@@ -162,7 +173,7 @@ def before_serve_page(page, request, serve_args, serve_kwargs):
     # If the user should be shown the variant, serve that from the revision. Otherwise return to keep the control
     if version == AbTest.VERSION_VARIANT:
         request.wagtail_ab_testing_serving_variant = True
-        return test.variant_revision.as_page_object().serve(request, *serve_args, **serve_kwargs)
+        return test.variant_revision.as_object().serve(request, *serve_args, **serve_kwargs)
 
 
 class AbTestingReportMenuItem(MenuItem):

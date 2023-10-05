@@ -1,5 +1,5 @@
+from wagtail import hooks
 
-from wagtail.core import hooks
 from wagtail_ab_testing.events import BaseEvent
 
 

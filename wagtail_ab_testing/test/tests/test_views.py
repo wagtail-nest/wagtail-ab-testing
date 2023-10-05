@@ -4,7 +4,8 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from freezegun import freeze_time
 from rest_framework.test import APIClient, APITestCase
-from wagtail.core.models import Page
+
+from wagtail.models import Page
 
 from wagtail_ab_testing.models import AbTest
 

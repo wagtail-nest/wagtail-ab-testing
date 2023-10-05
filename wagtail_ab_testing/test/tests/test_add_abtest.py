@@ -4,8 +4,9 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
-from wagtail.core.models import Page
-from wagtail.tests.utils import WagtailTestUtils
+
+from wagtail.models import Page
+from wagtail.test.utils import WagtailTestUtils
 
 from wagtail_ab_testing.models import AbTest
 from wagtail_ab_testing.test.models import SimplePage

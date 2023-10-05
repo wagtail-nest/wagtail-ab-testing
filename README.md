@@ -18,6 +18,8 @@ Key features:
 
 ## Usage
 
+Wagtail A/B Testing works with Django 3.2+, Wagtail 4.1+ on Python 3.7+ environments.
+
 ### Creating an A/B test
 
 Any user with the "Create A/B test" permission can create an A/B test by clicking "Save and create A/B test" from the page's action menu.
@@ -72,7 +74,7 @@ from wagtail_ab_testing import urls as ab_testing_urls
 urlpatterns = [
     ...
 
-    url(r'^abtesting/', include(ab_testing_urls)),
+    path('abtesting/', include(ab_testing_urls)),
 ]
 ```
 
@@ -99,7 +101,7 @@ add your goal type to the list of options shown to users when they create A/B te
 ```python
 # myapp/wagtail_hooks.py
 
-from wagtail.core import hooks
+from wagtail import hooks
 from wagtail_ab_testing.events import BaseEvent
 
 
@@ -143,7 +145,7 @@ Firstly, we need to register the event type. To do this, implement a handler for
 ```python
 # myapp/wagtail_hooks.py
 
-from wagtail.core import hooks
+from wagtail import hooks
 from wagtail_ab_testing.events import BaseEvent
 
 from .models import ContactUsFormPage

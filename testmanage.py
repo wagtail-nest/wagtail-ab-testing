@@ -8,6 +8,8 @@ import warnings
 
 from django.core.management import execute_from_command_line
 
+from wagtail.test.settings import STATIC_ROOT, MEDIA_ROOT
+
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "wagtail_ab_testing.test.settings"
 
@@ -56,8 +58,6 @@ def runtests():
     try:
         execute_from_command_line(argv)
     finally:
-        from wagtail.tests.settings import STATIC_ROOT, MEDIA_ROOT
-
         shutil.rmtree(STATIC_ROOT, ignore_errors=True)
         shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
 

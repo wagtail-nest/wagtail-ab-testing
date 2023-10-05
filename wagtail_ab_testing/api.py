@@ -2,7 +2,8 @@ from django.urls import reverse
 from rest_framework import fields, routers, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from wagtail.core.models import Page, Site
+
+from wagtail.models import Page, Site
 
 from .models import AbTest
 
@@ -64,7 +65,7 @@ class AbTestViewSet(viewsets.ReadOnlyModelViewSet):
         test = self.get_object()
         request.wagtail_ab_testing_test = test
         request.wagtail_ab_testing_serving_variant = True
-        return test.variant_revision.as_page_object().serve(request)
+        return test.variant_revision.as_object().serve(request)
 
     @action(detail=True, methods=['post'])
     def add_participant(self, request, pk=None):

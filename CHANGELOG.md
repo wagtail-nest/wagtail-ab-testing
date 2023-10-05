@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Wagtail 4.2 compatibility
+- Wagtail 4.1 compatibility
+- NO SUPPORT for Wagtail 4.0 and older, sorry
+
 ## [0.7] - 2022-03-31
 
  - [Add default_auto_field](https://github.com/torchbox/wagtail-ab-testing/pull/42)

@@ -12,7 +12,8 @@ from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy as __
-from wagtail.core.signals import page_unpublished
+
+from wagtail.signals import page_unpublished
 
 from .events import get_event_types
 
@@ -73,7 +74,7 @@ class AbTest(models.Model):
     page = models.ForeignKey('wagtailcore.Page', on_delete=models.CASCADE, related_name='ab_tests')
     name = models.CharField(max_length=255)
     hypothesis = models.TextField(blank=True)
-    variant_revision = models.ForeignKey('wagtailcore.PageRevision', on_delete=models.CASCADE, related_name='+')
+    variant_revision = models.ForeignKey('wagtailcore.Revision', on_delete=models.CASCADE, related_name='+')
     goal_event = models.CharField(max_length=255)
     goal_page = models.ForeignKey('wagtailcore.Page', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
     sample_size = models.PositiveIntegerField(validators=[MinValueValidator(1)])

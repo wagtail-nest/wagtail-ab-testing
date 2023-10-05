@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     "wagtail.contrib.routable_page",
     "wagtail.contrib.styleguide",
     "wagtail.sites",
-    "wagtail.core",
+    "wagtail",
     "taggit",
     "rest_framework",
     "django.contrib.admin",
@@ -101,6 +101,13 @@ CACHES = {
     }
 }
 
+# while search isn't used in the tests, wagtail.core checks for the presence of it
+# because it's in INSTALLED_APPS
+WAGTAILSEARCH_BACKENDS = {
+    'default': {
+        'BACKEND': 'wagtail.search.backends.database',
+    }
+}
 
 # don't use the intentionally slow default password hasher
 PASSWORD_HASHERS = ("django.contrib.auth.hashers.MD5PasswordHasher",)
@@ -158,3 +165,5 @@ MEDIA_ROOT = os.path.join(PROJECT_DIR, "media")
 
 
 WAGTAIL_SITE_NAME = "Wagtail A/B Testing test site"
+
+WAGTAILADMIN_BASE_URL = "http://example.com"

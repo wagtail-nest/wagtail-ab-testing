@@ -3,7 +3,8 @@ import datetime
 from django.urls import reverse
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
-from wagtail.core.models import Page
+
+from wagtail.models import Page
 
 from wagtail_ab_testing.models import AbTest
 from wagtail_ab_testing.test.models import SimplePage

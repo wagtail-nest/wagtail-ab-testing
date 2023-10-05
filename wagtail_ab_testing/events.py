@@ -1,6 +1,6 @@
 from django.utils.translation import gettext_lazy as __
 
-from wagtail.core import hooks
+from wagtail import hooks
 
 
 class BaseEvent:
