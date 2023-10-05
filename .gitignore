@@ -2,7 +2,7 @@
 /build
 /dist
 /wagtail_ab_testing.egg-info
-/.coverage
+/.coverage*
 /htmlcov
 /.tox
 /venv
