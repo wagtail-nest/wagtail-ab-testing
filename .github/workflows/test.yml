@@ -9,7 +9,28 @@ on:
   workflow_call:  # Allow for the publish workflows to run the tests by calling this workflow
 
 jobs:
-  test:
+  qa_javascript:
+    name: JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          node-version: 14
+      - name: Install dependencies
+        run: |
+          npm ci
+      - name: Lint JavaScript
+        run: |
+          npm run lint
+      - name: Compile JavaScript
+        run: |
+          npm run build
+
+  qa_python:
     services:
         postgres:
           image: postgres:16
