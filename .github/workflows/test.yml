@@ -101,4 +101,5 @@ jobs:
           tox -e ${{ matrix.toxenv }}
         env:
           TOXENV: ${{ matrix.toxenv }}
+          DATABASE_URL: postgres://postgres:postgres@localhost/wagtail_ab_testing
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
