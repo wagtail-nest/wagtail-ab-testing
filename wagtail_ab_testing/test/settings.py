@@ -120,6 +120,12 @@ DATABASES = {
     "default": dj_database_url.config(default="sqlite:///test_wagtail_ab_testing.db"),
 }
 
+# If we are running inside of tox, override the test database name to avoid
+# conflicts if multiple tox environments are being run in parallel.
+if "DATABASE_URL" in os.environ and "TOX_ENV_NAME" in os.environ:
+    DATABASES["default"]["TEST"] = {
+        "NAME": "test_wagtail_ab_testing_{}".format(os.environ["TOX_ENV_NAME"])
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
