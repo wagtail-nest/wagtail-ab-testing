@@ -5,11 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased] - XXXX-XX-XX
 
-- Wagtail 4.2 compatibility
-- Wagtail 4.1 compatibility
+- [Wagtail 4.1, 4.2, 5.0, 5.1 and 5.2 support 🎉](https://github.com/wagtail-nest/wagtail-ab-testing/pull/52)
 - NO SUPPORT for Wagtail 4.0 and older, sorry
+- [Revisions that are part of A/B test are now marked as protected to avoid data loss when the revision is deleted](https://github.com/wagtail-nest/wagtail-ab-testing/pull/54)
+
+**Maintenance**
+
+- The package was moved to Wagtail Nest
+- Move to GitHub Actions for CI
+- Move to Codecov for coverage
+- [Add Trusted Publishing for publishing to PyPI](https://github.com/wagtail-nest/wagtail-ab-testing/pull/60)
+- [Upload wheels to PyPI for faster installs](https://github.com/wagtail-nest/wagtail-ab-testing/pull/60)
 
 ## [0.7] - 2022-03-31
 
