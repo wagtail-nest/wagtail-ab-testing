@@ -1,11 +1,8 @@
 name: Publish to PyPI
 on:
-  push:
-    tags:
-      # Only run for tags **not** ending with `.devN`
-      # https://peps.python.org/pep-0440/#summary-of-permitted-suffixes-and-relative-ordering
-      - '*'
-      - '!*\.dev\d+'
+  release:
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#release
+    types: [released]
 jobs:
   test:
     uses: ./.github/workflows/test.yml
