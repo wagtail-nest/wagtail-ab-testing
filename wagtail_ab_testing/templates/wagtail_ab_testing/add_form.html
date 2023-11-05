@@ -53,11 +53,11 @@
         </p>
 
         <div class="nice-padding">
-            <div class="help-block help-info">
+            {% help_block status="info"%}
                 <p>{% trans "A/B tests are calculated using Pearson's chi squared test and are set at 95% confidence level." %}</p>
                 <p>{% trans "Traffic is split evenly between each version." %}</p>
                 <p>{% trans 'Users with "<a href="https://en.wikipedia.org/wiki/Do_Not_Track" target="_blank">Do Not Track</a>" enabled are not counted.' %}</p>
-            </div>
+            {% endhelp_block %}
         </div>
     </form>
 {% endblock %}
