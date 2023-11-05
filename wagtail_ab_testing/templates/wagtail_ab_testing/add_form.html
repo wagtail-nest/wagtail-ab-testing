@@ -16,8 +16,12 @@
 
             <div class="section__content nice-padding">
                 <ul class="fields">
-                    {% include "wagtailadmin/shared/field_as_li.html" with field=form.name %}
-                    {% include "wagtailadmin/shared/field_as_li.html" with field=form.hypothesis %}
+                    <li>
+                        {% include "wagtailadmin/shared/field.html" with field=form.name %}
+                    </li>
+                    <li>
+                        {% include "wagtailadmin/shared/field.html" with field=form.hypothesis %}
+                    </li>
                 </ul>
             </div>
         </section>
@@ -41,7 +45,9 @@
 
             <div class="section__content nice-padding">
                 <ul class="fields">
-                    {% include "wagtailadmin/shared/field_as_li.html" with field=form.sample_size %}
+                    <li>
+                        {% include "wagtailadmin/shared/field.html" with field=form.sample_size %}
+                    </li>
                 </ul>
                 {% trans 'Need help calculating sample size for A/B tests? Try <a href="https://www.optimizely.com/uk/sample-size-calculator/" target="_blank">Optimisely</a>, <a href="https://www.evanmiller.org/ab-testing/sample-size.html" target="_blank">Evan Miller</a>, or <a href="https://www.abtasty.com/sample-size-calculator/" target="_blank">AB Tasty</a>.' %}
             </div>
