@@ -4,7 +4,7 @@
 
 {% block content %}
     {% trans "Compare A/B test versions" as title %}
-    {% include "wagtailadmin/shared/header.html" with title=title subtitle=page.title tabbed=1 merged=1 %}
+    {% include "wagtailadmin/shared/header.html" with title=title subtitle=page.title merged=1 %}
 
     <div class="nice-padding" style="padding-top: 20px;">
         {% include "./includes/comparison.html" %}
