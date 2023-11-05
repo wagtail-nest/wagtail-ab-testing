@@ -9,10 +9,10 @@
         <form action="{% url 'wagtailadmin_pages:edit' page.id %}" method="POST">
             {% csrf_token %}
 
-            <footer>
+            <footer class="footer">
                 <nav aria-label="{% trans 'Actions' %}">
                     <ul>
-                        <li class="actions actions--primary">
+                        <li class="actions actions--primary footer__container">
                             <div class="dropdown dropup dropdown-button match-width">
                                 {{ action_menu.render_html }}
                             </div>
