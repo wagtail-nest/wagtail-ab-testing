@@ -24,7 +24,7 @@ from wagtail.admin import messages
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
 from wagtail.admin.views.reports import ReportView
-from wagtail.models import Page, PAGE_MODEL_CLASSES, UserPagePermissionsProxy
+from wagtail.models import Page, PAGE_MODEL_CLASSES
 
 from .models import AbTest
 from .events import get_event_types
@@ -197,11 +197,8 @@ class StartAbTestMenuItem(ActionMenuItem):
     label = _("Start A/B test")
 
     def is_shown(self, request, context):
-        if (
-            not context["user_page_permissions"]
-            .for_page(context["ab_test"].page)
-            .can_publish()
-        ):
+        page = context["ab_test"].page
+        if not page.permissions_for_user(request.user).can_publish():
             return False
 
         return context["ab_test"].status == AbTest.STATUS_DRAFT
@@ -212,11 +209,8 @@ class RestartAbTestMenuItem(ActionMenuItem):
     label = _("Restart A/B test")
 
     def is_shown(self, request, context):
-        if (
-            not context["user_page_permissions"]
-            .for_page(context["ab_test"].page)
-            .can_publish()
-        ):
+        page = context["ab_test"].page
+        if not page.permissions_for_user(request.user).can_publish():
             return False
 
         return context["ab_test"].status == AbTest.STATUS_PAUSED
@@ -227,11 +221,8 @@ class EndAbTestMenuItem(ActionMenuItem):
     label = _("End A/B test")
 
     def is_shown(self, request, context):
-        if (
-            not context["user_page_permissions"]
-            .for_page(context["ab_test"].page)
-            .can_publish()
-        ):
+        page = context["ab_test"].page
+        if not page.permissions_for_user(request.user).can_publish():
             return False
 
         return context["ab_test"].status in [
@@ -246,11 +237,8 @@ class PauseAbTestMenuItem(ActionMenuItem):
     label = _("Pause A/B test")
 
     def is_shown(self, request, context):
-        if (
-            not context["user_page_permissions"]
-            .for_page(context["ab_test"].page)
-            .can_publish()
-        ):
+        page = context["ab_test"].page
+        if not page.permissions_for_user(request.user).can_publish():
             return False
 
         return context["ab_test"].status == AbTest.STATUS_RUNNING
@@ -262,9 +250,6 @@ class AbTestActionMenu:
     def __init__(self, request, **kwargs):
         self.request = request
         self.context = kwargs
-        self.context["user_page_permissions"] = UserPagePermissionsProxy(
-            self.request.user
-        )
         # The ActionMenuItem request object is available in the context dictionary as context['request'].
         # https://docs.wagtail.io/en/stable/releases/2.15.html#admin-homepage-panels-summary-items-and-action-menu-items-now-use-components
         self.context["request"] = request
