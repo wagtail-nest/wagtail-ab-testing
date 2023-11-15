@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import sys, os
-
 from setuptools import setup, find_packages
 
 # Hack to prevent "TypeError: 'NoneType' object is not callable" error
@@ -38,8 +36,10 @@ setup(
         "Framework :: Django :: 3.2",
         "Framework :: Django :: 4.0",
         "Framework :: Django :: 4.1",
+        "Framework :: Django :: 4.2",
         "Framework :: Wagtail",
         "Framework :: Wagtail :: 4",
+        "Framework :: Wagtail :: 5",
     ],
     install_requires=[
         "Wagtail>=4.1",

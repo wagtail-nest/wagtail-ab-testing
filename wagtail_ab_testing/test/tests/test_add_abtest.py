@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
 
+from wagtail import VERSION as WAGTAIL_VERSION
 from wagtail.models import Page
 from wagtail.test.utils import WagtailTestUtils
 
@@ -204,7 +205,10 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
         self.assertEqual(ab_test.status, AbTest.STATUS_RUNNING)
 
     def test_post_add_form_start_without_publish_permission(self):
-        self.moderators_group.page_permissions.filter(permission_type='publish').delete()
+        if WAGTAIL_VERSION >= (5, 1):
+            self.moderators_group.page_permissions.filter(permission__codename='publish_page').delete()
+        else:
+            self.moderators_group.page_permissions.filter(permission_type='publish').delete()
 
         response = self.client.post(reverse('wagtail_ab_testing_admin:add_ab_test_form', args=[self.page.id]), {
             'name': 'Test',
