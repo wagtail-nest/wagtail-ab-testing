@@ -7,7 +7,7 @@ from django.db.models import Sum, Q, F
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.utils import timezone
+from django.utils import formats, timezone
 from django.utils.functional import cached_property
 from django.utils.translation import gettext as _, gettext_lazy
 from django.views.decorators.csrf import csrf_exempt
@@ -360,6 +360,14 @@ def get_progress_and_results_common_context(request, page, ab_test):
                 }
             )
 
+    # Format stats for display
+    control_conversions_percent = formats.localize(
+        round(control_conversions / control_participants * 100, 1)
+    ) if control_participants else 0
+    variant_conversions_percent = formats.localize(
+        round(variant_conversions / variant_participants * 100, 1)
+    ) if variant_conversions else 0
+
     return {
         "page": page,
         "ab_test": ab_test,
@@ -369,18 +377,10 @@ def get_progress_and_results_common_context(request, page, ab_test):
         ),
         "control_conversions": control_conversions,
         "control_participants": control_participants,
-        "control_conversions_percent": int(
-            control_conversions / control_participants * 100
-        )
-        if control_participants
-        else 0,
+        "control_conversions_percent": control_conversions_percent,
         "variant_conversions": variant_conversions,
         "variant_participants": variant_participants,
-        "variant_conversions_percent": int(
-            variant_conversions / variant_participants * 100
-        )
-        if variant_participants
-        else 0,
+        "variant_conversions_percent": variant_conversions_percent,
         "control_is_winner": ab_test.winning_version == AbTest.VERSION_CONTROL,
         "variant_is_winner": ab_test.winning_version == AbTest.VERSION_VARIANT,
         "unclear_winner": ab_test.status
