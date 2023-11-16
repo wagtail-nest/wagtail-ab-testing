@@ -10,11 +10,15 @@ try:
 except ImportError:
     pass
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setup(
     name="wagtail-ab-testing",
     version="0.8",
     description="A/B Testing for Wagtail",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Karl Hobley",
     author_email="karl@torchbox.com",
     url="",
