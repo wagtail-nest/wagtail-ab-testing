@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - XXXX-XX-XX
+## [0.8] - 2023-11-16
 
 - [Wagtail 4.1, 4.2, 5.0, 5.1 and 5.2 support 🎉](https://github.com/wagtail-nest/wagtail-ab-testing/pull/52)
 - NO SUPPORT for Wagtail 4.0 and older, sorry
