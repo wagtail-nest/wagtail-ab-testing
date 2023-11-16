@@ -3,8 +3,6 @@ on:
   release:
     # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#release
     types: [released]
-  workflow_dispatch:
-
 jobs:
   test:
     uses: ./.github/workflows/test.yml
