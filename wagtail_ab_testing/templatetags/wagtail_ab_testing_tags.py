@@ -1,4 +1,5 @@
 from django import template
+from wagtail.models.sites import Site
 
 from wagtail_ab_testing.models import AbTest
 from wagtail_ab_testing.utils import request_is_trackable
@@ -9,6 +10,7 @@ register = template.Library()
 @register.inclusion_tag('wagtail_ab_testing/script.html', takes_context=True)
 def wagtail_ab_testing_script(context):
     request = context['request']
+    site = Site.find_for_request(request)
     serving_variant = getattr(request, 'wagtail_ab_testing_serving_variant', False)
 
     return {
@@ -16,4 +18,5 @@ def wagtail_ab_testing_script(context):
         'page': context.get('page', None),
         'test': getattr(request, 'wagtail_ab_testing_test', None),
         'version': AbTest.VERSION_VARIANT if serving_variant else AbTest.VERSION_CONTROL,
+        'cookie_path': site.root_page.url,
     }
