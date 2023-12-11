@@ -49,19 +49,19 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         experimental: [false]
         toxenv: ["py"]
         include:
           # Linting
-          - python: "3.11"
+          - python: "3.12"
             toxenv: flake8
             experimental: false
             # Future Wagtail release from main branch (allowed to fail)
-          - python: "3.11"
+          - python: "3.12"
             toxenv: wagtailmain-sqlite
             experimental: true
-          - python: "3.11"
+          - python: "3.12"
             toxenv: wagtailmain-postgres
             experimental: true
     steps:

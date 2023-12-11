@@ -36,6 +36,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Framework :: Django",
         "Framework :: Django :: 3.2",
         "Framework :: Django :: 4.0",
@@ -48,8 +49,8 @@ setup(
     install_requires=[
         "Wagtail>=4.1",
         "user-agents>=2.2,<2.3",
-        "numpy>=1.19.4,<1.25",
-        "scipy>=1.5.4,<1.10",
+        "numpy>=1.19.4,<1.27",
+        "scipy>=1.5.4,<1.12",
     ],
     extras_require={
         "testing": ["dj-database-url==0.5.0", "freezegun==1.2.1"],
