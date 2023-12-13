@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9] - UNRELEASED
 
-- Nothing new yet
+- [Add missing migration](https://github.com/wagtail-nest/wagtail-ab-testing/pull/65)
+- [Remove outdated css file](https://github.com/wagtail-nest/wagtail-ab-testing/pull/66)
+- [Set cookie path to URL of homepage](https://github.com/wagtail-nest/wagtail-ab-testing/pull/67)
+- [Fix Safari JS error accessing `window.external`](https://github.com/wagtail-nest/wagtail-ab-testing/pull/68)
+- [Support for Python 3.12 and Django 5.0](https://github.com/wagtail-nest/wagtail-ab-testing/pull/69)
 
 
 ## [0.8] - 2023-11-16
