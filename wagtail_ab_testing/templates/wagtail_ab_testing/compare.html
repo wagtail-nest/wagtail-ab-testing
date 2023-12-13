@@ -10,8 +10,3 @@
         {% include "./includes/comparison.html" %}
     </div>
 {% endblock %}
-
-{% block extra_css %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% versioned_static 'wagtailadmin/css/layouts/compare-revisions.css' %}" type="text/css" />
-{% endblock %}
