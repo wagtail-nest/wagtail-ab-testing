@@ -15,7 +15,6 @@
             version: '{{ version|escapejs }}',
             goalEvent: '{{ test.goal_event|escapejs }}',
             goalPageId: {% if test.goal_page %}{{ test.goal_page.id }}{% else %}null{% endif %},
-            cookiePath: '{{ cookie_path|escapejs }}',
             {% endif %}
 
             urls: {

@@ -47,7 +47,6 @@
             // We could check the cookie instead, but it's possible that the user has cleared their cookies but not local storage
             if (goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent].indexOf(window.wagtailAbTesting.testId) === -1) {
                 var cookieName = 'wagtail-ab-testing_' + window.wagtailAbTesting.testId + '_version';
-                var cookiePath = window.wagtailAbTesting.cookiePath;
                 if (!document.cookie.includes(cookieName)) {
                     fetch(
                         window.wagtailAbTesting.urls.registerParticipant, {
@@ -65,7 +64,7 @@
                             // Put the version into a cookie so that Wagtail continues to serve this version
                             var expires = new Date();
                             expires.setFullYear(expires.getFullYear() + 1);
-                            document.cookie = cookieName + '=' + window.wagtailAbTesting.version + '; path=' + cookiePath + '; expires=' + expires.toUTCString();
+                            document.cookie = cookieName + '=' + window.wagtailAbTesting.version + '; path=/; expires=' + expires.toUTCString();
 
                             // Store the test ID against the goal event in the goals data structure
                             // We will use this for knowing when to call the goal reached API later
