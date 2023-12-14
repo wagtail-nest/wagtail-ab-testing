@@ -1,6 +1,6 @@
 (function() {
     // Check if Do Not Track is enabled
-    if (window.doNotTrack || navigator.doNotTrack || navigator.msDoNotTrack || 'msTrackingProtectionEnabled' in window.external) {
+    if (window.doNotTrack || navigator.doNotTrack || navigator.msDoNotTrack) {
         if (window.doNotTrack == '1' || navigator.doNotTrack == 'yes' || navigator.doNotTrack == '1' || navigator.msDoNotTrack == '1' || 'msTrackingProtectionEnabled' in window.external && window.external.msTrackingProtectionEnabled()) {
             // Don't track this browser
             return;
