@@ -3,7 +3,7 @@ from django.core import management
 from django.test import TestCase
 
 
-class TestReportView(TestCase):
+class TestMigrations(TestCase):
     def test_migrations(self):
         output = StringIO()
 
