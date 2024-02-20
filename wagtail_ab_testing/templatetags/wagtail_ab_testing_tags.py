@@ -11,7 +11,7 @@ register = template.Library()
 def wagtail_ab_testing_script(context):
     request = context['request']
     serving_variant = getattr(request, 'wagtail_ab_testing_serving_variant', False)
-    
+
     track = request_is_trackable(request)
     if not track:
         return {
