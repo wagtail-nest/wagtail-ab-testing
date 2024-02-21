@@ -3,41 +3,37 @@
 $color-control: #0c0073;
 $color-variant: #ef746f;
 
-$light-teal: #e1f0f0;
-$dark-teal: #007273;
-
-$charcoal-grey: #333;
-
 .abtest-progressbar {
     position: relative;
 
     &__sample-size {
         width: 100%;
         height: 160px;
+        fill: var(--w-color-text-placeholder);
     }
 
     &__sample-size line {
-        stroke: black;
+        stroke: var(--w-color-border-field-default);
         stroke-width: 2px;
     }
 
     &__sample-size-bg {
-        fill: $light-teal;
+        fill: var(--w-color-surface-field-inactive);
     }
 
     &__sample-size-bar {
-        fill: $dark-teal;
+        fill: var(--w-color-surface-button-default);
     }
 
     &__sample-size-percentage {
         font-weight: bold;
         font-size: 40px;
-        fill: white;
+        fill: var(--w-color-text-button);
     }
 
     &__sample-size-complete {
         font-size: 17px;
-        fill: white;
+        fill: var(--w-color-text-button);
     }
 }
 
@@ -53,12 +49,21 @@ $charcoal-grey: #333;
         &--control {
             padding-right: 10px;
             color: $color-control;
-
             a {
                 color: $color-control !important;
 
                 &:hover {
                     color: darken($color-control, 10%) !important;
+                }
+            }
+            @media (prefers-color-scheme: dark) {
+                color: var(--w-color-secondary-100);
+
+                a {
+                    color: var(--w-color-secondary-100) !important;
+                    &:hover {
+                        color: var(--w-color-secondary-400) !important;
+                    }
                 }
             }
         }
@@ -87,7 +92,7 @@ $charcoal-grey: #333;
         height: 30px;
         border-bottom-width: 5px;
         border-bottom-style: solid;
-        color: white;
+        color: var(--w-color-text-button);
         text-transform: uppercase;
         text-align: center;
         font-size: 15px;
@@ -104,6 +109,9 @@ $charcoal-grey: #333;
     }
     &__version--control &__version-heading {
         border-bottom-color: $color-control;
+        @media (prefers-color-scheme: dark) {
+            border-bottom-color: var(--w-color-secondary-100);
+        }
     }
     &__version--variant &__version-heading {
         border-bottom-color: $color-variant;
@@ -111,13 +119,16 @@ $charcoal-grey: #333;
 
     &__version--control &__version-heading--winner {
         background-color: $color-control;
+        @media (prefers-color-scheme: dark) {
+            background-color: var(--w-color-secondary-100);
+        }
     }
     &__version--variant &__version-heading--winner {
         background-color: $color-variant;
     }
 
     &__version-inner {
-        border: 1px solid #eeeeee;
+        border: 1px solid var(--w-color-border-furniture);
         border-top: none;
         box-sizing: border-box;
         padding: 20px;
@@ -132,6 +143,17 @@ $charcoal-grey: #333;
         .button span {
             font-weight: bold;
         }
+    }
+
+    &__version-title--control {
+        color: $color-control;
+        @media (prefers-color-scheme: dark) {
+            color: var(--w-color-secondary-100);
+        }
+    }
+
+    &__version-title--variant {
+        color: $color-variant;
     }
 
     &__version-stats {
@@ -161,7 +183,7 @@ $charcoal-grey: #333;
     &__version-stat-name {
         text-transform: uppercase;
         font-size: 20px;
-        color: $charcoal-grey;
+        color: var(--w-color-text-placeholder);
         margin-top: 20px;
 
         span {
@@ -172,4 +194,16 @@ $charcoal-grey: #333;
 
 .abtest-chart {
     padding-top: 20px;
+
+    // Chart lines
+    .c3-axis .tick line,
+    .c3-axis .domain {
+        stroke: var(--w-color-text-label);
+    }
+
+    // Axes text
+    .c3-axis .tick text tspan,
+    .c3-legend-item text {
+        fill: var(--w-color-text-label);
+    }
 }
