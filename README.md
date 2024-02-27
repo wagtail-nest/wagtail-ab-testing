@@ -195,78 +195,93 @@ To run Wagtail A/B testing on a site that uses Cloudflare, firstly generate a se
 WAGTAIL_AB_TESTING_WORKER_TOKEN = '<token here>'
 ```
 
-Then set up a Cloudflare Worker based on the following JavaScript. Don't forget to set ``WAGTAIL_DOMAIN``:
+Then set up a Cloudflare Worker based on the following JavaScript:
 
 ```javascript
-// Set this to the domain name of your backend server
-const WAGTAIL_DOMAIN = "mysite.herokuapp.com";
-
 // Set to false if Cloudflare shouldn't automatically redirect requests to use HTTPS
 const ENFORCE_HTTPS = true;
 
-async function handleRequest(request) {
-  const url = new URL(request.url)
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url)
 
-  if (url.protocol == 'http:' && ENFORCE_HTTPS) {
-    url.protocol = 'https:';
-    return Response.redirect(url, 301);
-  }
+    // Set this to the domain name of your backend server
+    const WAGTAIL_DOMAIN = env.WAGTAIL_DOMAIN;
 
-  if (request.method === 'GET') {
-    const newRequest = new Request(request, {
+    // This should match the token on your Django settings
+    const WAGTAIL_AB_TESTING_WORKER_TOKEN = env.WAGTAIL_AB_TESTING_WORKER_TOKEN;
+
+    if (url.protocol == 'http:' && ENFORCE_HTTPS) {
+      url.protocol = 'https:';
+      return Response.redirect(url, 301);
+    }
+
+    if (request.method === 'GET') {
+      const newRequest = new Request(request, {
       headers: {
         ...request.headers,
         'Authorization': 'Token ' + WAGTAIL_AB_TESTING_WORKER_TOKEN,
         'X-Requested-With': 'WagtailAbTestingWorker'
       }
-    });
+      });
 
-    url.hostname = WAGTAIL_DOMAIN;
-    response = await fetch(url.toString(), newRequest);
+      url.hostname = WAGTAIL_DOMAIN;
+      response = await fetch(url.toString(), newRequest);
 
-    // If there is a test running at the URL, the worker would return
-    // a JSON response containing both versions of the page. Also, it
-    // returns the test ID in the X-WagtailAbTesting-Test header.
-    const testId = response.headers.get('X-WagtailAbTesting-Test');
-    if (testId) {
-      // Participants of a test would have a cookie that tells us which
-      // version of the page being tested on that they should see
-      // If they don't have this cookie, serve a random version
-      const versionCookieName = `abtesting-${testId}-version`;
-      const cookie = request.headers.get('cookie');
-      let version;
-      if (cookie && cookie.includes(`${versionCookieName}=control`)) {
-        version = 'control';
-      } else if (cookie && cookie.includes(`${versionCookieName}=variant`)) {
-        version = 'variant';
-      } else if (Math.random() < 0.5) {
-        version = 'control';
-      } else {
-        version = 'variant';
-      }
+      // If there is a test running at the URL, the worker would return
+      // a JSON response containing both versions of the page. Also, it
+      // returns the test ID in the X-WagtailAbTesting-Test header.
+      const testId = response.headers.get('X-WagtailAbTesting-Test');
+      if (testId) {
+        // Participants of a test would have a cookie that tells us which
+        // version of the page being tested on that they should see
+        // If they don't have this cookie, serve a random version
+        const versionCookieName = `abtesting-${testId}-version`;
+        const cookie = request.headers.get('cookie');
+        let version;
+        if (cookie && cookie.includes(`${versionCookieName}=control`)) {
+          version = 'control';
+        } else if (cookie && cookie.includes(`${versionCookieName}=variant`)) {
+          version = 'variant';
+        } else if (Math.random() < 0.5) {
+          version = 'control';
+        } else {
+          version = 'variant';
+        }
 
-      return response.json().then(json => {
-        return new Response(json[version], {
+        return response.json().then(json => {
+          return new Response(json[version], {
           headers: {
             ...response.headers,
             'Content-Type': 'text/html'
           }
+          });
         });
-      });
+      }
+
+      return response;
+    } else {
+      return await fetch(url.toString(), request);
     }
-
-    return response;
-  } else {
-    return await fetch(url.toString(), request);
-  }
-}
-
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request));
-});
+  },
+};
 ```
 
-Add a variable to the worker called ``WAGTAIL_AB_TESTING_WORKER_TOKEN``, giving it the same token value that you generated earlier.
+You can use CloudFlare's `wrangler` to setup your worker. On an empty directory, install `wrangler`:
+
+```sh
+npm install wrangler --save-dev
+```
+
+and then initialise a new Wrangler project:
+
+```sh
+npx wrangler init
+```
+
+Follow the CLI prompt until it generates a project for you, then add the JS script above to `src/index.js`.
+
+Add a ``WAGTAIL_AB_TESTING_WORKER_TOKEN`` variable to the worker, giving it the same token value that you generated earlier. Make sure to also setup a ``WAGTAIL_DOMAIN`` variable with the value of the domain where your website is hosted (e.g. `"www.mysite.com"`).
 
 Finally, add a route into Cloudflare so that it routes all traffic through this worker.
 
