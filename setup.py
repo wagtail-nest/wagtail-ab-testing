@@ -15,7 +15,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="wagtail-ab-testing",
-    version="0.9",
+    version="0.10",
     description="A/B Testing for Wagtail",
     long_description=long_description,
     long_description_content_type="text/markdown",
