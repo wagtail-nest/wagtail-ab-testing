@@ -25,23 +25,21 @@ interface GoalPageSelectorProps {
 }
 
 const GoalPageSelector: FunctionComponent<GoalPageSelectorProps> = ({
-    onChangeSelectedPage
+    onChangeSelectedPage,
 }) => {
     const [selectedPageId, setSelectedPageId] = React.useState<number | null>(
-        null
+        null,
     );
-    const [
-        selectedPageInfo,
-        setSelectedPageInfo
-    ] = React.useState<PageAPI | null>(null);
+    const [selectedPageInfo, setSelectedPageInfo] =
+        React.useState<PageAPI | null>(null);
 
     // Fetch info about the page whenever the selected page ID is changed
     useEffect(() => {
         if (selectedPageId) {
             fetch(
-                `${wagtailConfig.ADMIN_ROOT_URL}api/main/pages/${selectedPageId}/`
+                `${wagtailConfig.ADMIN_ROOT_URL}api/main/pages/${selectedPageId}/`,
             )
-                .then(response => response.json())
+                .then((response) => response.json())
                 .then(setSelectedPageInfo);
         } else {
             setSelectedPageInfo(null);
@@ -54,17 +52,17 @@ const GoalPageSelector: FunctionComponent<GoalPageSelectorProps> = ({
     }, [selectedPageInfo]);
 
     const onClickChooseDifferentPage = (
-        e: React.MouseEvent<HTMLButtonElement>
+        e: React.MouseEvent<HTMLButtonElement>,
     ) => {
         e.preventDefault();
         (window as any).ModalWorkflow({
             url: (window as any).chooserUrls.pageChooser,
             onload: (window as any).PAGE_CHOOSER_MODAL_ONLOAD_HANDLERS,
             responses: {
-                pageChosen: function(pageData: any) {
+                pageChosen: function (pageData: any) {
                     setSelectedPageId(pageData.id);
-                }
-            }
+                },
+            },
         });
     };
 
@@ -112,7 +110,7 @@ interface FieldProps {
 const Field = styled.div<FieldProps>`
     padding-top: 10px;
     padding-bottom: 10px;
-    display: ${props => (props.visible != false ? 'block' : 'none')};
+    display: ${(props) => (props.visible != false ? 'block' : 'none')};
 `;
 
 interface GoalSelectorProps {
@@ -130,7 +128,7 @@ interface GoalSelectorProps {
 
 const GoalSelector: FunctionComponent<GoalSelectorProps> = ({
     goalTypesByPageType,
-    globalGoalTypes
+    globalGoalTypes,
 }) => {
     const [selectedPageType, setSelectedPageType] = React.useState<
         string | null
@@ -170,7 +168,7 @@ const GoalSelector: FunctionComponent<GoalSelectorProps> = ({
                 </select>
                 <p>
                     {gettext(
-                        'By default pages only have one goal (Page Visit). Read the developer docs to learn why, and how to add custom goals.'
+                        'By default pages only have one goal (Page Visit). Read the developer docs to learn why, and how to add custom goals.',
                     )}
                 </p>
             </Field>
@@ -188,7 +186,7 @@ export function initGoalSelector() {
 
             ReactDOM.render(
                 <GoalSelector {...JSON.parse(element.dataset.props)} />,
-                element
+                element,
             );
         });
 }

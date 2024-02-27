@@ -16,12 +16,12 @@ interface PageEditorTabProps {
 
 const PageEditorTab: FunctionComponent<PageEditorTabProps> = ({
     tests,
-    can_create_abtest
+    can_create_abtest,
 }) => {
     const noPermissionMessage = (
         <p className="help-block help-info">
             {gettext(
-                'You do not have permission to create A/B tests. Please contact an administrator if you need to create one.'
+                'You do not have permission to create A/B tests. Please contact an administrator if you need to create one.',
             )}
         </p>
     );
@@ -39,7 +39,7 @@ const PageEditorTab: FunctionComponent<PageEditorTabProps> = ({
                         </tr>
                     </thead>
                     <tbody>
-                        {tests.map(test => (
+                        {tests.map((test) => (
                             <tr key={test.id}>
                                 <td className="title">{test.started_at}</td>
                                 <td>
@@ -65,12 +65,12 @@ const PageEditorTab: FunctionComponent<PageEditorTabProps> = ({
                         <ol>
                             <li style={{ listStyleType: 'decimal' }}>
                                 {gettext(
-                                    'Ensure you have a published version of the page (this will act as the "Control" in your test)'
+                                    'Ensure you have a published version of the page (this will act as the "Control" in your test)',
                                 )}
                             </li>
                             <li style={{ listStyleType: 'decimal' }}>
                                 {gettext(
-                                    'Make changes to the page content (this will act as the "Variant" in your test) and choose "SAVE AND CREATE A/B TEST"'
+                                    'Make changes to the page content (this will act as the "Variant" in your test) and choose "SAVE AND CREATE A/B TEST"',
                                 )}
                             </li>
                             <li style={{ listStyleType: 'decimal' }}>
