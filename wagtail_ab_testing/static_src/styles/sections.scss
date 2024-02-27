@@ -22,27 +22,27 @@
             color: inherit;
             font-size: inherit;
         }
-        &::before {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-shadow: none;
-            font-family: wagtail;
-            text-transform: none;
-            content: '';
-            text-align: center;
-            display: block;
-            position: absolute;
-            z-index: 2;
-            font-size: 2em;
-            top: 0;
-            line-height: 1.8em;
-            left: 0;
-            width: 50px;
-            color: #fff;
-            padding: 0;
-            margin: 0;
-            background-color: #f37e77;
-        }
+    }
+
+    &__icon {
+        height: 1rem;
+        width: 1rem;
+    }
+
+    &__icon-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 50px;
+        color: #fff;
+        padding: 0;
+        margin: 0;
+        background-color: #f37e77;
     }
 
     &__content {
