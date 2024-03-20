@@ -7,6 +7,14 @@
         }
     }
 
+    // Read the tracking parameters from JSON script
+    let trackingParams = null;
+    if (document.getElementById('abtesting-tracking-params')) {
+        trackingParams = JSON.parse(document.getElementById('abtesting-tracking-params').textContent);
+        // Attach the wagtailAbTesting object to the window
+        window.wagtailAbTesting = trackingParams;
+    }
+
     function getCookie(cookieName) {
         var cookies = document.cookie.split(';');
         for (var i = 0; i < cookies.length; i++) {
