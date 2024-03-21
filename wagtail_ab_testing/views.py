@@ -20,7 +20,7 @@ from rest_framework.decorators import (
     permission_classes,
 )
 from rest_framework.response import Response
-from wagtail.admin import messages
+from wagtail.admin import messages, panels
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
 from wagtail.admin.views.reports import ReportView
@@ -52,6 +52,40 @@ class CreateAbTestForm(forms.ModelForm):
     class Meta:
         model = AbTest
         fields = ["name", "hypothesis", "goal_event", "goal_page", "sample_size"]
+
+    panels = [
+        panels.MultiFieldPanel(
+            [
+                panels.FieldPanel("name"),
+                panels.FieldPanel("hypothesis"),
+            ],
+            heading=_("Enter test details"),
+        ),
+        panels.MultiFieldPanel(
+            [
+                # A dummy help panel to mount the react component:
+                panels.HelpPanel(attrs={"data-component": "goal-selector"}),
+            ],
+            heading=_("Choose a goal"),
+        ),
+        panels.MultiFieldPanel(
+            [
+                panels.FieldPanel("sample_size"),
+                panels.HelpPanel(
+                    _(
+                        "Need help calculating sample size for A/B tests? "
+                        'Try <a href="https://www.optimizely.com/uk/sample-size-calculator/" '
+                        'target="_blank">Optimisely</a>, '
+                        '<a href="https://www.evanmiller.org/ab-testing/sample-size.html" '
+                        'target="_blank">Evan Miller</a>, or '
+                        '<a href="https://www.abtasty.com/sample-size-calculator/" '
+                        'target="_blank">AB Tasty</a>.'
+                    )
+                ),
+            ],
+            heading=_("Sample size"),
+        ),
+    ]
 
 
 def add_ab_test_checks(request, page):
@@ -150,6 +184,11 @@ def add_form(request, page_id):
 
     event_types = get_event_types().items()
 
+    panel = panels.ObjectList(form.panels).bind_to_model(AbTest)
+    bound_panel = panel.get_bound_panel(
+        instance=form.instance, form=form, request=request
+    )
+
     """
     Template: wagtail_ab_testing/add_form.html is rendered here
 
@@ -163,6 +202,7 @@ def add_form(request, page_id):
         {
             "page": page,
             "form": form,
+            "panel": bound_panel,
             "goal_selector_props": json.dumps(
                 {
                     "goalTypesByPageType": {
