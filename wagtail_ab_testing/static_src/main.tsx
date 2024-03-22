@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initGoalSelector();
 
     // Charts on A/B test progress
-    document.querySelectorAll('[component="chart"]').forEach(chartElement => {
+    document.querySelectorAll('[component="chart"]').forEach((chartElement) => {
         if (
             !(chartElement instanceof HTMLElement) ||
             !chartElement.getAttribute('data')
@@ -23,19 +23,19 @@ document.addEventListener('DOMContentLoaded', () => {
             bindto: chartElement,
             data: JSON.parse(chartElement.getAttribute('data')!),
             padding: {
-                right: 20
+                right: 20,
             },
             axis: {
                 x: {
                     type: 'timeseries',
                     tick: {
-                        format: '%Y-%m-%d'
-                    }
-                }
+                        format: '%Y-%m-%d',
+                    },
+                },
             },
             color: {
-                pattern: ['#0C0073', '#EF746F']
-            }
+                pattern: ['#0C0073', '#EF746F'],
+            },
         });
     });
 

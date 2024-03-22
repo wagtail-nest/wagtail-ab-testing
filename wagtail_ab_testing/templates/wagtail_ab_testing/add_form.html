@@ -11,12 +11,16 @@
 
         <section class="section">
             <div class="section__title">
+                <div class="section__icon-container">
+                    {% icon "arrow-down" classname="section__icon" %}
+                </div>
                 <h3>{% trans "Enter test details" %}</h3>
             </div>
 
             <div class="section__content nice-padding">
                 <ul class="fields">
                     <li>
+                        {# TODO: Wagtail 6.0 introduced {% formattedfield %} to replace this template include #}
                         {% include "wagtailadmin/shared/field.html" with field=form.name %}
                     </li>
                     <li>
@@ -29,6 +33,9 @@
 
         <section class="section">
             <div class="section__title">
+                <div class="section__icon-container">
+                    {% icon "arrow-down" classname="section__icon" %}
+                </div>
                 <h3>{% trans "Choose a goal" %}</h3>
             </div>
 
@@ -40,6 +47,9 @@
 
         <section class="section">
             <div class="section__title">
+                <div class="section__icon-container">
+                    {% icon "arrow-down" classname="section__icon" %}
+                </div>
                 <h3>{% trans "Sample size" %}</h3>
             </div>
 
