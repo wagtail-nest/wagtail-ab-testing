@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.10] - UNRELEASED
+## [0.10] - 2024-03-22
 
-Nothing new yet
+- [Add support for Wagtail 6.0](https://github.com/wagtail-nest/wagtail-ab-testing/pull/77)
+- [Drop support for Wagtail 4.1, 4.2, 5.0, 5.1](https://github.com/wagtail-nest/wagtail-ab-testing/pull/77)
+- [Adjust styling of create test page and testing log page to match look and feel of Wagtail 5.2 and up](https://github.com/wagtail-nest/wagtail-ab-testing/pull/80)
+- [Add support for dark mode](https://github.com/wagtail-nest/wagtail-ab-testing/pull/76)
+- [Update CloudFlare worker setup docs](https://github.com/wagtail-nest/wagtail-ab-testing/pull/72)
+- [Move in-page script to `tracker.js`](https://github.com/wagtail-nest/wagtail-ab-testing/pull/73)
+- [Maintenance: update all frontend dependencies to latest versions](https://github.com/wagtail-nest/wagtail-ab-testing/pull/78)
 
 ## [0.9] - 2023-12-14
 
