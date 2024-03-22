@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11] - [Unreleased]
+
+Nothing yet.
+
 ## [0.10] - 2024-03-22
 
 - [Add support for Wagtail 6.0](https://github.com/wagtail-nest/wagtail-ab-testing/pull/77)
