@@ -113,6 +113,8 @@ const Field = styled.div<FieldProps>`
     display: ${(props) => (props.visible != false ? 'block' : 'none')};
 `;
 
+const RequiredMark = () => <span className="w-required-mark">*</span>;
+
 interface GoalSelectorProps {
     goalTypesByPageType: {
         [pageType: string]: {
@@ -148,38 +150,54 @@ const GoalSelector: FunctionComponent<GoalSelectorProps> = ({
 
     return (
         <div>
-            <Field>
-                <SunkenLabel>
+            <Field className="w-panel__wrapper">
+                <SunkenLabel className="w-field__label">
                     {gettext('Which page is the goal on?')}
                 </SunkenLabel>
                 <GoalPageSelector onChangeSelectedPage={onChangeSelectedPage} />
             </Field>
-            <Field visible={!!goalTypes}>
-                <SunkenLabel>{gettext('What is the goal?')}</SunkenLabel>
-                <select name="goal_event">
-                    <option key="" value="">
-                        Choose a goal
-                    </option>
-                    {goalTypes.map(({ slug, name }) => (
-                        <option key={slug} value={slug}>
-                            {name}
+            <Field visible={!!goalTypes} className="w-panel__wrapper">
+                <SunkenLabel className="w-field__label">
+                    {gettext('What is the goal?')}
+                    <RequiredMark />
+                </SunkenLabel>
+                <div className="w-field__input">
+                    <select name="goal_event">
+                        <option key="" value="">
+                            Choose a goal
                         </option>
-                    ))}
-                </select>
-                <p>
-                    {gettext(
-                        'By default pages only have one goal (Page Visit). Read the developer docs to learn why, and how to add custom goals.',
-                    )}
-                </p>
+                        {goalTypes.map(({ slug, name }) => (
+                            <option key={slug} value={slug}>
+                                {name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </Field>
+            <div className="w-panel__wrapper">
+                <fieldset>
+                    <div className="">
+                        {gettext(
+                            'By default pages only have one goal (Page Visit). Read the developer docs to learn why, and how to add custom goals.',
+                        )}
+                    </div>
+                </fieldset>
+            </div>
         </div>
     );
 };
 
 export function initGoalSelector() {
+    const goalSelectorProps = JSON.parse(
+        document.getElementById('data-goal-selector-props')?.textContent ||
+            '{}',
+    );
+
     document
         .querySelectorAll('div[data-component="goal-selector"]')
         .forEach((element: HTMLDivElement) => {
+            element.setAttribute('data-props', goalSelectorProps);
+
             if (!element.dataset.props) {
                 return;
             }

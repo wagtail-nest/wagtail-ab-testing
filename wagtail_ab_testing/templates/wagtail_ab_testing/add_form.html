@@ -6,80 +6,31 @@
     {% trans "Create an A/B Test" as title %}
     {% include "wagtailadmin/shared/header.html" with title=title subtitle=page.title icon='people-arrows' merged=1 %}
 
-    <form method="post">
-        {% csrf_token %}
+    <div class="nice-padding">
+        <form method="post">
+            {% csrf_token %}
 
-        <section class="section">
-            <div class="section__title">
-                <div class="section__icon-container">
-                    {% icon "arrow-down" classname="section__icon" %}
-                </div>
-                <h3>{% trans "Enter test details" %}</h3>
-            </div>
+            {% component panel %}
 
-            <div class="section__content nice-padding">
-                <ul class="fields">
-                    <li>
-                        {# TODO: Wagtail 6.0 introduced {% formattedfield %} to replace this template include #}
-                        {% include "wagtailadmin/shared/field.html" with field=form.name %}
-                    </li>
-                    <li>
-                        {% include "wagtailadmin/shared/field.html" with field=form.hypothesis %}
-                    </li>
-                </ul>
-            </div>
-        </section>
+            <section class="w-form-width">
+                <p class="section__content">
+                    <button type="submit" class="button button-primary">{% trans "Save" %}</button>
+                    <button type="submit" name="start" class="button button-primary">{% trans "Save and start test" %}</button>
+                </p>
 
-
-        <section class="section">
-            <div class="section__title">
-                <div class="section__icon-container">
-                    {% icon "arrow-down" classname="section__icon" %}
-                </div>
-                <h3>{% trans "Choose a goal" %}</h3>
-            </div>
-
-            <div class="section__content nice-padding">
-                <div data-component="goal-selector" data-props="{{ goal_selector_props }}"></div>
-            </div>
-        </section>
-
-
-        <section class="section">
-            <div class="section__title">
-                <div class="section__icon-container">
-                    {% icon "arrow-down" classname="section__icon" %}
-                </div>
-                <h3>{% trans "Sample size" %}</h3>
-            </div>
-
-            <div class="section__content nice-padding">
-                <ul class="fields">
-                    <li>
-                        {% include "wagtailadmin/shared/field.html" with field=form.sample_size %}
-                    </li>
-                </ul>
-                {% trans 'Need help calculating sample size for A/B tests? Try <a href="https://www.optimizely.com/uk/sample-size-calculator/" target="_blank">Optimisely</a>, <a href="https://www.evanmiller.org/ab-testing/sample-size.html" target="_blank">Evan Miller</a>, or <a href="https://www.abtasty.com/sample-size-calculator/" target="_blank">AB Tasty</a>.' %}
-            </div>
-        </section>
-
-        <p class="section__content nice-padding">
-            <button type="submit" class="button button-primary">{% trans "Save" %}</button>
-            <button type="submit" name="start" class="button button-primary">{% trans "Save and start test" %}</button>
-        </p>
-
-        <div class="nice-padding">
-            {% help_block status="info"%}
-                <p>{% trans "A/B tests are calculated using Pearson's chi squared test and are set at 95% confidence level." %}</p>
-                <p>{% trans "Traffic is split evenly between each version." %}</p>
-                <p>{% trans 'Users with "<a href="https://en.wikipedia.org/wiki/Do_Not_Track" target="_blank">Do Not Track</a>" enabled are not counted.' %}</p>
-            {% endhelp_block %}
-        </div>
-    </form>
+                {% help_block status="info"%}
+                    <p>{% trans "A/B tests are calculated using Pearson's chi squared test and are set at 95% confidence level." %}</p>
+                    <p>{% trans "Traffic is split evenly between each version." %}</p>
+                    <p>{% trans 'Users with "<a href="https://en.wikipedia.org/wiki/Do_Not_Track" target="_blank">Do Not Track</a>" enabled are not counted.' %}</p>
+                {% endhelp_block %}
+            </section>
+        </form>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
     {% include "wagtailadmin/pages/_editor_js.html" %}
+    {{ goal_selector_props|json_script:"data-goal-selector-props" }}
     <script>
         {% url 'wagtailadmin_home' as wagtailadmin_root_url %}
         wagtailConfig.ADMIN_ROOT_URL = '{{ wagtailadmin_root_url|escapejs }}';
