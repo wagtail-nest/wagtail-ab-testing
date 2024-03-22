@@ -189,7 +189,8 @@ const GoalSelector: FunctionComponent<GoalSelectorProps> = ({
 
 export function initGoalSelector() {
     const goalSelectorProps = JSON.parse(
-        document.getElementById('data-goal-selector-props')?.textContent || '',
+        document.getElementById('data-goal-selector-props')?.textContent ||
+            '{}',
     );
 
     document
