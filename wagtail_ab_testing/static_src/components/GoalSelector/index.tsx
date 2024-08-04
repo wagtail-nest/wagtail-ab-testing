@@ -56,7 +56,7 @@ const GoalPageSelector: FunctionComponent<GoalPageSelectorProps> = ({
     ) => {
         e.preventDefault();
         (window as any).ModalWorkflow({
-            url: (window as any).chooserUrls.pageChooser,
+            url: (window as any).AB_TESTING_CHOOSE_PAGE_URL,
             onload: (window as any).PAGE_CHOOSER_MODAL_ONLOAD_HANDLERS,
             responses: {
                 pageChosen: function (pageData: any) {

@@ -34,6 +34,8 @@
     <script>
         {% url 'wagtailadmin_home' as wagtailadmin_root_url %}
         wagtailConfig.ADMIN_ROOT_URL = '{{ wagtailadmin_root_url|escapejs }}';
+        {% url 'wagtailadmin_choose_page' as wagtailadmin_choose_page_url %}
+        window.AB_TESTING_CHOOSE_PAGE_URL = '{{ wagtailadmin_choose_page_url|escapejs }}';
     </script>
     <script src="{% url 'wagtail_ab_testing_admin:javascript_catalog' %}"></script>
     <script type="text/javascript" src="{% versioned_static 'wagtailadmin/js/page-chooser-modal.js' %}"></script>
