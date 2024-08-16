@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
-import getJsonScript from '../../utils/getJsonScript'
+import getJsonScript from '../../utils/getJsonScript';
 
 // A label element without Wagtail's 'float: left;' rule applied
 const SunkenLabel = styled.label`
@@ -37,10 +37,10 @@ const GoalPageSelector: FunctionComponent<GoalPageSelectorProps> = ({
     // Fetch info about the page whenever the selected page ID is changed
     useEffect(() => {
         if (selectedPageId) {
-            const adminRootUrl = getJsonScript('wagtail-ab-testing-admin-root-url');
-            fetch(
-                `${adminRootUrl}api/main/pages/${selectedPageId}/`,
-            )
+            const adminRootUrl = getJsonScript(
+                'wagtail-ab-testing-admin-root-url',
+            );
+            fetch(`${adminRootUrl}api/main/pages/${selectedPageId}/`)
                 .then((response) => response.json())
                 .then(setSelectedPageInfo);
         } else {
@@ -58,7 +58,7 @@ const GoalPageSelector: FunctionComponent<GoalPageSelectorProps> = ({
     ) => {
         e.preventDefault();
         (window as any).ModalWorkflow({
-            url: getJsonScript("wagtail-ab-testing-choose-page-url"),
+            url: getJsonScript('wagtail-ab-testing-choose-page-url'),
             onload: (window as any).PAGE_CHOOSER_MODAL_ONLOAD_HANDLERS,
             responses: {
                 pageChosen: function (pageData: any) {
