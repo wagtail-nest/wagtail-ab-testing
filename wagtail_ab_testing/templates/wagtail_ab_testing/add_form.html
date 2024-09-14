@@ -31,10 +31,10 @@
 {% block extra_js %}
     {% include "wagtailadmin/pages/_editor_js.html" %}
     {{ goal_selector_props|json_script:"data-goal-selector-props" }}
-    <script>
-        {% url 'wagtailadmin_home' as wagtailadmin_root_url %}
-        wagtailConfig.ADMIN_ROOT_URL = '{{ wagtailadmin_root_url|escapejs }}';
-    </script>
+    {% url 'wagtailadmin_home' as wagtailadmin_root_url %}
+    {{ wagtailadmin_root_url|json_script:"wagtail-ab-testing-admin-root-url" }}
+    {% url 'wagtailadmin_choose_page' as wagtailadmin_choose_page_url %}
+    {{ wagtailadmin_choose_page_url|json_script:"wagtail-ab-testing-choose-page-url" }}
     <script src="{% url 'wagtail_ab_testing_admin:javascript_catalog' %}"></script>
     <script type="text/javascript" src="{% versioned_static 'wagtailadmin/js/page-chooser-modal.js' %}"></script>
     <script src="{% versioned_static 'wagtail_ab_testing/js/wagtail-ab-testing.js' %}"></script>
