@@ -442,7 +442,7 @@ class AbTestHourlyLog(models.Model):
 
         This will create a new AbTestHourlyLog record if one doesn't exist for the current hour.
         """
-        time = time.astimezone(tz.utc) if time else datetime.utcnow()
+        time = time.astimezone(tz.utc) if time else datetime.now(tz.utc)
         date = time.date()
         hour = time.hour
 
