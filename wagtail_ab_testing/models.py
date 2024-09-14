@@ -448,6 +448,7 @@ class AbTestHourlyLog(models.Model):
 
         if connection.vendor == "postgresql":
             # Use fast, atomic UPSERT query on PostgreSQL
+            # This needs to be done as a raw query because Django's ORM doesn't support atomic UPSERTs
             with connection.cursor() as cursor:
                 table_name = connection.ops.quote_name(cls._meta.db_table)
 
@@ -476,7 +477,10 @@ class AbTestHourlyLog(models.Model):
                     ],
                 )
         else:
-            # Fall back to running two queries (with small potential for race conditions if things run slowly)
+            # Fall back to running two queries. This is less efficient.
+            # We cannot use the simpler update_or_create here
+            # because it holds a lock on the row for the duration
+            # it takes to run the update query
             hourly_log, created = cls.objects.get_or_create(
                 ab_test=ab_test,
                 version=version,
@@ -489,8 +493,8 @@ class AbTestHourlyLog(models.Model):
             )
 
             if not created:
-                hourly_log.participants += participants
-                hourly_log.conversions += conversions
+                hourly_log.participants = models.F("participants") + participants
+                hourly_log.conversions = models.F("conversions") + conversions
                 hourly_log.save(update_fields=["participants", "conversions"])
 
     class Meta:
