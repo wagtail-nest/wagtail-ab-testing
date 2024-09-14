@@ -311,3 +311,7 @@ python -m pip install -e .[testing]
 ```shell
 python testmanage.py test
 ```
+
+## Credits
+
+`wagtail-ab-testing` was originally created by [Karl Hobley](https://github.com/kaedroho)
