@@ -606,6 +606,9 @@ class SearchPageTitleFilter(django_filters.CharFilter):
 
 
 class AbTestingReportFilterSet(WagtailFilterSet):
+    name = django_filters.CharFilter(
+        lookup_expr="icontains", label=gettext_lazy("Name")
+    )
     page = SearchPageTitleFilter()
     first_started_at = django_filters.DateFromToRangeFilter(
         label=gettext_lazy("Started at"), widget=DateRangePickerWidget
@@ -613,7 +616,7 @@ class AbTestingReportFilterSet(WagtailFilterSet):
 
     class Meta:
         model = AbTest
-        fields = ["status", "page", "first_started_at"]
+        fields = ["name", "status", "page", "first_started_at"]
 
 
 class AbTestingReportView(ReportView):
