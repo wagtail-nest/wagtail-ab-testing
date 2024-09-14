@@ -312,6 +312,20 @@ python -m pip install -e .[testing]
 python testmanage.py test
 ```
 
+### Formatting and linting
+
+We are using `pre-commit` to ensure that all code is formatted and linted before committing. To install the pre-commit hooks, run:
+
+```shell
+pre-commit install
+```
+
+The pre-commit hooks will run automatically before each commit. Or you can run them manually with:
+
+```shell
+pre-commit run --all-files
+```
+
 ## Credits
 
 `wagtail-ab-testing` was originally created by [Karl Hobley](https://github.com/kaedroho)
