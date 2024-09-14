@@ -21,6 +21,7 @@ from rest_framework.decorators import (
     permission_classes,
 )
 from rest_framework.response import Response
+from wagtail import VERSION as WAGTAIL_VERSION
 from wagtail.admin import messages, panels
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
@@ -616,11 +617,24 @@ class AbTestingReportFilterSet(WagtailFilterSet):
 
 
 class AbTestingReportView(ReportView):
-    template_name = "wagtail_ab_testing/report.html"
     title = gettext_lazy("A/B testing")
-    header_icon = ""
+    index_results_url_name = "wagtail_ab_testing_admin:report_results"
+    index_url_name = "wagtail_ab_testing_admin:report"
+    results_template_name = "wagtail_ab_testing/report.html"
+    header_icon = "people-arrows"
 
     filterset_class = AbTestingReportFilterSet
+
+    @property
+    def template_name(self):
+        # TODO: compatibility: remove `template_name` getter once Wagtail 6.2
+        # is the minimum supported version
+        if WAGTAIL_VERSION < (6, 2):
+            return "wagtail_ab_testing/_compat/report.html"
+
+        # On Wagtail 6.2 and above, we can return the default template name
+        # because Wagtail 6.2 will use `results_template_name`
+        return ReportView.template_name
 
     @property
     # TODO: compatibility: replace `title` attribute with `page_title` and

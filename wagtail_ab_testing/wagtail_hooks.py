@@ -35,6 +35,11 @@ def register_admin_urls():
         path("<int:page_id>/compare-draft/", views.compare_draft, name="compare_draft"),
         path("add/<int:page_id>/", views.add_form, name="add_ab_test_form"),
         path("report/", views.AbTestingReportView.as_view(), name="report"),
+        path(
+            "report/results/",
+            views.AbTestingReportView.as_view(results_only=True),
+            name="report_results",
+        ),
         path("results/<int:page_id>/<int:ab_test_id>/", views.results, name="results"),
     ]
 
