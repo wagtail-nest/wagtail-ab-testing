@@ -1,9 +1,10 @@
 # Wagtail A/B Testing
 
-[![Version](https://img.shields.io/pypi/v/wagtail-ab-testing.svg?style=flat)](https://pypi.python.org/pypi/wagtail-ab-testing/)
-[![License](https://img.shields.io/badge/license-BSD-blue.svg?style=flat)](https://opensource.org/licenses/BSD-3-Clause)
-[![Test & Lint](https://github.com/wagtail-nest/wagtail-ab-testing/actions/workflows/test.yml/badge.svg)](https://github.com/wagtail-nest/wagtail-ab-testing/actions/workflows/test.yml)
+[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD-blue.svg?style=flat)](https://opensource.org/licenses/BSD-3-Clause)
+[![Build status](https://github.com/wagtail-nest/wagtail-ab-testing/actions/workflows/test.yml/badge.svg)](https://github.com/wagtail-nest/wagtail-ab-testing/actions/workflows/test.yml)
 [![codecov](https://img.shields.io/codecov/c/github/wagtail-nest/wagtail-ab-testing?style=flat)](https://codecov.io/gh/wagtail-nest/wagtail-ab-testing)
+[![Version](https://img.shields.io/pypi/v/wagtail-ab-testing.svg?style=flat)](https://pypi.python.org/pypi/wagtail-ab-testing/)
+[![Monthly downloads](https://img.shields.io/pypi/dm/wagtail-ab-testing.svg?logo=Downloads)](https://pypi.python.org/pypi/wagtail-ab-testing/)
 
 Wagtail A/B Testing is an A/B testing package for Wagtail that allows users to create and manage A/B tests on pages through the Wagtail admin.
 
