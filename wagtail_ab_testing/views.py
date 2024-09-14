@@ -622,6 +622,12 @@ class AbTestingReportView(ReportView):
 
     filterset_class = AbTestingReportFilterSet
 
+    @property
+    # TODO: compatibility: replace `title` attribute with `page_title` and
+    # delete this getter once Wagtail 6.2 is the minimum supported version
+    def page_title(self):
+        return self.title
+
     def get_queryset(self):
         return AbTest.objects.all().order_by(
             F("first_started_at").desc(nulls_first=True)
