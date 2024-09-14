@@ -5,15 +5,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('wagtail_ab_testing', '0005_hypothesis_and_created_by'),
+        ("wagtail_ab_testing", "0005_hypothesis_and_created_by"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='abtest',
-            name='sample_size',
-            field=models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(1)]),
+            model_name="abtest",
+            name="sample_size",
+            field=models.PositiveIntegerField(
+                validators=[django.core.validators.MinValueValidator(1)]
+            ),
         ),
     ]

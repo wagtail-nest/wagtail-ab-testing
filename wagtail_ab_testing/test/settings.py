@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+
 import dj_database_url
 
 # Build paths inside the project like this: os.path.join(PROJECT_DIR, ...)
@@ -103,8 +104,8 @@ CACHES = {
 # while search isn't used in the tests, wagtail.core checks for the presence of it
 # because it's in INSTALLED_APPS
 WAGTAILSEARCH_BACKENDS = {
-    'default': {
-        'BACKEND': 'wagtail.search.backends.database',
+    "default": {
+        "BACKEND": "wagtail.search.backends.database",
     }
 }
 

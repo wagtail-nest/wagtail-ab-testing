@@ -4,25 +4,30 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('wagtail_ab_testing', '0009_rename_variant_to_version'),
+        ("wagtail_ab_testing", "0009_rename_variant_to_version"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='abtest',
-            old_name='treatment_revision',
-            new_name='variant_revision',
+            model_name="abtest",
+            old_name="treatment_revision",
+            new_name="variant_revision",
         ),
         migrations.AlterField(
-            model_name='abtest',
-            name='winning_version',
-            field=models.CharField(choices=[('control', 'Control'), ('variant', 'Variant')], max_length=9, null=True),
+            model_name="abtest",
+            name="winning_version",
+            field=models.CharField(
+                choices=[("control", "Control"), ("variant", "Variant")],
+                max_length=9,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='abtesthourlylog',
-            name='version',
-            field=models.CharField(choices=[('control', 'Control'), ('variant', 'Variant')], max_length=9),
+            model_name="abtesthourlylog",
+            name="version",
+            field=models.CharField(
+                choices=[("control", "Control"), ("variant", "Variant")], max_length=9
+            ),
         ),
     ]

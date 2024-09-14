@@ -1,5 +1,4 @@
 from django.utils.translation import gettext_lazy as __
-
 from wagtail import hooks
 
 
@@ -7,6 +6,7 @@ class BaseEvent:
     """
     A base class for events that are linked to Wagtail pages.
     """
+
     name = None
 
     # When False, the user won't be asked to select a goal page
@@ -39,6 +39,7 @@ class VisitPageEvent(BaseEvent):
     """
     Triggered when a user visits a page.
     """
+
     name = __("Visit page")
 
 
@@ -58,7 +59,7 @@ class VisitPageEvent(BaseEvent):
 
 
 BUILTIN_EVENT_TYPES = {
-    'visit-page': VisitPageEvent(),
+    "visit-page": VisitPageEvent(),
     # 'submit-form': SubmitFormPageEvent(),
 }
 
@@ -67,7 +68,7 @@ def get_event_types():
     event_types = {}
     event_types.update(BUILTIN_EVENT_TYPES)
 
-    for fn in hooks.get_hooks('register_ab_testing_event_types'):
+    for fn in hooks.get_hooks("register_ab_testing_event_types"):
         event_types.update(fn())
 
     return event_types

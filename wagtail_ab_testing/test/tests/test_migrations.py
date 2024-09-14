@@ -1,4 +1,5 @@
 from io import StringIO
+
 from django.core import management
 from django.test import TestCase
 

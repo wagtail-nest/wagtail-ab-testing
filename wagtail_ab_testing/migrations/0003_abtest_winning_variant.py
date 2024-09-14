@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('wagtail_ab_testing', '0002_abtesthourlylog'),
+        ("wagtail_ab_testing", "0002_abtesthourlylog"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='abtest',
-            name='winning_variant',
-            field=models.CharField(choices=[('control', 'Control'), ('treatment', 'Treatment')], max_length=9, null=True),
+            model_name="abtest",
+            name="winning_variant",
+            field=models.CharField(
+                choices=[("control", "Control"), ("treatment", "Treatment")],
+                max_length=9,
+                null=True,
+            ),
         ),
     ]

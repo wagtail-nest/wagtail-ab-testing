@@ -1,17 +1,18 @@
 import datetime
 import json
 
+import django_filters
 from django import forms
 from django.core.exceptions import PermissionDenied
-from django.db.models import Sum, Q, F
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import F, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import formats, timezone
 from django.utils.functional import cached_property
-from django.utils.translation import gettext as _, gettext_lazy
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.views.decorators.csrf import csrf_exempt
-import django_filters
 from django_filters.constants import EMPTY_VALUES
 from rest_framework import status
 from rest_framework.decorators import (
@@ -24,10 +25,10 @@ from wagtail.admin import messages, panels
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
 from wagtail.admin.views.reports import ReportView
-from wagtail.models import Page, PAGE_MODEL_CLASSES
+from wagtail.models import PAGE_MODEL_CLASSES, Page
 
-from .models import AbTest
 from .events import get_event_types
+from .models import AbTest
 
 
 class CreateAbTestForm(forms.ModelForm):
@@ -318,8 +319,7 @@ class AbTestActionMenu:
                 "default_menu_item": self.default_item.render_html(self.context),
                 "show_menu": bool(self.menu_items),
                 "rendered_menu_items": [
-                    menu_item.render_html(self.context)
-                    for menu_item in self.menu_items
+                    menu_item.render_html(self.context) for menu_item in self.menu_items
                 ],
             },
             request=self.request,
@@ -401,12 +401,16 @@ def get_progress_and_results_common_context(request, page, ab_test):
             )
 
     # Format stats for display
-    control_conversions_percent = formats.localize(
-        round(control_conversions / control_participants * 100, 1)
-    ) if control_participants else 0
-    variant_conversions_percent = formats.localize(
-        round(variant_conversions / variant_participants * 100, 1)
-    ) if variant_conversions else 0
+    control_conversions_percent = (
+        formats.localize(round(control_conversions / control_participants * 100, 1))
+        if control_participants
+        else 0
+    )
+    variant_conversions_percent = (
+        formats.localize(round(variant_conversions / variant_participants * 100, 1))
+        if variant_conversions
+        else 0
+    )
 
     return {
         "page": page,
@@ -650,9 +654,7 @@ def register_participant(request):
 
     if version not in [AbTest.VERSION_CONTROL, AbTest.VERSION_VARIANT]:
         return Response(
-            "version must be either '{}' or '{}'".format(
-                AbTest.VERSION_CONTROL, AbTest.VERSION_VARIANT
-            ),
+            f"version must be either '{AbTest.VERSION_CONTROL}' or '{AbTest.VERSION_VARIANT}'",
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -679,9 +681,7 @@ def goal_reached(request):
 
     if version not in [AbTest.VERSION_CONTROL, AbTest.VERSION_VARIANT]:
         return Response(
-            "version must be either '{}' or '{}'".format(
-                AbTest.VERSION_CONTROL, AbTest.VERSION_VARIANT
-            ),
+            f"version must be either '{AbTest.VERSION_CONTROL}' or '{AbTest.VERSION_VARIANT}'",
             status=status.HTTP_400_BAD_REQUEST,
         )
 

@@ -1,14 +1,14 @@
 import datetime
 
+from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 from freezegun import freeze_time
-from django.db.models.deletion import ProtectedError
 from wagtail.models import Page
 
 from wagtail_ab_testing.models import AbTest, AbTestHourlyLog
 
 
-@freeze_time('2020-11-04T22:37:00Z')
+@freeze_time("2020-11-04T22:37:00Z")
 class TestAbTestModel(TestCase):
     def setUp(self):
         home_page = Page.objects.get(id=2)
@@ -104,7 +104,13 @@ class TestAbTestModel(TestCase):
         self.assertEqual(log.participants, 0)
         self.assertEqual(log.conversions, 2)
 
-    def set_up_test(self, control_participants, control_conversions, variant_participants, variant_conversions):
+    def set_up_test(
+        self,
+        control_participants,
+        control_conversions,
+        variant_participants,
+        variant_conversions,
+    ):
         AbTestHourlyLog.objects.create(
             ab_test=self.ab_test,
             version=AbTest.VERSION_CONTROL,

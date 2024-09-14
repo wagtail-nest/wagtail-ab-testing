@@ -2,9 +2,9 @@
 
 # PURPOSE OF THIS MIGRATION
 #
-# This squashed migration was created for compatibility with Wagtail 4.0's migration from PageRevision 
-# to a generic Revision model. The `0001_initial` migration in this project must continue to reference the old 
-# PageRevision model and wagtailcore.0052_pagelogentry dependency to maintain a consistent migration history 
+# This squashed migration was created for compatibility with Wagtail 4.0's migration from PageRevision
+# to a generic Revision model. The `0001_initial` migration in this project must continue to reference the old
+# PageRevision model and wagtailcore.0052_pagelogentry dependency to maintain a consistent migration history
 # for existing databases. On the flip side, new projects that run wagtail_ab_testing's migrations for the first time
 # will encounter a PageRevision model that no longer exists which causes errors.
 #
@@ -12,11 +12,12 @@
 # This file contains no references to PageRevision and will migrate without errors.
 
 import datetime
-from django.conf import settings
+
 import django.core.validators
-from django.db import migrations, models
 import django.db.migrations.operations.special
 import django.db.models.deletion
+from django.conf import settings
+from django.db import migrations, models
 
 
 # Migrated from wagtail_ab_testing.migrations.0007_grant_moderators_add_abtest_permission
