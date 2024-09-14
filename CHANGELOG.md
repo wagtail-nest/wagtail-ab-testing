@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.11] - [Unreleased]
 
+- Add Wagtail 6.2 support
 - [Drop Django 3.2 support, Add Wagtail 6.1 support](https://github.com/wagtail-nest/wagtail-ab-testing/pull/83)
+- Drop support for Python 3.8 in preparation for its upcoming end of life
+- [Fix page chooser not working](https://github.com/wagtail-nest/wagtail-ab-testing/pull/85)
+- Fix a potential race condition during increment of AB test statistics when using any database besides PostgreSQL
+
+**Maintenance**
+
+- Resolve several deprecation warnings in the codebase
+- Switch from `setup.py` to `pyproject.toml` for package metadata
+- Format the codebase with `black` and `ruff`
 
 ## [0.10] - 2024-03-22
 
