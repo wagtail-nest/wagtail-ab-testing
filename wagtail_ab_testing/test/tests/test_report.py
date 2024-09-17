@@ -42,6 +42,7 @@ class TestReportView(WagtailTestUtils, TestCase):
     def test_get_report(self):
         response = self.client.get(reverse("wagtail_ab_testing_admin:report"))
 
+        # TODO: compatibility: remove this check when dropping support for < 6.2
         if WAGTAIL_VERSION < (6, 2):
             self.assertTemplateUsed(response, "wagtail_ab_testing/_compat/report.html")
         else:

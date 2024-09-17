@@ -630,13 +630,14 @@ class AbTestingReportView(ReportView):
 
     @property
     def template_name(self):
+        # Upgrade consideration: https://docs.wagtail.org/en/stable/releases/6.2.html#adjust-the-templates
         # TODO: compatibility: remove `template_name` getter once Wagtail 6.2
         # is the minimum supported version
+
+        # If we are on Wagtail 6.1 or below, we need to provide the 'old'-style report template
         if WAGTAIL_VERSION < (6, 2):
             return "wagtail_ab_testing/_compat/report.html"
 
-        # On Wagtail 6.2 and above, we can return the default template name
-        # because Wagtail 6.2 will use `results_template_name`
         return ReportView.template_name
 
     @property
