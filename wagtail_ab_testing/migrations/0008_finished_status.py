@@ -4,15 +4,25 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('wagtail_ab_testing', '0007_grant_moderators_add_abtest_permission'),
+        ("wagtail_ab_testing", "0007_grant_moderators_add_abtest_permission"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='abtest',
-            name='status',
-            field=models.CharField(choices=[('draft', 'Draft'), ('running', 'Running'), ('paused', 'Paused'), ('cancelled', 'Cancelled'), ('finished', 'Finished'), ('completed', 'Completed')], default='draft', max_length=20),
+            model_name="abtest",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("draft", "Draft"),
+                    ("running", "Running"),
+                    ("paused", "Paused"),
+                    ("cancelled", "Cancelled"),
+                    ("finished", "Finished"),
+                    ("completed", "Completed"),
+                ],
+                default="draft",
+                max_length=20,
+            ),
         ),
     ]

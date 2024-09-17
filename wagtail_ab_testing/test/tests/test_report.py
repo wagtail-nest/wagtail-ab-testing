@@ -2,7 +2,7 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
-
+from wagtail import VERSION as WAGTAIL_VERSION
 from wagtail.models import Page
 from wagtail.test.utils import WagtailTestUtils
 
@@ -16,14 +16,18 @@ class TestReportView(WagtailTestUtils, TestCase):
 
         # Convert the user into an moderator
         self.moderators_group = Group.objects.get(name="Moderators")
-        for permission in Permission.objects.filter(content_type=ContentType.objects.get_for_model(AbTest)):
+        for permission in Permission.objects.filter(
+            content_type=ContentType.objects.get_for_model(AbTest)
+        ):
             self.moderators_group.permissions.add(permission)
         self.user.is_superuser = False
         self.user.groups.add(self.moderators_group)
         self.user.save()
 
         # Create test page with a draft revision
-        self.page = Page.objects.get(id=1).add_child(instance=SimplePage(title="Test", slug="test"))
+        self.page = Page.objects.get(id=1).add_child(
+            instance=SimplePage(title="Test", slug="test")
+        )
         self.page.save_revision().publish()
 
         # Create an A/B test
@@ -36,6 +40,10 @@ class TestReportView(WagtailTestUtils, TestCase):
         )
 
     def test_get_report(self):
-        response = self.client.get(reverse('wagtail_ab_testing_admin:report'))
+        response = self.client.get(reverse("wagtail_ab_testing_admin:report"))
 
-        self.assertTemplateUsed(response, "wagtail_ab_testing/report.html")
+        # TODO: compatibility: remove this check when dropping support for < 6.2
+        if WAGTAIL_VERSION < (6, 2):
+            self.assertTemplateUsed(response, "wagtail_ab_testing/_compat/report.html")
+        else:
+            self.assertTemplateUsed(response, "wagtail_ab_testing/report.html")

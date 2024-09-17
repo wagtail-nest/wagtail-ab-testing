@@ -8,8 +8,8 @@ class GlobalEvent(BaseEvent):
     requires_page = False
 
 
-@hooks.register('register_ab_testing_event_types')
+@hooks.register("register_ab_testing_event_types")
 def register_submit_form_event_type():
     return {
-        'global-event': GlobalEvent(),
+        "global-event": GlobalEvent(),
     }

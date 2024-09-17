@@ -1,10 +1,13 @@
-include LICENSE *.rst *.txt *.md
-graft wagtail_ab_testing
+exclude *
+recursive-exclude * *
 
-prune wagtail_ab_testing.egg-info
+include CHANGELOG.md
+include LICENSE
+include MANIFEST.in
+include README.md
+include pyproject.toml
+
+recursive-include wagtail_ab_testing/ *.html *.js *.py *.txt
+
 prune wagtail_ab_testing/test
 prune wagtail_ab_testing/static_src
-
-global-exclude __pycache__
-global-exclude *.py[co]
-global-exclude *.gitkeep *.gitignore

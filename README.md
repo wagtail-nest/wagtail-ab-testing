@@ -1,24 +1,25 @@
 # Wagtail A/B Testing
 
-[![Version](https://img.shields.io/pypi/v/wagtail-ab-testing.svg?style=flat)](https://pypi.python.org/pypi/wagtail-ab-testing/)
-[![License](https://img.shields.io/badge/license-BSD-blue.svg?style=flat)](https://opensource.org/licenses/BSD-3-Clause)
-[![Test & Lint](https://github.com/wagtail-nest/wagtail-ab-testing/actions/workflows/test.yml/badge.svg)](https://github.com/wagtail-nest/wagtail-ab-testing/actions/workflows/test.yml)
+[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD-blue.svg?style=flat)](https://opensource.org/licenses/BSD-3-Clause)
+[![Build status](https://github.com/wagtail-nest/wagtail-ab-testing/actions/workflows/test.yml/badge.svg)](https://github.com/wagtail-nest/wagtail-ab-testing/actions/workflows/test.yml)
 [![codecov](https://img.shields.io/codecov/c/github/wagtail-nest/wagtail-ab-testing?style=flat)](https://codecov.io/gh/wagtail-nest/wagtail-ab-testing)
+[![Version](https://img.shields.io/pypi/v/wagtail-ab-testing.svg?style=flat)](https://pypi.python.org/pypi/wagtail-ab-testing/)
+[![Monthly downloads](https://img.shields.io/pypi/dm/wagtail-ab-testing.svg?logo=Downloads)](https://pypi.python.org/pypi/wagtail-ab-testing/)
 
 Wagtail A/B Testing is an A/B testing package for Wagtail that allows users to create and manage A/B tests on pages through the Wagtail admin.
 
 Key features:
 
- - Create an A/B test on any page from within Wagtail
- - Tests using page revisions (no need to create separate pages for the variants)
- - It prevents users from editing the page while a test is in progress
- - Calculates confidence using a Pearson's chi-squared test
+-   Create an A/B test on any page from within Wagtail
+-   Tests using page revisions (no need to create separate pages for the variants)
+-   It prevents users from editing the page while a test is in progress
+-   Calculates confidence using a Pearson's chi-squared test
 
 [Changelog](https://github.com/torchbox/wagtail-ab-testing/blob/main/CHANGELOG.md)
 
 ## Usage
 
-Wagtail A/B Testing works with Django 3.2+, Wagtail 4.1+ on Python 3.8+ environments.
+Wagtail A/B Testing works with Django 3.2+, Wagtail 5.2+ on Python 3.9+ environments.
 
 ### Creating an A/B test
 
@@ -52,11 +53,11 @@ The results from this A/B test remain accessible under the A/B testing tab or fr
 
 ## Installation
 
-Firstly, install the ``wagtail-ab-testing`` package from PyPI:
+Firstly, install the `wagtail-ab-testing` package from PyPI:
 
     pip install wagtail-ab-testing
 
-Then add it into ``INSTALLED_APPS``:
+Then add it into `INSTALLED_APPS`:
 
 ```python
 INSTALLED_APPS = [
@@ -95,7 +96,7 @@ Finally, add the tracking script to your base HTML template:
 Out of the box, Wagtail A/B testing provides a "Visit page" goal event type which you can use to track when users visit a goal page.
 It also supports custom goal types, which can be used for tracking other events such as making a purchase, submitting a form, or clicking a link.
 
-To implement a custom goal event type, firstly register your type using the ``register_ab_testing_event_types`` hook, this would
+To implement a custom goal event type, firstly register your type using the `register_ab_testing_event_types` hook, this would
 add your goal type to the list of options shown to users when they create A/B tests:
 
 ```python
@@ -125,7 +126,7 @@ def register_submit_form_event_type():
 
 ```
 
-Next, you need to tell Wagtail A/B testing whenever a user triggers the goal. This can be done by calling ``wagtailAbTesting.triggerEvent()``
+Next, you need to tell Wagtail A/B testing whenever a user triggers the goal. This can be done by calling `wagtailAbTesting.triggerEvent()`
 in the browser:
 
 ```javascript
@@ -134,13 +135,13 @@ if (window.wagtailAbTesting) {
 }
 ```
 
-The JavaScript library tracks A/B tests using ``localStorage``, so this will only call the server if the user is participating in an A/B test with the provided goal type and the current page is the goal page.
+The JavaScript library tracks A/B tests using `localStorage`, so this will only call the server if the user is participating in an A/B test with the provided goal type and the current page is the goal page.
 
 #### Example: Adding a "Submit form" event type
 
-We will add a "Submit form" event type for a ``ContactUsFormPage`` page type in this example.
+We will add a "Submit form" event type for a `ContactUsFormPage` page type in this example.
 
-Firstly, we need to register the event type. To do this, implement a handler for the ``register_ab_testing_event_types`` hook in your app:
+Firstly, we need to register the event type. To do this, implement a handler for the `register_ab_testing_event_types` hook in your app:
 
 ```python
 # myapp/wagtail_hooks.py
@@ -202,68 +203,72 @@ Then set up a Cloudflare Worker based on the following JavaScript:
 const ENFORCE_HTTPS = true;
 
 export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url)
+    async fetch(request, env, ctx) {
+        const url = new URL(request.url);
 
-    // Set this to the domain name of your backend server
-    const WAGTAIL_DOMAIN = env.WAGTAIL_DOMAIN;
+        // Set this to the domain name of your backend server
+        const WAGTAIL_DOMAIN = env.WAGTAIL_DOMAIN;
 
-    // This should match the token on your Django settings
-    const WAGTAIL_AB_TESTING_WORKER_TOKEN = env.WAGTAIL_AB_TESTING_WORKER_TOKEN;
+        // This should match the token on your Django settings
+        const WAGTAIL_AB_TESTING_WORKER_TOKEN =
+            env.WAGTAIL_AB_TESTING_WORKER_TOKEN;
 
-    if (url.protocol == 'http:' && ENFORCE_HTTPS) {
-      url.protocol = 'https:';
-      return Response.redirect(url, 301);
-    }
-
-    if (request.method === 'GET') {
-      const newRequest = new Request(request, {
-      headers: {
-        ...request.headers,
-        'Authorization': 'Token ' + WAGTAIL_AB_TESTING_WORKER_TOKEN,
-        'X-Requested-With': 'WagtailAbTestingWorker'
-      }
-      });
-
-      url.hostname = WAGTAIL_DOMAIN;
-      response = await fetch(url.toString(), newRequest);
-
-      // If there is a test running at the URL, the worker would return
-      // a JSON response containing both versions of the page. Also, it
-      // returns the test ID in the X-WagtailAbTesting-Test header.
-      const testId = response.headers.get('X-WagtailAbTesting-Test');
-      if (testId) {
-        // Participants of a test would have a cookie that tells us which
-        // version of the page being tested on that they should see
-        // If they don't have this cookie, serve a random version
-        const versionCookieName = `abtesting-${testId}-version`;
-        const cookie = request.headers.get('cookie');
-        let version;
-        if (cookie && cookie.includes(`${versionCookieName}=control`)) {
-          version = 'control';
-        } else if (cookie && cookie.includes(`${versionCookieName}=variant`)) {
-          version = 'variant';
-        } else if (Math.random() < 0.5) {
-          version = 'control';
-        } else {
-          version = 'variant';
+        if (url.protocol == 'http:' && ENFORCE_HTTPS) {
+            url.protocol = 'https:';
+            return Response.redirect(url, 301);
         }
 
-        return response.json().then(json => {
-          return new Response(json[version], {
-          headers: {
-            ...response.headers,
-            'Content-Type': 'text/html'
-          }
-          });
-        });
-      }
+        if (request.method === 'GET') {
+            const newRequest = new Request(request, {
+                headers: {
+                    ...request.headers,
+                    Authorization: 'Token ' + WAGTAIL_AB_TESTING_WORKER_TOKEN,
+                    'X-Requested-With': 'WagtailAbTestingWorker',
+                },
+            });
 
-      return response;
-    } else {
-      return await fetch(url.toString(), request);
-    }
-  },
+            url.hostname = WAGTAIL_DOMAIN;
+            response = await fetch(url.toString(), newRequest);
+
+            // If there is a test running at the URL, the worker would return
+            // a JSON response containing both versions of the page. Also, it
+            // returns the test ID in the X-WagtailAbTesting-Test header.
+            const testId = response.headers.get('X-WagtailAbTesting-Test');
+            if (testId) {
+                // Participants of a test would have a cookie that tells us which
+                // version of the page being tested on that they should see
+                // If they don't have this cookie, serve a random version
+                const versionCookieName = `abtesting-${testId}-version`;
+                const cookie = request.headers.get('cookie');
+                let version;
+                if (cookie && cookie.includes(`${versionCookieName}=control`)) {
+                    version = 'control';
+                } else if (
+                    cookie &&
+                    cookie.includes(`${versionCookieName}=variant`)
+                ) {
+                    version = 'variant';
+                } else if (Math.random() < 0.5) {
+                    version = 'control';
+                } else {
+                    version = 'variant';
+                }
+
+                return response.json().then((json) => {
+                    return new Response(json[version], {
+                        headers: {
+                            ...response.headers,
+                            'Content-Type': 'text/html',
+                        },
+                    });
+                });
+            }
+
+            return response;
+        } else {
+            return await fetch(url.toString(), request);
+        }
+    },
 };
 ```
 
@@ -281,7 +286,7 @@ npx wrangler init
 
 Follow the CLI prompt until it generates a project for you, then add the JS script above to `src/index.js`.
 
-Add a ``WAGTAIL_AB_TESTING_WORKER_TOKEN`` variable to the worker, giving it the same token value that you generated earlier. Make sure to also setup a ``WAGTAIL_DOMAIN`` variable with the value of the domain where your website is hosted (e.g. `"www.mysite.com"`).
+Add a `WAGTAIL_AB_TESTING_WORKER_TOKEN` variable to the worker, giving it the same token value that you generated earlier. Make sure to also setup a `WAGTAIL_DOMAIN` variable with the value of the domain where your website is hosted (e.g. `"www.mysite.com"`).
 
 Finally, add a route into Cloudflare so that it routes all traffic through this worker.
 
@@ -298,7 +303,6 @@ cd wagtail-ab-testing
 
 With your preferred virtualenv activated, install testing dependencies:
 
-
 ```shell
 python -m pip install -e .[testing]
 ```
@@ -308,3 +312,21 @@ python -m pip install -e .[testing]
 ```shell
 python testmanage.py test
 ```
+
+### Formatting and linting
+
+We are using `pre-commit` to ensure that all code is formatted and linted before committing. To install the pre-commit hooks, run:
+
+```shell
+pre-commit install
+```
+
+The pre-commit hooks will run automatically before each commit. Or you can run them manually with:
+
+```shell
+pre-commit run --all-files
+```
+
+## Credits
+
+`wagtail-ab-testing` was originally created by [Karl Hobley](https://github.com/kaedroho)

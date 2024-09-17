@@ -1,9 +1,9 @@
 import random
+from datetime import datetime, timedelta
+from datetime import timezone as tz
 
-from datetime import datetime, timedelta, timezone as tz
-
-import scipy.stats
 import numpy as np
+import scipy.stats
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import connection, models, transaction
@@ -11,8 +11,8 @@ from django.db.models import Q, Sum
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.translation import gettext as _, gettext_lazy as __
-
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as __
 from wagtail.signals import page_unpublished
 
 from .events import get_event_types
@@ -20,7 +20,12 @@ from .events import get_event_types
 
 class AbTestManager(models.Manager):
     def get_current_for_page(self, page):
-        return self.get_queryset().filter(page=page).exclude(status__in=[AbTest.STATUS_CANCELLED, AbTest.STATUS_COMPLETED]).first()
+        return (
+            self.get_queryset()
+            .filter(page=page)
+            .exclude(status__in=[AbTest.STATUS_CANCELLED, AbTest.STATUS_COMPLETED])
+            .first()
+        )
 
 
 class AbTest(models.Model):
@@ -31,39 +36,39 @@ class AbTest(models.Model):
     the `.variant_revision` field contains the changes that are being tested.
     """
 
-    STATUS_DRAFT = 'draft'
-    STATUS_RUNNING = 'running'
-    STATUS_PAUSED = 'paused'
-    STATUS_CANCELLED = 'cancelled'
+    STATUS_DRAFT = "draft"
+    STATUS_RUNNING = "running"
+    STATUS_PAUSED = "paused"
+    STATUS_CANCELLED = "cancelled"
     # These two sound similar, but there's a difference:
     # 'Finished' means that we've reached the sample size and testing has stopped
     # but the user still needs to decide whether to publish the variant version
     # or revert back to the control.
     # Once they've decided and that action has taken place, the test status is
     # updated to 'Completed'.
-    STATUS_FINISHED = 'finished'
-    STATUS_COMPLETED = 'completed'
+    STATUS_FINISHED = "finished"
+    STATUS_COMPLETED = "completed"
 
     STATUS_CHOICES = [
-        (STATUS_DRAFT, __('Draft')),
-        (STATUS_RUNNING, __('Running')),
-        (STATUS_PAUSED, __('Paused')),
-        (STATUS_CANCELLED, __('Cancelled')),
-        (STATUS_FINISHED, __('Finished')),
-        (STATUS_COMPLETED, __('Completed')),
+        (STATUS_DRAFT, __("Draft")),
+        (STATUS_RUNNING, __("Running")),
+        (STATUS_PAUSED, __("Paused")),
+        (STATUS_CANCELLED, __("Cancelled")),
+        (STATUS_FINISHED, __("Finished")),
+        (STATUS_COMPLETED, __("Completed")),
     ]
 
-    VERSION_CONTROL = 'control'
-    VERSION_VARIANT = 'variant'
+    VERSION_CONTROL = "control"
+    VERSION_VARIANT = "variant"
 
     VERSION_CHOICES = [
-        (VERSION_CONTROL, __('Control')),
-        (VERSION_VARIANT, __('Variant')),
+        (VERSION_CONTROL, __("Control")),
+        (VERSION_VARIANT, __("Variant")),
     ]
 
-    COMPLETION_ACTION_DO_NOTHING = 'do-nothing'
-    COMPLETION_ACTION_REVERT = 'revert'
-    COMPLETION_ACTION_PUBLISH = 'publish'
+    COMPLETION_ACTION_DO_NOTHING = "do-nothing"
+    COMPLETION_ACTION_REVERT = "revert"
+    COMPLETION_ACTION_PUBLISH = "publish"
 
     COMPLETION_ACTION_CHOICES = [
         (COMPLETION_ACTION_DO_NOTHING, "Do nothing"),
@@ -71,15 +76,33 @@ class AbTest(models.Model):
         (COMPLETION_ACTION_PUBLISH, "Publish"),
     ]
 
-    page = models.ForeignKey('wagtailcore.Page', on_delete=models.CASCADE, related_name='ab_tests')
+    page = models.ForeignKey(
+        "wagtailcore.Page", on_delete=models.CASCADE, related_name="ab_tests"
+    )
     name = models.CharField(max_length=255)
     hypothesis = models.TextField(blank=True)
-    variant_revision = models.ForeignKey('wagtailcore.Revision', on_delete=models.PROTECT, related_name='+')
+    variant_revision = models.ForeignKey(
+        "wagtailcore.Revision", on_delete=models.PROTECT, related_name="+"
+    )
     goal_event = models.CharField(max_length=255)
-    goal_page = models.ForeignKey('wagtailcore.Page', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+    goal_page = models.ForeignKey(
+        "wagtailcore.Page",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
     sample_size = models.PositiveIntegerField(validators=[MinValueValidator(1)])
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT
+    )
     winning_version = models.CharField(max_length=9, null=True, choices=VERSION_CHOICES)
     first_started_at = models.DateTimeField(null=True)
 
@@ -111,7 +134,9 @@ class AbTest(models.Model):
 
             self.status = self.STATUS_RUNNING
 
-            self.save(update_fields=['status', 'current_run_started_at', 'first_started_at'])
+            self.save(
+                update_fields=["status", "current_run_started_at", "first_started_at"]
+            )
 
     def pause(self):
         """
@@ -121,10 +146,18 @@ class AbTest(models.Model):
             self.status = self.STATUS_PAUSED
 
             if self.current_run_started_at is not None:
-                self.previous_run_duration += timezone.now() - self.current_run_started_at
+                self.previous_run_duration += (
+                    timezone.now() - self.current_run_started_at
+                )
                 self.current_run_started_at = None
 
-            self.save(update_fields=['status', 'previous_run_duration', 'current_run_started_at'])
+            self.save(
+                update_fields=[
+                    "status",
+                    "previous_run_duration",
+                    "current_run_started_at",
+                ]
+            )
 
     def get_results_url(self):
         """
@@ -135,10 +168,12 @@ class AbTest(models.Model):
         page editor returns to normal.
         """
         if self.status in [AbTest.STATUS_COMPLETED, AbTest.STATUS_CANCELLED]:
-            return reverse('wagtail_ab_testing_admin:results', args=[self.page_id, self.id])
+            return reverse(
+                "wagtail_ab_testing_admin:results", args=[self.page_id, self.id]
+            )
 
         else:
-            return reverse('wagtailadmin_pages:edit', args=[self.page_id])
+            return reverse("wagtailadmin_pages:edit", args=[self.page_id])
 
     def total_running_duration(self):
         """
@@ -157,7 +192,7 @@ class AbTest(models.Model):
         """
         self.status = self.STATUS_CANCELLED
 
-        self.save(update_fields=['status'])
+        self.save(update_fields=["status"])
 
     def finish(self):
         """
@@ -172,7 +207,7 @@ class AbTest(models.Model):
         self.status = self.STATUS_FINISHED
         self.winning_version = self.check_for_winner()
 
-        self.save(update_fields=['status', 'winning_version'])
+        self.save(update_fields=["status", "winning_version"])
 
     @transaction.atomic
     def complete(self, action, user=None):
@@ -192,14 +227,16 @@ class AbTest(models.Model):
            and also publishes the variant revision.
         """
         self.status = self.STATUS_COMPLETED
-        self.save(update_fields=['status'])
+        self.save(update_fields=["status"])
 
         if action == AbTest.COMPLETION_ACTION_DO_NOTHING:
             pass
 
         elif action == AbTest.COMPLETION_ACTION_REVERT:
             # Create a new revision with the content of the live page and publish it
-            self.page.specific.save_revision(user=user, previous_revision=self.page.live_revision).publish(user=user)
+            self.page.specific.save_revision(
+                user=user, previous_revision=self.page.live_revision
+            ).publish(user=user)
 
         elif action == AbTest.COMPLETION_ACTION_PUBLISH:
             self.variant_revision.publish(user=user)
@@ -209,11 +246,15 @@ class AbTest(models.Model):
         Returns a 2-tuple containing the number of participants who were given the control or variant version of the page respectively.
         """
         stats = self.hourly_logs.aggregate(
-            control_participants=Sum('participants', filter=Q(version=self.VERSION_CONTROL)),
-            variant_participants=Sum('participants', filter=Q(version=self.VERSION_VARIANT)),
+            control_participants=Sum(
+                "participants", filter=Q(version=self.VERSION_CONTROL)
+            ),
+            variant_participants=Sum(
+                "participants", filter=Q(version=self.VERSION_VARIANT)
+            ),
         )
-        control_participants = stats['control_participants'] or 0
-        variant_participants = stats['variant_participants'] or 0
+        control_participants = stats["control_participants"] or 0
+        variant_participants = stats["variant_participants"] or 0
 
         return control_participants, variant_participants
 
@@ -234,10 +275,12 @@ class AbTest(models.Model):
             return self.VERSION_VARIANT
 
         else:
-            return random.choice([
-                self.VERSION_CONTROL,
-                self.VERSION_VARIANT,
-            ])
+            return random.choice(
+                [
+                    self.VERSION_CONTROL,
+                    self.VERSION_VARIANT,
+                ]
+            )
 
     def add_participant(self, version=None):
         """
@@ -249,7 +292,9 @@ class AbTest(models.Model):
         # Create an equal number of participants for each version
         if version is None:
             # Note, pass participation numbers we already have to save a database query
-            version = self.get_new_participant_version(participation_numbers=(control_participants, variant_participants))
+            version = self.get_new_participant_version(
+                participation_numbers=(control_participants, variant_participants)
+            )
 
         # Add new participant to statistics model
         AbTestHourlyLog._increment_stats(self, version, 1, 0)
@@ -285,20 +330,31 @@ class AbTest(models.Model):
         """
         # Fetch stats from database
         stats = self.hourly_logs.aggregate(
-            control_participants=Sum('participants', filter=Q(version=self.VERSION_CONTROL)),
-            control_conversions=Sum('conversions', filter=Q(version=self.VERSION_CONTROL)),
-            variant_participants=Sum('participants', filter=Q(version=self.VERSION_VARIANT)),
-            variant_conversions=Sum('conversions', filter=Q(version=self.VERSION_VARIANT)),
+            control_participants=Sum(
+                "participants", filter=Q(version=self.VERSION_CONTROL)
+            ),
+            control_conversions=Sum(
+                "conversions", filter=Q(version=self.VERSION_CONTROL)
+            ),
+            variant_participants=Sum(
+                "participants", filter=Q(version=self.VERSION_VARIANT)
+            ),
+            variant_conversions=Sum(
+                "conversions", filter=Q(version=self.VERSION_VARIANT)
+            ),
         )
-        control_participants = stats['control_participants'] or 0
-        control_conversions = stats['control_conversions'] or 0
-        variant_participants = stats['variant_participants'] or 0
-        variant_conversions = stats['variant_conversions'] or 0
+        control_participants = stats["control_participants"] or 0
+        control_conversions = stats["control_conversions"] or 0
+        variant_participants = stats["variant_participants"] or 0
+        variant_conversions = stats["variant_conversions"] or 0
 
         if not control_conversions and not variant_conversions:
             return
 
-        if control_conversions > control_participants or variant_conversions > variant_participants:
+        if (
+            control_conversions > control_participants
+            or variant_conversions > variant_participants
+        ):
             # Something's up. I'm sure it's already clear in the UI what's going on, so let's not crash
             return
 
@@ -310,7 +366,12 @@ class AbTest(models.Model):
             # Prevent this error: "The internally computed table of expected frequencies has a zero element at (0, 1)."
             return
 
-        T = np.array([[control_conversions, control_failures], [variant_conversions, variant_failures]])
+        T = np.array(
+            [
+                [control_conversions, control_failures],
+                [variant_conversions, variant_failures],
+            ]
+        )
 
         # Perform Chi-Squared test
         p = scipy.stats.chi2_contingency(T, correction=False)[1]
@@ -320,7 +381,9 @@ class AbTest(models.Model):
         if 1 - p > required_confidence_level:
             # There is a clear winner!
             # Return the one with the highest success rate
-            if (control_conversions / control_participants) > (variant_conversions / variant_participants):
+            if (control_conversions / control_participants) > (
+                variant_conversions / variant_participants
+            ):
                 return self.VERSION_CONTROL
             else:
                 return self.VERSION_VARIANT
@@ -332,7 +395,12 @@ class AbTest(models.Model):
         status = self.get_status_display()
 
         if self.status == AbTest.STATUS_RUNNING:
-            participants = self.hourly_logs.aggregate(participants=Sum('participants'))['participants'] or 0
+            participants = (
+                self.hourly_logs.aggregate(participants=Sum("participants"))[
+                    "participants"
+                ]
+                or 0
+            )
             completeness_percentange = int((participants * 100) / self.sample_size)
             return status + f" ({completeness_percentange}%)"
 
@@ -351,7 +419,9 @@ class AbTest(models.Model):
 
 
 class AbTestHourlyLog(models.Model):
-    ab_test = models.ForeignKey(AbTest, on_delete=models.CASCADE, related_name='hourly_logs')
+    ab_test = models.ForeignKey(
+        AbTest, on_delete=models.CASCADE, related_name="hourly_logs"
+    )
     version = models.CharField(max_length=9, choices=AbTest.VERSION_CHOICES)
     date = models.DateField()
     # UTC hour. Values range from 0 to 23
@@ -364,65 +434,85 @@ class AbTestHourlyLog(models.Model):
     conversions = models.PositiveIntegerField(default=0)
 
     @classmethod
-    def _increment_stats(cls, ab_test, version, participants, conversions, *, time=None):
+    def _increment_stats(
+        cls, ab_test, version, participants, conversions, *, time=None
+    ):
         """
         Increments the participants/conversions statistics for the given ab_test/version.
 
         This will create a new AbTestHourlyLog record if one doesn't exist for the current hour.
         """
-        time = time.astimezone(tz.utc) if time else datetime.utcnow()
+        time = time.astimezone(tz.utc) if time else datetime.now(tz.utc)
         date = time.date()
         hour = time.hour
 
-        if connection.vendor == 'postgresql':
+        if connection.vendor == "postgresql":
             # Use fast, atomic UPSERT query on PostgreSQL
+            # This needs to be done as a raw query because Django's ORM doesn't support atomic UPSERTs
             with connection.cursor() as cursor:
                 table_name = connection.ops.quote_name(cls._meta.db_table)
-                query = """
+
+                query = (
+                    """
                     INSERT INTO %s (ab_test_id, version, date, hour, participants, conversions)
                     VALUES (%%s, %%s, %%s, %%s, %%s, %%s)
                     ON CONFLICT (ab_test_id, version, date, hour)
                         DO UPDATE SET participants = %s.participants + %%s, conversions = %s.conversions + %%s;
-                """ % (table_name, table_name, table_name)
+                """  # noqa: UP031 - percent format is fine here
+                    % (
+                        table_name,
+                        table_name,
+                        table_name,
+                    )
+                )
 
-                cursor.execute(query, [
-                    ab_test.id,
-                    version,
-                    date,
-                    hour,
-                    participants,
-                    conversions,
-                    participants,
-                    conversions
-                ])
+                cursor.execute(
+                    query,
+                    [
+                        ab_test.id,
+                        version,
+                        date,
+                        hour,
+                        participants,
+                        conversions,
+                        participants,
+                        conversions,
+                    ],
+                )
         else:
-            # Fall back to running two queries (with small potential for race conditions if things run slowly)
+            # Fall back to running two queries. This is less efficient.
+            # We cannot use the simpler update_or_create here
+            # because it holds a lock on the row for the duration
+            # it takes to run the update query
             hourly_log, created = cls.objects.get_or_create(
                 ab_test=ab_test,
                 version=version,
                 date=date,
                 hour=hour,
                 defaults={
-                    'participants': participants,
-                    'conversions': conversions,
-                }
+                    "participants": participants,
+                    "conversions": conversions,
+                },
             )
 
             if not created:
-                hourly_log.participants += participants
-                hourly_log.conversions += conversions
-                hourly_log.save(update_fields=['participants', 'conversions'])
+                hourly_log.participants = models.F("participants") + participants
+                hourly_log.conversions = models.F("conversions") + conversions
+                hourly_log.save(update_fields=["participants", "conversions"])
 
     class Meta:
-        ordering = ['ab_test', 'version', 'date', 'hour']
+        ordering = ["ab_test", "version", "date", "hour"]
         unique_together = [
-            ('ab_test', 'version', 'date', 'hour'),
+            ("ab_test", "version", "date", "hour"),
         ]
 
 
 @receiver(page_unpublished)
 def cancel_on_page_unpublish(instance, **kwargs):
-    for ab_test in AbTest.objects.filter(page=instance, status__in=[AbTest.STATUS_DRAFT, AbTest.STATUS_RUNNING, AbTest.STATUS_PAUSED]):
+    for ab_test in AbTest.objects.filter(
+        page=instance,
+        status__in=[AbTest.STATUS_DRAFT, AbTest.STATUS_RUNNING, AbTest.STATUS_PAUSED],
+    ):
         ab_test.cancel()
 
     for ab_test in AbTest.objects.filter(page=instance, status=AbTest.STATUS_FINISHED):

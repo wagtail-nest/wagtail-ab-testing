@@ -1,8 +1,7 @@
 from unittest.mock import patch
 
-from django.urls import reverse
 from django.test import RequestFactory, TestCase
-
+from django.urls import reverse
 from wagtail.models import Page
 
 from wagtail_ab_testing.models import AbTest
@@ -150,7 +149,9 @@ class TestWagtailAbTestingScriptTemplateTag(TestCase):
 
         # There is still a test running and this user is being tracked:
         self.assertEqual(result["track"], True)
-        self.assertDictEqual(result["tracking_parameters"], expected_tracking_parameters)
+        self.assertDictEqual(
+            result["tracking_parameters"], expected_tracking_parameters
+        )
 
     def test_ab_testing_script_tag_request_without_tracking(
         self, mock_request_is_callable

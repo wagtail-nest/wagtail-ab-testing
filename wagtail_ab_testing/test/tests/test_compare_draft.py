@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.urls import reverse
-
 from wagtail.models import Page
 from wagtail.test.utils import WagtailTestUtils
 
@@ -13,7 +12,9 @@ class TestCompareDraftView(WagtailTestUtils, TestCase):
         self.user = self.login()
 
         # Create test page with a draft revision
-        self.page = Page.objects.get(id=1).add_child(instance=SimplePage(title="Test", slug="test"))
+        self.page = Page.objects.get(id=1).add_child(
+            instance=SimplePage(title="Test", slug="test")
+        )
         self.page.save_revision().publish()
 
         # Create an A/B test
@@ -26,6 +27,8 @@ class TestCompareDraftView(WagtailTestUtils, TestCase):
         )
 
     def test_get_compare_draft(self):
-        response = self.client.get(reverse('wagtail_ab_testing_admin:compare_draft', args=[self.page.id]))
+        response = self.client.get(
+            reverse("wagtail_ab_testing_admin:compare_draft", args=[self.page.id])
+        )
 
         self.assertTemplateUsed(response, "wagtail_ab_testing/compare.html")

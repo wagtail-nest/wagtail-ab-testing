@@ -4,28 +4,27 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('wagtail_ab_testing', '0008_finished_status'),
+        ("wagtail_ab_testing", "0008_finished_status"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='abtest',
-            old_name='winning_variant',
-            new_name='winning_version',
+            model_name="abtest",
+            old_name="winning_variant",
+            new_name="winning_version",
         ),
         migrations.AlterModelOptions(
-            name='abtesthourlylog',
-            options={'ordering': ['ab_test', 'version', 'date', 'hour']},
+            name="abtesthourlylog",
+            options={"ordering": ["ab_test", "version", "date", "hour"]},
         ),
         migrations.RenameField(
-            model_name='abtesthourlylog',
-            old_name='variant',
-            new_name='version',
+            model_name="abtesthourlylog",
+            old_name="variant",
+            new_name="version",
         ),
         migrations.AlterUniqueTogether(
-            name='abtesthourlylog',
-            unique_together={('ab_test', 'version', 'date', 'hour')},
+            name="abtesthourlylog",
+            unique_together={("ab_test", "version", "date", "hour")},
         ),
     ]

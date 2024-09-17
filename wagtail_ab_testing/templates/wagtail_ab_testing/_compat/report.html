@@ -1,0 +1,52 @@
+{% extends 'wagtailadmin/reports/base_report.html' %}
+{% load i18n wagtailadmin_tags %}
+
+{% block results %}
+    {% if object_list %}
+        <table class="listing">
+            <thead>
+                <tr>
+                    <th>
+                        {% trans 'Start date' %}
+                    </th>
+                    <th>
+                        {% trans 'Page title' %}
+                    </th>
+                    <th>
+                        {% trans 'Test name' %}
+                    </th>
+                    <th>
+                        {% trans 'Status' %}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ab_test in object_list %}
+                    <tr>
+                        <td>
+                            {% trans "Not started" as not_started_str %}
+                            {{ ab_test.first_started_at|default:not_started_str }}
+                        </td>
+                        <td>
+                            <a href="{{ ab_test.get_results_url }}">
+                                {{ ab_test.page.get_admin_display_title }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ ab_test.get_results_url }}">
+                                {{ ab_test.name }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="status-tag primary">
+                                {{ ab_test.get_status_description }}
+                            </span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{% trans "No A/B tests have been created yet" %}</p>
+    {% endif %}
+{% endblock %}

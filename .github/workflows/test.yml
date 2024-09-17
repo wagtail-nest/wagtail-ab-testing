@@ -30,7 +30,19 @@ jobs:
         run: |
           npm run build
 
-  qa_python:
+  lint_python:
+    name: Python Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_LATEST }}
+      - uses: pre-commit/action@v3.0.1
+
+  test_python:
     services:
         postgres:
           image: postgres:16
@@ -49,14 +61,10 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python: ["3.9", "3.10", "3.11", "3.12"]
         experimental: [false]
         toxenv: ["py"]
         include:
-          # Linting
-          - python: "3.12"
-            toxenv: flake8
-            experimental: false
             # Future Wagtail release from main branch (allowed to fail)
           - python: "3.12"
             toxenv: wagtailmain-sqlite
@@ -94,7 +102,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-        # This step runs only for jobs in the include matrix and covers linting
+        # This step runs only for jobs in the include matrix
       - name: Run tox targets for Python ${{ matrix.python }} (${{ matrix.toxenv }})
         if: ${{ matrix.toxenv != 'py' }}
         run: |

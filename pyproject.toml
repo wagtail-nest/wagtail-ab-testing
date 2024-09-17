@@ -1,0 +1,107 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wagtail-ab-testing"
+version = "0.11"
+description = "A/B Testing for Wagtail"
+readme = "README.md"
+authors = [
+    { name = "Wagtail Nest team", email = "hello@wagtail.org" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Django",
+    "Framework :: Django :: 4",
+    "Framework :: Django :: 5",
+    "Framework :: Wagtail",
+    "Framework :: Wagtail :: 5",
+    "Framework :: Wagtail :: 6",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "numpy>=1.19.4,<2",
+    "scipy>=1.5.4,<2",
+    "user-agents>=2.2,<2.3",
+    "Wagtail>=5.2",
+]
+
+[project.optional-dependencies]
+testing = [
+    "coverage[toml]>=7.2.7,<8.0",
+    "dj-database-url==0.5.0",
+    "freezegun==1.2.1",
+    "pre-commit>=3.4.0",
+]
+
+[project.urls]
+Changelog = "https://github.com/wagtail-nest/wagtail-ab-testing/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/wagtail-nest/wagtail-ab-testing/"
+"Issue tracker" = "https://github.com/wagtail-nest/wagtail-ab-testing/issues/"
+Source = "https://github.com/wagtail-nest/wagtail-ab-testing/"
+
+[tool.setuptools]
+packages = ["wagtail_ab_testing"]
+
+[tool.coverage.run]
+branch = true
+source_pkgs = ["wagtail_ab_testing"]
+
+[tool.coverage.paths]
+omit = ["**/migrations/*", "tests/"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    "pragma: no cover",
+
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+
+    # Don't complain about abstract methods, they aren't run:
+    "@(abc.)?abstractmethod",
+
+    # Nor complain about type checking
+    "if TYPE_CHECKING:",
+]
+
+
+[tool.ruff]
+target-version = "py39"  # minimum target version
+
+exclude = [
+    ".github",
+]
+
+# E501: Line too long
+lint.ignore = ["E501"]
+
+lint.select = [
+    "E", # pycodestyle errors
+    "F", # pyflakes
+    "I", # isort
+    "T20", # flake8-print
+    "BLE", # flake8-blind-except
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
