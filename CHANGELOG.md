@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.11] - [Unreleased]
+## [0.11] - 2024-09-17
 
 - [Add Wagtail 6.2 support](https://github.com/wagtail-nest/wagtail-ab-testing/pull/87)
 - [Drop Django 3.2 support, Add Wagtail 6.1 support](https://github.com/wagtail-nest/wagtail-ab-testing/pull/83)
