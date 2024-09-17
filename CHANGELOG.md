@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Resolve several deprecation warnings in the codebase
 - Switch from `setup.py` to `pyproject.toml` for package metadata
-- Format the codebase with `black` and `ruff`
+- Format the codebase with `ruff`
 
 ## [0.10] - 2024-03-22
 

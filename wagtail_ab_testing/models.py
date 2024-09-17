@@ -452,15 +452,18 @@ class AbTestHourlyLog(models.Model):
             with connection.cursor() as cursor:
                 table_name = connection.ops.quote_name(cls._meta.db_table)
 
-                query = """
+                query = (
+                    """
                     INSERT INTO %s (ab_test_id, version, date, hour, participants, conversions)
                     VALUES (%%s, %%s, %%s, %%s, %%s, %%s)
                     ON CONFLICT (ab_test_id, version, date, hour)
                         DO UPDATE SET participants = %s.participants + %%s, conversions = %s.conversions + %%s;
-                """ % (  # noqa: UP031 - percent format is fine here
-                    table_name,
-                    table_name,
-                    table_name,
+                """  # noqa: UP031 - percent format is fine here
+                    % (
+                        table_name,
+                        table_name,
+                        table_name,
+                    )
                 )
 
                 cursor.execute(
