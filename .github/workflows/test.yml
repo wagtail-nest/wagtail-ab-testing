@@ -39,7 +39,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_LATEST }}
+          python-version: 3.12
       - uses: pre-commit/action@v3.0.1
 
   test_python:
