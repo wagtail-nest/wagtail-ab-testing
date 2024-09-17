@@ -2,7 +2,6 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
-from wagtail import VERSION as WAGTAIL_VERSION
 from wagtail.models import Page
 from wagtail.test.utils import WagtailTestUtils
 
@@ -122,14 +121,9 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.assertEqual(self.ab_test.status, AbTest.STATUS_CANCELLED)
 
     def test_post_start_without_publish_permission(self):
-        if WAGTAIL_VERSION >= (5, 1):
-            self.moderators_group.page_permissions.filter(
-                permission__codename="publish_page"
-            ).delete()
-        else:
-            self.moderators_group.page_permissions.filter(
-                permission_type="publish"
-            ).delete()
+        self.moderators_group.page_permissions.filter(
+            permission__codename="publish_page"
+        ).delete()
 
         self.ab_test.status = AbTest.STATUS_DRAFT
         self.ab_test.save()
@@ -150,14 +144,9 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.assertEqual(self.ab_test.status, AbTest.STATUS_DRAFT)
 
     def test_post_pause_without_publish_permission(self):
-        if WAGTAIL_VERSION >= (5, 1):
-            self.moderators_group.page_permissions.filter(
-                permission__codename="publish_page"
-            ).delete()
-        else:
-            self.moderators_group.page_permissions.filter(
-                permission_type="publish"
-            ).delete()
+        self.moderators_group.page_permissions.filter(
+            permission__codename="publish_page"
+        ).delete()
 
         response = self.client.post(
             reverse("wagtailadmin_pages:edit", args=[self.page.id]),
@@ -175,14 +164,9 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.assertEqual(self.ab_test.status, AbTest.STATUS_RUNNING)
 
     def test_post_restart_without_publish_permission(self):
-        if WAGTAIL_VERSION >= (5, 1):
-            self.moderators_group.page_permissions.filter(
-                permission__codename="publish_page"
-            ).delete()
-        else:
-            self.moderators_group.page_permissions.filter(
-                permission_type="publish"
-            ).delete()
+        self.moderators_group.page_permissions.filter(
+            permission__codename="publish_page"
+        ).delete()
 
         self.ab_test.status = AbTest.STATUS_PAUSED
         self.ab_test.save()
@@ -202,14 +186,9 @@ class TestProgressView(WagtailTestUtils, TestCase):
         self.assertEqual(self.ab_test.status, AbTest.STATUS_PAUSED)
 
     def test_post_end_without_publish_permission(self):
-        if WAGTAIL_VERSION >= (5, 1):
-            self.moderators_group.page_permissions.filter(
-                permission__codename="publish_page"
-            ).delete()
-        else:
-            self.moderators_group.page_permissions.filter(
-                permission_type="publish"
-            ).delete()
+        self.moderators_group.page_permissions.filter(
+            permission__codename="publish_page"
+        ).delete()
 
         response = self.client.post(
             reverse("wagtailadmin_pages:edit", args=[self.page.id]),
