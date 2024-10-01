@@ -7,7 +7,7 @@ include MANIFEST.in
 include README.md
 include pyproject.toml
 
-recursive-include wagtail_ab_testing/ *.html *.js *.py *.txt
+recursive-include wagtail_ab_testing/ *.html *.js *.py *.txt *.svg
 
 prune wagtail_ab_testing/test
 prune wagtail_ab_testing/static_src
