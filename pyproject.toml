@@ -38,7 +38,7 @@ dependencies = [
 testing = [
     "coverage[toml]>=7.2.7,<8.0",
     "dj-database-url==2.3.0",
-    "freezegun==1.2.1",
+    "freezegun==1.5.1",
     "pre-commit>=3.4.0",
 ]
 
