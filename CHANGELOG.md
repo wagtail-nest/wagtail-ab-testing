@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.12] - [Unreleased]
 
-Nothing new yet.
+- [Add support for Wagtail 6.3 LTS](https://github.com/wagtail-nest/wagtail-ab-testing/pull/91)
+- [Add support for Django 5.1](https://github.com/wagtail-nest/wagtail-ab-testing/pull/91)
+- [Add support for Python 3.13](https://github.com/wagtail-nest/wagtail-ab-testing/pull/91)
 
 ## [0.11.1] - 2024-10-02
 
