@@ -39,7 +39,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: 3.13
       - uses: pre-commit/action@v3.0.1
 
   test_python:
@@ -61,15 +61,15 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        python: ["3.9", "3.10", "3.11", "3.12"]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         experimental: [false]
         toxenv: ["py"]
         include:
             # Future Wagtail release from main branch (allowed to fail)
-          - python: "3.12"
+          - python: "3.13"
             toxenv: wagtailmain-sqlite
             experimental: true
-          - python: "3.12"
+          - python: "3.13"
             toxenv: wagtailmain-postgres
             experimental: true
     steps:
