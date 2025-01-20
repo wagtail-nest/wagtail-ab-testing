@@ -3,7 +3,7 @@ import json
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.core.exceptions import PermissionDenied
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect
 from django.urls import include, path, reverse
 from django.utils.html import escapejs, format_html
@@ -236,3 +236,15 @@ def register_add_abtest_permission():
     return Permission.objects.filter(
         content_type__app_label="wagtail_ab_testing", codename="add_abtest"
     )
+
+
+@hooks.register("before_delete_page")
+def check_ab_tests_for_page(request, page):
+    if page.ab_tests.exists():
+        return HttpResponseRedirect(
+            reverse(
+                "wagtail_ab_testing:ab_test_confirm_delete", kwargs={"page_id": page.id}
+            )
+        )
+
+    return None

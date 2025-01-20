@@ -8,6 +8,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import F, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import formats, timezone
 from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
@@ -713,3 +714,34 @@ def goal_reached(request):
     test.log_conversion(version)
 
     return Response()
+
+
+def ab_test_confirm_delete(request, page_id):
+    page = get_object_or_404(Page, id=page_id)
+    ab_tests = page.ab_tests.order_by("-first_started_at")
+
+    return render(
+        request,
+        "wagtail_ab_testing/confirm_delete_ab_tests.html",
+        {
+            "page": page,
+            "ab_tests": ab_tests,
+            "ab_tests_count": ab_tests.count(),
+        },
+    )
+
+
+def ab_test_delete(request, page_id):
+    if request.method == "POST":
+        page = get_object_or_404(Page, id=page_id)
+        page.ab_tests.all().delete()
+
+        return redirect(
+            reverse("wagtailadmin_pages:delete", kwargs={"page_id": page_id})
+        )
+
+    return redirect(
+        reverse(
+            "wagtail_ab_testing:ab_test_confirm_delete", kwargs={"page_id": page_id}
+        )
+    )
