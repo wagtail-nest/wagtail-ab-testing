@@ -132,3 +132,12 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
             reverse("wagtailadmin_pages:delete", args=[self.page.id]),
             msg_prefix="The response did not redirect to the expected delete page. A/B Tests were not deleted.",
         )
+
+        response = self.client.get(
+            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("wagtail_ab_testing:ab_test_confirm_delete", args=[self.page.id]),
+        )
