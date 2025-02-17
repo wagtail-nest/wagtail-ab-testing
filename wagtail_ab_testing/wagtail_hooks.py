@@ -41,6 +41,16 @@ def register_admin_urls():
             name="report_results",
         ),
         path("results/<int:page_id>/<int:ab_test_id>/", views.results, name="results"),
+        path(
+            "pages/<int:page_id>/confirm_delete/abtests/",
+            views.ab_test_confirm_delete,
+            name="ab_test_confirm_delete",
+        ),
+        path(
+            "pages/<int:page_id>/delete/abtests/",
+            views.ab_test_delete,
+            name="ab_test_delete",
+        ),
     ]
 
     return [
