@@ -141,3 +141,37 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
             response,
             reverse("wagtail_ab_testing:ab_test_confirm_delete", args=[self.page.id]),
         )
+
+    def test_ab_test_confirm_delete_view_bad_permissions(self):
+        AbTest.objects.create(
+            page=self.page,
+            name="Test AB 1",
+            first_started_at=datetime(2023, 2, 15),
+            variant_revision=self.page.get_latest_revision(),
+            status=AbTest.STATUS_DRAFT,
+            sample_size=10,
+        )
+        AbTest.objects.create(
+            page=self.page,
+            name="Test AB 2",
+            first_started_at=datetime(2023, 2, 20),
+            variant_revision=self.page.get_latest_revision(),
+            status=AbTest.STATUS_DRAFT,
+            sample_size=10,
+        )
+        self.user.is_superuser = False
+        self.user.groups.clear()
+        self.user.save()
+
+        response = self.client.get(
+            reverse("wagtail_ab_testing:ab_test_confirm_delete", args=[self.page.id])
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(
+            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(AbTest.objects.filter(page=self.page).count(), 2)

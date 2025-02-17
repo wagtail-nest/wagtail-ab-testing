@@ -720,6 +720,9 @@ def ab_test_confirm_delete(request, page_id):
     page = get_object_or_404(Page, id=page_id)
     ab_tests = page.ab_tests.order_by("-first_started_at")
 
+    if not page.permissions_for_user(request.user).can_delete():
+        raise PermissionDenied
+
     return render(
         request,
         "wagtail_ab_testing/confirm_delete_ab_tests.html",
@@ -734,6 +737,8 @@ def ab_test_confirm_delete(request, page_id):
 def ab_test_delete(request, page_id):
     if request.method == "POST":
         page = get_object_or_404(Page, id=page_id)
+        if not page.permissions_for_user(request.user).can_delete():
+            raise PermissionDenied
         page.ab_tests.all().delete()
 
         return redirect(
