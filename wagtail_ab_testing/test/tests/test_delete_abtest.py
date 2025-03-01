@@ -22,6 +22,11 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
             content_type=ContentType.objects.get_for_model(AbTest)
         ):
             self.moderators_group.permissions.add(permission)
+
+        for permission in Permission.objects.filter(
+            content_type=ContentType.objects.get_for_model(Page)
+        ):
+            self.moderators_group.permissions.add(permission)
         self.user.is_superuser = False
         self.user.groups.add(self.moderators_group)
         self.user.save()
@@ -94,9 +99,26 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
             reverse("wagtail_ab_testing:ab_test_confirm_delete", args=[self.page.id]),
         )
 
-    def test_ab_test_confirm_delete_view_bad_permissions(self):
-        self.user.is_superuser = False
-        self.user.groups.clear()
+    def test_ab_test_confirm_delete_view_without_delete_abtest_permission(self):
+        delete_abtest_permission = Permission.objects.get(codename="delete_abtest")
+        self.moderators_group.permissions.remove(delete_abtest_permission)
+        self.user.save()
+
+        response = self.client.get(
+            reverse("wagtail_ab_testing:ab_test_confirm_delete", args=[self.page.id])
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(
+            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_ab_test_confirm_delete_view_without_delete_page_permission(self):
+        delete_abtest_permission = Permission.objects.get(codename="delete_page")
+        self.moderators_group.permissions.remove(delete_abtest_permission)
         self.user.save()
 
         response = self.client.get(
