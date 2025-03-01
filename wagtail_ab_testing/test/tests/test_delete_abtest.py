@@ -117,8 +117,8 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_ab_test_confirm_delete_view_without_delete_page_permission(self):
-        delete_abtest_permission = Permission.objects.get(codename="delete_page")
-        self.moderators_group.permissions.remove(delete_abtest_permission)
+        delete_page_permission = Permission.objects.get(codename="delete_page")
+        self.moderators_group.permissions.remove(delete_page_permission)
         self.user.save()
 
         response = self.client.get(
