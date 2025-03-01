@@ -65,7 +65,8 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
 
     def test_ab_test_confirm_delete_view(self):
         response = self.client.get(
-            reverse("wagtail_ab_testing:ab_test_confirm_delete", args=[self.page.id])
+            reverse("wagtailadmin_pages:delete", args=[self.page.id]),
+            follow=True,
         )
         self.assertTemplateUsed(
             response, "wagtail_ab_testing/confirm_delete_ab_tests.html"
