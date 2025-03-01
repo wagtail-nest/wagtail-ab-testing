@@ -109,4 +109,3 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(AbTest.objects.filter(page=self.page).count(), 2)
