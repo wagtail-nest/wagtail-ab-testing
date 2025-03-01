@@ -57,7 +57,7 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         # Assert redirection to the A/B test confirmation page
         self.assertRedirects(
             response,
-            reverse("wagtail_ab_testing:ab_test_confirm_delete", args=[self.page.id]),
+            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id]),
             msg_prefix="Redirection to the delete A/B tests confirmation page failed.",
         )
 
@@ -73,9 +73,7 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
             reverse("wagtailadmin_pages:delete", args=[self.page.id]),
             follow=True,
         )
-        self.assertTemplateUsed(
-            response, "wagtail_ab_testing/confirm_delete_ab_tests.html"
-        )
+        self.assertTemplateUsed(response, "wagtail_ab_testing/delete_ab_tests.html")
 
     def test_ab_test_delete_view(self):
         response = self.client.post(
@@ -90,22 +88,13 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
             msg_prefix="The response did not redirect to the expected delete page. A/B Tests were not deleted.",
         )
 
-        response = self.client.get(
-            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
-        )
-
-        self.assertRedirects(
-            response,
-            reverse("wagtail_ab_testing:ab_test_confirm_delete", args=[self.page.id]),
-        )
-
     def test_ab_test_confirm_delete_view_without_delete_abtest_permission(self):
         delete_abtest_permission = Permission.objects.get(codename="delete_abtest")
         self.moderators_group.permissions.remove(delete_abtest_permission)
         self.user.save()
 
         response = self.client.get(
-            reverse("wagtail_ab_testing:ab_test_confirm_delete", args=[self.page.id])
+            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
         )
 
         self.assertEqual(response.status_code, 403)
@@ -122,7 +111,7 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         self.user.save()
 
         response = self.client.get(
-            reverse("wagtail_ab_testing:ab_test_confirm_delete", args=[self.page.id])
+            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
         )
 
         self.assertEqual(response.status_code, 403)

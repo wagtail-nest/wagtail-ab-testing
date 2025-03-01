@@ -42,11 +42,6 @@ def register_admin_urls():
         ),
         path("results/<int:page_id>/<int:ab_test_id>/", views.results, name="results"),
         path(
-            "pages/<int:page_id>/confirm_delete/abtests/",
-            views.ab_test_confirm_delete,
-            name="ab_test_confirm_delete",
-        ),
-        path(
             "pages/<int:page_id>/delete/abtests/",
             views.ab_test_delete,
             name="ab_test_delete",
@@ -252,9 +247,7 @@ def register_add_abtest_permission():
 def check_ab_tests_for_page(request, page):
     if page.ab_tests.exists():
         return HttpResponseRedirect(
-            reverse(
-                "wagtail_ab_testing:ab_test_confirm_delete", kwargs={"page_id": page.id}
-            )
+            reverse("wagtail_ab_testing:ab_test_delete", kwargs={"page_id": page.id})
         )
 
     return None

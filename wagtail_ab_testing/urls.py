@@ -9,11 +9,6 @@ urlpatterns = [
     ),
     path("goal-reached/", views.goal_reached, name="goal_reached"),
     path(
-        "pages/<int:page_id>/confirm_delete/abtests/",
-        views.ab_test_confirm_delete,
-        name="ab_test_confirm_delete",
-    ),
-    path(
         "pages/<int:page_id>/delete/abtests/",
         views.ab_test_delete,
         name="ab_test_delete",
