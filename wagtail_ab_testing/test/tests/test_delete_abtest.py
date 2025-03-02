@@ -68,14 +68,13 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         response = check_ab_tests_for_page(request, self.page)
         self.assertIsNone(response)
 
-    def test_ab_test_confirm_delete_view(self):
+    def test_ab_test_delete_view(self):
         response = self.client.get(
             reverse("wagtailadmin_pages:delete", args=[self.page.id]),
             follow=True,
         )
         self.assertTemplateUsed(response, "wagtail_ab_testing/delete_ab_tests.html")
 
-    def test_ab_test_delete_view(self):
         response = self.client.post(
             reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
         )
@@ -88,7 +87,7 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
             msg_prefix="The response did not redirect to the expected delete page. A/B Tests were not deleted.",
         )
 
-    def test_ab_test_confirm_delete_view_without_delete_abtest_permission(self):
+    def test_ab_test_delete_view_without_delete_abtest_permission(self):
         delete_abtest_permission = Permission.objects.get(codename="delete_abtest")
         self.moderators_group.permissions.remove(delete_abtest_permission)
         self.user.save()
@@ -105,7 +104,7 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
 
         self.assertEqual(response.status_code, 403)
 
-    def test_ab_test_confirm_delete_view_without_delete_page_permission(self):
+    def test_ab_test_delete_view_without_delete_page_permission(self):
         delete_page_permission = Permission.objects.get(codename="delete_page")
         self.moderators_group.permissions.remove(delete_page_permission)
         self.user.save()
