@@ -738,6 +738,5 @@ def ab_test_delete(request, page_id):
         {
             "page": page,
             "ab_tests": ab_tests,
-            "ab_tests_count": ab_tests.count(),
         },
     )
