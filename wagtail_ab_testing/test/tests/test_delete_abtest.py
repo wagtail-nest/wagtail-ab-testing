@@ -16,7 +16,6 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
     def setUp(self):
         self.user = self.login()
 
-        # Convert the user into an moderator
         self.moderators_group = Group.objects.get(name="Moderators")
         for permission in Permission.objects.filter(
             content_type=ContentType.objects.get_for_model(AbTest)
@@ -33,7 +32,6 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
 
         self.factory = RequestFactory()
 
-        # Create test page with a draft revision
         self.page = Page.objects.get(id=1).add_child(
             instance=SimplePage(title="Test", slug="test")
         )
@@ -49,12 +47,10 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         )
 
     def test_check_ab_tests_hook_with_tests(self):
-        # Simulate visiting the delete page
         response = self.client.get(
             reverse("wagtailadmin_pages:delete", args=[self.page.id])
         )
 
-        # Assert redirection to the A/B test confirmation page
         self.assertRedirects(
             response,
             reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id]),
@@ -63,7 +59,6 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
 
     def test_check_ab_tests_hook_without_tests(self):
         AbTest.objects.all().delete()
-        # Simulate visiting the delete page
         request = self.factory.get("/")
         response = check_ab_tests_for_page(request, self.page)
         self.assertIsNone(response)

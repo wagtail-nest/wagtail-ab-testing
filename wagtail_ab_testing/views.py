@@ -720,21 +720,18 @@ def ab_test_delete(request, page_id):
     page = get_object_or_404(Page, id=page_id)
     ab_tests = page.ab_tests.order_by("-first_started_at")
 
-    # Check permissions
     if not request.user.has_perm(
         "wagtailcore.delete_page"
     ) or not request.user.has_perm("wagtail_ab_testing.delete_abtest"):
         raise PermissionDenied
 
     if request.method == "POST":
-        # Delete all A/B tests for the page
         page.ab_tests.all().delete()
 
         return redirect(
             reverse("wagtailadmin_pages:delete", kwargs={"page_id": page_id})
         )
 
-    # If GET request, render the confirmation page
     return render(
         request,
         "wagtail_ab_testing/delete_ab_tests.html",
