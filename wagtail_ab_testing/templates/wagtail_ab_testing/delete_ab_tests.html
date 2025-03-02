@@ -67,7 +67,7 @@
                 </tbody>
             </table>
                 <p class="status-msg failure" >This action cannot be undone.</p>
-            <form action="{% url 'wagtail_ab_testing:ab_test_delete' page.id %}" method="POST">
+            <form method="POST">
                 {% csrf_token %}
                 <input type="submit" value="{% trans 'Yes, delete A/B tests' %}" class="button serious">
                 <a href="{% if next %}{{ next }}{% else %}{% url 'wagtailadmin_explore' page.get_parent.id %}{% endif %}" class="button button-secondary">{% trans "No, don't Delete" %}</a>
