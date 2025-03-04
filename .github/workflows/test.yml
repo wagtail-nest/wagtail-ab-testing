@@ -30,8 +30,8 @@ jobs:
         run: |
           npm run build
 
-  lint_python:
-    name: Python Lint
+  lint_precommit:
+    name: Lint Precommit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +41,8 @@ jobs:
         with:
           python-version: 3.13
       - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --all-files
 
   test_python:
     services:
