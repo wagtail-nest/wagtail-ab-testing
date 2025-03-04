@@ -1,7 +1,14 @@
-(function() {
+(function () {
     // Check if Do Not Track is enabled
     if (window.doNotTrack || navigator.doNotTrack || navigator.msDoNotTrack) {
-        if (window.doNotTrack == '1' || navigator.doNotTrack == 'yes' || navigator.doNotTrack == '1' || navigator.msDoNotTrack == '1' || 'msTrackingProtectionEnabled' in window.external && window.external.msTrackingProtectionEnabled()) {
+        if (
+            window.doNotTrack == '1' ||
+            navigator.doNotTrack == 'yes' ||
+            navigator.doNotTrack == '1' ||
+            navigator.msDoNotTrack == '1' ||
+            ('msTrackingProtectionEnabled' in window.external &&
+                window.external.msTrackingProtectionEnabled())
+        ) {
             // Don't track this browser
             return;
         }
@@ -10,7 +17,9 @@
     // Read the tracking parameters from JSON script
     let trackingParams = null;
     if (document.getElementById('abtesting-tracking-params')) {
-        trackingParams = JSON.parse(document.getElementById('abtesting-tracking-params').textContent);
+        trackingParams = JSON.parse(
+            document.getElementById('abtesting-tracking-params').textContent,
+        );
         // Attach the wagtailAbTesting object to the window
         window.wagtailAbTesting = trackingParams;
     }
@@ -48,52 +57,73 @@
             }
 
             // Add this goal page/event into the goals data structure
-            goals[window.wagtailAbTesting.goalPageId] = goals[window.wagtailAbTesting.goalPageId] || {};
-            goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent] = goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent] || [];
+            goals[window.wagtailAbTesting.goalPageId] =
+                goals[window.wagtailAbTesting.goalPageId] || {};
+            goals[window.wagtailAbTesting.goalPageId][
+                window.wagtailAbTesting.goalEvent
+            ] =
+                goals[window.wagtailAbTesting.goalPageId][
+                    window.wagtailAbTesting.goalEvent
+                ] || [];
 
             // Check if this user is already a participant in this test
             // We could check the cookie instead, but it's possible that the user has cleared their cookies but not local storage
-            if (goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent].indexOf(window.wagtailAbTesting.testId) === -1) {
-                var cookieName = 'wagtail-ab-testing_' + window.wagtailAbTesting.testId + '_version';
+            if (
+                goals[window.wagtailAbTesting.goalPageId][
+                    window.wagtailAbTesting.goalEvent
+                ].indexOf(window.wagtailAbTesting.testId) === -1
+            ) {
+                var cookieName =
+                    'wagtail-ab-testing_' +
+                    window.wagtailAbTesting.testId +
+                    '_version';
                 if (!document.cookie.includes(cookieName)) {
-                    fetch(
-                        window.wagtailAbTesting.urls.registerParticipant, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                test_id: window.wagtailAbTesting.testId,
-                                version: window.wagtailAbTesting.version
-                            })
-                        }
-                    ).then(function(response) {
+                    fetch(window.wagtailAbTesting.urls.registerParticipant, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            test_id: window.wagtailAbTesting.testId,
+                            version: window.wagtailAbTesting.version,
+                        }),
+                    }).then(function (response) {
                         if (response.status === 200) {
                             // Put the version into a cookie so that Wagtail continues to serve this version
                             var expires = new Date();
                             expires.setFullYear(expires.getFullYear() + 1);
-                            document.cookie = cookieName + '=' + window.wagtailAbTesting.version + '; path=/; expires=' + expires.toUTCString();
+                            document.cookie =
+                                cookieName +
+                                '=' +
+                                window.wagtailAbTesting.version +
+                                '; path=/; expires=' +
+                                expires.toUTCString();
 
                             // Store the test ID against the goal event in the goals data structure
                             // We will use this for knowing when to call the goal reached API later
-                            goals[window.wagtailAbTesting.goalPageId][window.wagtailAbTesting.goalEvent].push(window.wagtailAbTesting.testId);
-                            window.localStorage.setItem('abtesting-goals', JSON.stringify(goals));
+                            goals[window.wagtailAbTesting.goalPageId][
+                                window.wagtailAbTesting.goalEvent
+                            ].push(window.wagtailAbTesting.testId);
+                            window.localStorage.setItem(
+                                'abtesting-goals',
+                                JSON.stringify(goals),
+                            );
                         }
                     });
                 }
             }
         }
 
-        window.wagtailAbTesting.triggerEvent = function(event) {
+        window.wagtailAbTesting.triggerEvent = function (event) {
             // Check if any goals were reached
             var goalsJson = window.localStorage.getItem('abtesting-goals');
             if (!goalsJson) {
-                return
+                return;
             }
 
             var goals = JSON.parse(goalsJson);
 
-            var checkGoalReached = function(pageId) {
+            var checkGoalReached = function (pageId) {
                 var goalsForPage = goals[pageId];
                 if (!goalsForPage) {
                     return;
@@ -103,29 +133,31 @@
                     return;
                 }
 
-                goalsForEvent.forEach(function(testId) {
-                    var cookieName = 'wagtail-ab-testing_' + testId + '_version';
+                goalsForEvent.forEach(function (testId) {
+                    var cookieName =
+                        'wagtail-ab-testing_' + testId + '_version';
                     var version = getCookie(cookieName);
 
                     if (version) {
-                        fetch(
-                            window.wagtailAbTesting.urls.goalReached, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    test_id: testId,
-                                    version: version
-                                })
-                            }
-                        );
+                        fetch(window.wagtailAbTesting.urls.goalReached, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                test_id: testId,
+                                version: version,
+                            }),
+                        });
                     }
                 });
 
                 // Remove those goals from local storage so we don't use them again
                 delete goals[pageId][event];
-                window.localStorage.setItem('abtesting-goals', JSON.stringify(goals));
+                window.localStorage.setItem(
+                    'abtesting-goals',
+                    JSON.stringify(goals),
+                );
             };
 
             // Check goals on current page

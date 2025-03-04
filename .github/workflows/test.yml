@@ -2,114 +2,114 @@ name: Test & Lint
 # Inspired by https://github.com/wagtail/wagtail-bakery/blob/0bfff2a7446e6119156279d22cfac2137960145d/.github/workflows/test.yml
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-  workflow_call:  # Allow for the publish workflows to run the tests by calling this workflow
+    push:
+        branches:
+            - main
+    pull_request:
+    workflow_call: # Allow for the publish workflows to run the tests by calling this workflow
 
 jobs:
-  qa_javascript:
-    name: JavaScript
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          cache: 'npm'
-          node-version: 20
-      - name: Install dependencies
-        run: |
-          npm ci
-      - name: Lint JavaScript
-        run: |
-          npm run lint
-      - name: Compile JavaScript
-        run: |
-          npm run build
+    qa_javascript:
+        name: JavaScript
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version: 20
+            - name: Install dependencies
+              run: |
+                  npm ci
+            - name: Lint JavaScript
+              run: |
+                  npm run lint
+            - name: Compile JavaScript
+              run: |
+                  npm run build
 
-  lint_precommit:
-    name: Lint Precommit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.13
-      - uses: pre-commit/action@v3.0.1
-        with:
-          extra_args: --all-files
+    lint_precommit:
+        name: Lint Precommit
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: 3.13
+            - uses: pre-commit/action@v3.0.1
+              with:
+                  extra_args: --all-files
 
-  test_python:
-    services:
-        postgres:
-          image: postgres:16
-          env:
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: postgres
-          options: >-
-            --health-cmd pg_isready
-            --health-interval 10s
-            --health-timeout 5s
-            --health-retries 5
-          ports:
-            - 5432:5432
-    name: Python ${{ matrix.python}} ${{ matrix.toxenv }}
-    runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-      matrix:
-        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        experimental: [false]
-        toxenv: ["py"]
-        include:
-            # Future Wagtail release from main branch (allowed to fail)
-          - python: "3.13"
-            toxenv: wagtailmain-sqlite
-            experimental: true
-          - python: "3.13"
-            toxenv: wagtailmain-postgres
-            experimental: true
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Install dependencies
-        run: |
-          python -m pip install tox coverage
+    test_python:
+        services:
+            postgres:
+                image: postgres:16
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+                ports:
+                    - 5432:5432
+        name: Python ${{ matrix.python}} ${{ matrix.toxenv }}
+        runs-on: ubuntu-latest
+        continue-on-error: ${{ matrix.experimental }}
+        strategy:
+            matrix:
+                python: ['3.9', '3.10', '3.11', '3.12', '3.13']
+                experimental: [false]
+                toxenv: ['py']
+                include:
+                    # Future Wagtail release from main branch (allowed to fail)
+                    - python: '3.13'
+                      toxenv: wagtailmain-sqlite
+                      experimental: true
+                    - python: '3.13'
+                      toxenv: wagtailmain-postgres
+                      experimental: true
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - name: Set up Python ${{ matrix.python }}
+              uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ matrix.python }}
+            - name: Install dependencies
+              run: |
+                  python -m pip install tox coverage
 
-        # This step runs only for jobs NOT in the include matrix
-      - name: Run tox targets for Python ${{ matrix.python }}
-        if: ${{ matrix.toxenv == 'py' }}
-        run: |
-          # Run only the tox environments that match the Python version
-          tox run -f py$(echo ${{ matrix.python }} | tr -d .)
-          coverage combine
-          coverage report
-          # Codecov does not support the .coverage file generated by coverage, so we convert it to xml
-          coverage xml
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost/wagtail_ab_testing
-      - name: Upload coverage reports to Codecov
-        if: ${{ matrix.toxenv == 'py' }}
-        uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+              # This step runs only for jobs NOT in the include matrix
+            - name: Run tox targets for Python ${{ matrix.python }}
+              if: ${{ matrix.toxenv == 'py' }}
+              run: |
+                  # Run only the tox environments that match the Python version
+                  tox run -f py$(echo ${{ matrix.python }} | tr -d .)
+                  coverage combine
+                  coverage report
+                  # Codecov does not support the .coverage file generated by coverage, so we convert it to xml
+                  coverage xml
+              env:
+                  DATABASE_URL: postgres://postgres:postgres@localhost/wagtail_ab_testing
+            - name: Upload coverage reports to Codecov
+              if: ${{ matrix.toxenv == 'py' }}
+              uses: codecov/codecov-action@v4
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-        # This step runs only for jobs in the include matrix
-      - name: Run tox targets for Python ${{ matrix.python }} (${{ matrix.toxenv }})
-        if: ${{ matrix.toxenv != 'py' }}
-        run: |
-          tox -e ${{ matrix.toxenv }}
-        env:
-          TOXENV: ${{ matrix.toxenv }}
-          DATABASE_URL: postgres://postgres:postgres@localhost/wagtail_ab_testing
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              # This step runs only for jobs in the include matrix
+            - name: Run tox targets for Python ${{ matrix.python }} (${{ matrix.toxenv }})
+              if: ${{ matrix.toxenv != 'py' }}
+              run: |
+                  tox -e ${{ matrix.toxenv }}
+              env:
+                  TOXENV: ${{ matrix.toxenv }}
+                  DATABASE_URL: postgres://postgres:postgres@localhost/wagtail_ab_testing
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

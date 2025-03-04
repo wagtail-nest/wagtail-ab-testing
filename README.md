@@ -10,10 +10,10 @@ Wagtail A/B Testing is an A/B testing package for Wagtail that allows users to c
 
 Key features:
 
--   Create an A/B test on any page from within Wagtail
--   Tests using page revisions (no need to create separate pages for the variants)
--   It prevents users from editing the page while a test is in progress
--   Calculates confidence using a Pearson's chi-squared test
+- Create an A/B test on any page from within Wagtail
+- Tests using page revisions (no need to create separate pages for the variants)
+- It prevents users from editing the page while a test is in progress
+- Calculates confidence using a Pearson's chi-squared test
 
 [Changelog](https://github.com/torchbox/wagtail-ab-testing/blob/main/CHANGELOG.md)
 
