@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
-from wagtail.models import Page
+from wagtail.models import GroupPagePermission, Page
 from wagtail.test.utils import WagtailTestUtils
 
 from wagtail_ab_testing.models import AbTest
@@ -22,10 +22,6 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         ):
             self.moderators_group.permissions.add(permission)
 
-        for permission in Permission.objects.filter(
-            content_type=ContentType.objects.get_for_model(Page)
-        ):
-            self.moderators_group.permissions.add(permission)
         self.user.is_superuser = False
         self.user.groups.add(self.moderators_group)
         self.user.save()
@@ -100,9 +96,9 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_ab_test_delete_view_without_delete_page_permission(self):
-        delete_page_permission = Permission.objects.get(codename="delete_page")
-        self.moderators_group.permissions.remove(delete_page_permission)
-        self.user.save()
+        GroupPagePermission.objects.filter(
+            group=self.moderators_group, permission__codename="change_page"
+        ).delete()
 
         response = self.client.get(
             reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])

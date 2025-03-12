@@ -720,9 +720,10 @@ def ab_test_delete(request, page_id):
     page = get_object_or_404(Page, id=page_id)
     ab_tests = page.ab_tests.order_by("-first_started_at")
 
-    if not request.user.has_perm(
-        "wagtailcore.delete_page"
-    ) or not request.user.has_perm("wagtail_ab_testing.delete_abtest"):
+    if not (
+        page.permissions_for_user(request.user).can_delete()
+        and request.user.has_perm("wagtail_ab_testing.delete_abtest")
+    ):
         raise PermissionDenied
 
     if request.method == "POST":
