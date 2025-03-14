@@ -87,13 +87,21 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
             reverse("wagtail_ab_testing_admin:ab_test_delete", args=[self.page.id])
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, reverse("wagtailadmin_home"))
+        self.assertEqual(
+            response.context["message"],
+            "Sorry, you do not have permission to access this area.",
+        )
 
         response = self.client.post(
             reverse("wagtail_ab_testing_admin:ab_test_delete", args=[self.page.id])
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, reverse("wagtailadmin_home"))
+        self.assertEqual(
+            response.context["message"],
+            "Sorry, you do not have permission to access this area.",
+        )
 
     def test_ab_test_delete_view_without_delete_page_permission(self):
         GroupPagePermission.objects.filter(
@@ -104,10 +112,18 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
             reverse("wagtail_ab_testing_admin:ab_test_delete", args=[self.page.id])
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, reverse("wagtailadmin_home"))
+        self.assertEqual(
+            response.context["message"],
+            "Sorry, you do not have permission to access this area.",
+        )
 
         response = self.client.post(
             reverse("wagtail_ab_testing_admin:ab_test_delete", args=[self.page.id])
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, reverse("wagtailadmin_home"))
+        self.assertEqual(
+            response.context["message"],
+            "Sorry, you do not have permission to access this area.",
+        )
