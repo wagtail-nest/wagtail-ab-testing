@@ -49,7 +49,7 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
 
         self.assertRedirects(
             response,
-            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id]),
+            reverse("wagtail_ab_testing_admin:ab_test_delete", args=[self.page.id]),
             msg_prefix="Redirection to the delete A/B tests confirmation page failed.",
         )
 
@@ -67,7 +67,7 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         self.assertTemplateUsed(response, "wagtail_ab_testing/delete_ab_tests.html")
 
         response = self.client.post(
-            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
+            reverse("wagtail_ab_testing_admin:ab_test_delete", args=[self.page.id])
         )
 
         self.assertEqual(AbTest.objects.filter(page=self.page).count(), 0)
@@ -84,13 +84,13 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         self.user.save()
 
         response = self.client.get(
-            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
+            reverse("wagtail_ab_testing_admin:ab_test_delete", args=[self.page.id])
         )
 
         self.assertEqual(response.status_code, 403)
 
         response = self.client.post(
-            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
+            reverse("wagtail_ab_testing_admin:ab_test_delete", args=[self.page.id])
         )
 
         self.assertEqual(response.status_code, 403)
@@ -101,13 +101,13 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         ).delete()
 
         response = self.client.get(
-            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
+            reverse("wagtail_ab_testing_admin:ab_test_delete", args=[self.page.id])
         )
 
         self.assertEqual(response.status_code, 403)
 
         response = self.client.post(
-            reverse("wagtail_ab_testing:ab_test_delete", args=[self.page.id])
+            reverse("wagtail_ab_testing_admin:ab_test_delete", args=[self.page.id])
         )
 
         self.assertEqual(response.status_code, 403)

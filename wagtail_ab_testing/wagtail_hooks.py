@@ -247,7 +247,9 @@ def register_add_abtest_permission():
 def check_ab_tests_for_page(request, page):
     if page.ab_tests.exists():
         return HttpResponseRedirect(
-            reverse("wagtail_ab_testing:ab_test_delete", kwargs={"page_id": page.id})
+            reverse(
+                "wagtail_ab_testing_admin:ab_test_delete", kwargs={"page_id": page.id}
+            )
         )
 
     return None
