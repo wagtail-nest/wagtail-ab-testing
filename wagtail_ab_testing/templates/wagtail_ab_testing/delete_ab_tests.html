@@ -1,0 +1,76 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n wagtailadmin_tags %}
+{% block titletag %}{% trans "Delete A/B Tests" %} - {{ page.title }}{% endblock %} 
+
+{% block content %}
+    {% include "wagtailadmin/shared/header.html" with title=_("A/B Tests") subtitle=page.get_admin_display_title icon="doc-empty-inverse" %}
+
+    <div class="nice-padding">
+        <p>
+            {% blocktrans count counter=ab_tests.count %}
+                1 A/B test associated with this page will be permanently deleted.
+            {% plural %}
+                All {{ counter }} A/B tests associated with this page will be permanently deleted.
+            {% endblocktrans %}
+        </p>
+        <table class="listing">
+            <thead>
+                <tr>
+                    <th>
+                        {% trans "Test Name" %}
+                    </th>
+                    <th>
+                        {% trans "Goal Event" %}
+                    </th>
+                    <th>
+                        {% trans "Status" %}
+                    </th>
+                    <th>
+                        {% trans "Created By" %}
+                    </th>
+                    <th>
+                        {% trans "Start Date" %}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for test in ab_tests %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'wagtailadmin_pages:edit' page.id %}">
+                                {{ test.name }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="status-tag primary">
+                                {{ test.goal_event }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-tag primary">
+                                {{ test.get_status_description }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-tag primary">
+                                {{ test.created_by }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-tag primary">
+                                {% trans "Not started" as not_started_str %}
+                                {{ test.first_started_at|default:not_started_str }}
+                            </span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="status-msg failure" >This action cannot be undone.</p>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="submit" value="{% trans 'Yes, delete A/B tests' %}" class="button serious">
+            <a href="{% url 'wagtailadmin_explore' page.get_parent.id %}" class="button button-secondary">{% trans "No, don't Delete" %}</a>
+        </form>
+    </div>
+{% endblock %}
