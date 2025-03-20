@@ -1,60 +1,60 @@
 name: Publish to Test PyPI
 on:
-  release:
-    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#release
-    types: [prereleased]
+    release:
+        # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#release
+        types: [prereleased]
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
+    test:
+        uses: ./.github/workflows/test.yml
 
-  build:
-    needs: ['test']
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    build:
+        needs: ['test']
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
 
-      - name: Install Node dependencies
-        run: |
-          npm ci
+            - name: Install Node dependencies
+              run: |
+                  npm ci
 
-      - name: Compile JavaScript
-        run: |
-          npm run build
+            - name: Compile JavaScript
+              run: |
+                  npm run build
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.13
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: 3.13
 
-      - name: Install Python dependencies
-        run: pip install build
+            - name: Install Python dependencies
+              run: pip install build
 
-      - name: Build package distributions
-        run: python -m build
+            - name: Build package distributions
+              run: python -m build
 
-      - uses: actions/upload-artifact@v4
-        with:
-          path: ./dist
+            - uses: actions/upload-artifact@v4
+              with:
+                  path: ./dist
 
-  # https://docs.pypi.org/trusted-publishers/using-a-publisher/
-  pypi-publish:
-    needs: ['build']
-    environment: 'publish-test'
+    # https://docs.pypi.org/trusted-publishers/using-a-publisher/
+    pypi-publish:
+        needs: ['build']
+        environment: 'publish-test'
 
-    name: upload release to TestPyPI
-    runs-on: ubuntu-latest
-    permissions:
-      # Mandatory for trusted publishing
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@v4
+        name: upload release to TestPyPI
+        runs-on: ubuntu-latest
+        permissions:
+            # Mandatory for trusted publishing
+            id-token: write
+        steps:
+            - uses: actions/download-artifact@v4
 
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: artifact/
-          print-hash: true
-          repository-url: https://test.pypi.org/legacy/
+            - name: Publish package distributions to PyPI
+              uses: pypa/gh-action-pypi-publish@release/v1
+              with:
+                  packages-dir: artifact/
+                  print-hash: true
+                  repository-url: https://test.pypi.org/legacy/
