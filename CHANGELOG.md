@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.12] - [Unreleased]
 
+- [Add a confirmation screen when deleting a page with A/B tests](https://github.com/wagtail-nest/wagtail-ab-testing/pull/94)
+- [Add preliminary for Wagtail 7.0](https://github.com/wagtail-nest/wagtail-ab-testing/pull/97)
+- [Add support for Wagtail 6.4](https://github.com/wagtail-nest/wagtail-ab-testing/pull/97)
 - [Add support for Wagtail 6.3 LTS](https://github.com/wagtail-nest/wagtail-ab-testing/pull/91)
 - [Add support for Django 5.1](https://github.com/wagtail-nest/wagtail-ab-testing/pull/91)
 - [Add support for Python 3.13](https://github.com/wagtail-nest/wagtail-ab-testing/pull/91)
+- [Maintenance: update frontend dependencies](https://github.com/wagtail-nest/wagtail-ab-testing/pull/92)
 
 ## [0.11.1] - 2024-10-02
 
