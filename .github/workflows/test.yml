@@ -47,7 +47,7 @@ jobs:
     test_python:
         services:
             postgres:
-                image: postgres:16
+                image: postgres:17
                 env:
                     POSTGRES_USER: postgres
                     POSTGRES_PASSWORD: postgres
