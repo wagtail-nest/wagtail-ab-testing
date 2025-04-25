@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.12] - [Unreleased]
+## [0.12] - 2025-04-25
 
 - [Add a confirmation screen when deleting a page with A/B tests](https://github.com/wagtail-nest/wagtail-ab-testing/pull/94)
 - [Add preliminary for Wagtail 7.0](https://github.com/wagtail-nest/wagtail-ab-testing/pull/97)
