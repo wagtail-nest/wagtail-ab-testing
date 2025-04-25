@@ -6,3 +6,5 @@
 
 # Reformat with ruff
 649fe6694789e71190bdda1719f8b5ea2bb764b4
+# Pre-commit formatting
+b1739a313080a52fe73fd8b246b65b349a387041
