@@ -2,53 +2,53 @@ name: Nightly Wagtail test
 # Inspired by: https://github.com/torchbox/wagtailmedia/blob/main/.github/workflows/nightly-tests.yml
 
 on:
-  schedule:
-    # Run every Monday at midnight
-    - cron: "0 0 * * 1"
+    schedule:
+        # Run every Monday at midnight
+        - cron: '0 0 * * 1'
 
-  workflow_dispatch:
+    workflow_dispatch:
 
 jobs:
-  nightly-test:
-    # Cannot check the existence of secrets, so limiting to repository name to prevent all forks to run nightly.
-    # See: https://github.com/actions/runner/issues/520
-    if: ${{ github.repository == 'wagtail-nest/wagtail-ab-testing' }}
-    runs-on: ubuntu-latest
+    nightly-test:
+        # Cannot check the existence of secrets, so limiting to repository name to prevent all forks to run nightly.
+        # See: https://github.com/actions/runner/issues/520
+        if: ${{ github.repository == 'wagtail-nest/wagtail-ab-testing' }}
+        runs-on: ubuntu-latest
 
-    services:
-        postgres:
-          image: postgres:16
-          env:
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: postgres
-          options: >-
-            --health-cmd pg_isready
-            --health-interval 10s
-            --health-timeout 5s
-            --health-retries 5
-          ports:
-            - 5432:5432
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install dependencies
-        run: |
-          python -m pip install tox requests
-      - name: Test
-        id: test
-        continue-on-error: true
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost/wagtail_ab_testing
-        run: |
-          tox -e wagtailmain-postgres,wagtailmain-sqlite
+        services:
+            postgres:
+                image: postgres:16
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+                ports:
+                    - 5432:5432
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: '3.12'
+            - name: Install dependencies
+              run: |
+                  python -m pip install tox requests
+            - name: Test
+              id: test
+              continue-on-error: true
+              env:
+                  DATABASE_URL: postgres://postgres:postgres@localhost/wagtail_ab_testing
+              run: |
+                  tox -e wagtailmain-postgres,wagtailmain-sqlite
 
-      - name: Send Slack notification on failure
-        if: steps.test.outcome == 'failure'
-        run: |
-          python .github/report_nightly_build_failure.py
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+            - name: Send Slack notification on failure
+              if: steps.test.outcome == 'failure'
+              run: |
+                  python .github/report_nightly_build_failure.py
+              env:
+                  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
