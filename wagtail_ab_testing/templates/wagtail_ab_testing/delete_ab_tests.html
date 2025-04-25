@@ -70,7 +70,7 @@
         <form method="POST">
             {% csrf_token %}
             <input type="submit" value="{% trans 'Yes, delete A/B tests' %}" class="button serious">
-            <a href="{% url 'wagtailadmin_explore' page.get_parent.id %}" class="button button-secondary">{% trans "No, don't Delete" %}</a>
+            <a href="{% url 'wagtailadmin_explore' page.get_parent.id %}" class="button button-secondary">{% trans "No, don't delete" %}</a>
         </form>
     </div>
 {% endblock %}
