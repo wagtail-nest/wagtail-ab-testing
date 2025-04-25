@@ -29,7 +29,7 @@
         "eslint-plugin-jsx-a11y": "^6.8.0",
         "eslint-plugin-react": "^7.33.0",
         "file-loader": "^6.2.0",
-        "prettier": "~3.x",
+        "prettier": "3.5.3",
         "sass": "^1.71.1",
         "sass-loader": "^14.1.0",
         "style-loader": "^3.3.4",
