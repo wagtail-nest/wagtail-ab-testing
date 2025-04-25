@@ -44,7 +44,7 @@ jobs:
               env:
                   DATABASE_URL: postgres://postgres:postgres@localhost/wagtail_ab_testing
               run: |
-                  tox -e wagtailmain-postgres,wagtailmain-sqlite
+                  tox -e future-postgres,future-sqlite
 
             - name: Send Slack notification on failure
               if: steps.test.outcome == 'failure'
