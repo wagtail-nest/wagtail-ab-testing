@@ -47,7 +47,7 @@ jobs:
     test_python:
         services:
             postgres:
-                image: postgres:16
+                image: postgres:17
                 env:
                     POSTGRES_USER: postgres
                     POSTGRES_PASSWORD: postgres
@@ -67,12 +67,12 @@ jobs:
                 experimental: [false]
                 toxenv: ['py']
                 include:
-                    # Future Wagtail release from main branch (allowed to fail)
+                    # Future Wagtail and Django versions from main branch (allowed to fail)
                     - python: '3.13'
-                      toxenv: wagtailmain-sqlite
+                      toxenv: future-sqlite
                       experimental: true
                     - python: '3.13'
-                      toxenv: wagtailmain-postgres
+                      toxenv: future-postgres
                       experimental: true
         steps:
             - uses: actions/checkout@v4
