@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.13] - UNRELEASED
 
-- Nothing new yet
+- [Drop (official) support for Wagtail 5.2, 6.0, 6.1, 6.2 and 6.4](https://github.com/wagtail-nest/wagtail-ab-testing/pull/99)
+- [Add support for Wagtail 7.1](https://github.com/wagtail-nest/wagtail-ab-testing/pull/99)
 
 ## [0.12] - 2025-04-25
 

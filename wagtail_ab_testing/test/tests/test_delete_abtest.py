@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -36,7 +36,7 @@ class TestDeleteAbTestConfirmationPage(WagtailTestUtils, TestCase):
         self.ab_test = AbTest.objects.create(
             page=self.page,
             name="Test AB",
-            first_started_at=datetime(2023, 2, 15),
+            first_started_at=datetime(2023, 2, 15, tzinfo=timezone.utc),
             variant_revision=self.page.get_latest_revision(),
             status=AbTest.STATUS_DRAFT,
             sample_size=10,

@@ -22,7 +22,6 @@ from rest_framework.decorators import (
     permission_classes,
 )
 from rest_framework.response import Response
-from wagtail import VERSION as WAGTAIL_VERSION
 from wagtail.admin import messages, panels
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
@@ -621,31 +620,13 @@ class AbTestingReportFilterSet(WagtailFilterSet):
 
 
 class AbTestingReportView(ReportView):
-    title = gettext_lazy("A/B testing")
+    page_title = gettext_lazy("A/B testing")
     index_results_url_name = "wagtail_ab_testing_admin:report_results"
     index_url_name = "wagtail_ab_testing_admin:report"
     results_template_name = "wagtail_ab_testing/report.html"
     header_icon = "people-arrows"
 
     filterset_class = AbTestingReportFilterSet
-
-    @property
-    def template_name(self):
-        # Upgrade consideration: https://docs.wagtail.org/en/stable/releases/6.2.html#adjust-the-templates
-        # TODO: compatibility: remove `template_name` getter once Wagtail 6.2
-        # is the minimum supported version
-
-        # If we are on Wagtail 6.1 or below, we need to provide the 'old'-style report template
-        if WAGTAIL_VERSION < (6, 2):
-            return "wagtail_ab_testing/_compat/report.html"
-
-        return ReportView.template_name
-
-    @property
-    # TODO: compatibility: replace `title` attribute with `page_title` and
-    # delete this getter once Wagtail 6.2 is the minimum supported version
-    def page_title(self):
-        return self.title
 
     def get_queryset(self):
         return AbTest.objects.all().order_by(
