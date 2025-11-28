@@ -63,15 +63,15 @@ jobs:
         continue-on-error: ${{ matrix.experimental }}
         strategy:
             matrix:
-                python: ['3.9', '3.10', '3.11', '3.12', '3.13']
+                python: ['3.10', '3.11', '3.12', '3.13', '3.14']
                 experimental: [false]
                 toxenv: ['py']
                 include:
                     # Future Wagtail and Django versions from main branch (allowed to fail)
-                    - python: '3.13'
+                    - python: '3.14'
                       toxenv: future-sqlite
                       experimental: true
-                    - python: '3.13'
+                    - python: '3.14'
                       toxenv: future-postgres
                       experimental: true
         steps:
