@@ -5,11 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.13] - UNRELEASED
+## [0.13] - 2026-02-22
 
+- Add support for Django 6.0
+- Add support for Wagtail 7.3
 - [Add support for Wagtail 7.2](https://github.com/wagtail-nest/wagtail-ab-testing/pull/100)
 - [Drop (official) support for Wagtail 5.2, 6.0, 6.1, 6.2 and 6.4](https://github.com/wagtail-nest/wagtail-ab-testing/pull/99)
-- [Add support for Wagtail 7.1](https://github.com/wagtail-nest/wagtail-ab-testing/pull/99)
+- The package javascript files are now built with Node 24
 
 ## [0.12] - 2025-04-25
 

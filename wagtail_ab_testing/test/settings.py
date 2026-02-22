@@ -171,3 +171,10 @@ MEDIA_ROOT = os.path.join(PROJECT_DIR, "media")
 WAGTAIL_SITE_NAME = "Wagtail A/B Testing test site"
 
 WAGTAILADMIN_BASE_URL = "http://example.com"
+
+
+# If postgres is the backend, install "django.contrib.postgres" to
+# INSTALLED_APPS to make sure that required postgres-specific features are
+# available.
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+    INSTALLED_APPS.append("django.contrib.postgres")
