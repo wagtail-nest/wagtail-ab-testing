@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wagtail-ab-testing"
-version = "0.13"
+version = "0.14"
 description = "A/B Testing for Wagtail"
 readme = "README.md"
 license = "BSD-3-Clause"
