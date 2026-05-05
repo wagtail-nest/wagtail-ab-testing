@@ -19,7 +19,7 @@ Key features:
 
 ## Usage
 
-Wagtail A/B Testing works with Django 4.2+, Wagtail 6.3+ on Python 3.10+ environments.
+Wagtail A/B Testing works with Django 5.2+ and supported Wagtail 7.x releases on Python 3.10+ environments.
 
 ### Creating an A/B test
 
