@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.14] - UNRELEASED
 
-- Nothing new yet
+- Add support for Wagtail 7.4 LTS
+- Update dev tooling: bump `prettier` to 3.8.3, `freezegun` to 1.5.5, ruff pre-commit hook to v0.15.12
+- Relax `dj-database-url` test constraint to `>=2.3.0,<4`
 
 ## [0.13] - 2026-02-22
 
