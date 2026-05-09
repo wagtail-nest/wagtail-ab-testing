@@ -238,7 +238,7 @@ export default {
                 // Participants of a test would have a cookie that tells us which
                 // version of the page being tested on that they should see
                 // If they don't have this cookie, serve a random version
-                const versionCookieName = `abtesting-${testId}-version`;
+                const versionCookieName = `wagtail-ab-testing_${testId}_version`;
                 const cookie = request.headers.get('cookie');
                 let version;
                 if (cookie && cookie.includes(`${versionCookieName}=control`)) {
