@@ -29,7 +29,7 @@
 {% endblock %}
 
 {% block extra_js %}
-    {% include "wagtailadmin/pages/_editor_js.html" %}
+    {% hook_output 'insert_editor_js' %}
     {{ goal_selector_props|json_script:"data-goal-selector-props" }}
     {% url 'wagtailadmin_home' as wagtailadmin_root_url %}
     {{ wagtailadmin_root_url|json_script:"wagtail-ab-testing-admin-root-url" }}

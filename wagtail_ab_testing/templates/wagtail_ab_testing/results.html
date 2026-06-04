@@ -123,7 +123,7 @@
 {% endblock %}
 
 {% block extra_js %}
-    {% include "wagtailadmin/pages/_editor_js.html" %}
+    {% hook_output 'insert_editor_js' %}
     <script src="{% url 'wagtail_ab_testing_admin:javascript_catalog' %}"></script>
     <script type="text/javascript" src="{% versioned_static 'wagtailadmin/js/page-chooser-modal.js' %}"></script>
     <script src="{% versioned_static 'wagtail_ab_testing/js/wagtail-ab-testing.js' %}"></script>
