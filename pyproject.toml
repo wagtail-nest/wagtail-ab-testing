@@ -30,7 +30,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "Django>=5.2",
+    "Wagtail>=7.0",
     "numpy>=1.26,<3",
     "scipy>=1.15,<2",
     "user-agents>=2.2,<2.3",
