@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.14] - UNRELEASED
 
 - Add support for Wagtail 7.4 LTS
+- Fix: allow usage of `numpy` 2.x versions, for compatibility with Python 3.14
+- Fix compatibility issues with upcoming Wagtail 8.0
+- Drop support for Wagtail 6.3 LTS
+- Drop support for Django 4.2
 
 ## [0.13] - 2026-02-22
 
