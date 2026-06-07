@@ -8,17 +8,16 @@ version = "0.14"
 description = "A/B Testing for Wagtail"
 readme = "README.md"
 license = "BSD-3-Clause"
+requires-python = ">=3.10"
 authors = [
     { name = "Wagtail Nest team", email = "hello@wagtail.org" },
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Framework :: Django",
-    "Framework :: Django :: 4.2",
     "Framework :: Django :: 5.2",
     "Framework :: Django :: 6.0",
     "Framework :: Wagtail",
-    "Framework :: Wagtail :: 6",
     "Framework :: Wagtail :: 7",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
@@ -31,17 +30,17 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "numpy>=1.19.4,<2",
-    "scipy>=1.5.4,<2",
+    "Wagtail>=7.0",
+    "numpy>=1.26,<3",
+    "scipy>=1.15,<2",
     "user-agents>=2.2,<2.3",
-    "Wagtail>=6.3",
 ]
 
 [project.optional-dependencies]
 testing = [
     "coverage[toml]>=7.2.7,<8.0",
-    "dj-database-url==2.3.0",
-    "freezegun==1.5.1",
+    "dj-database-url>=2.3.0,<4",
+    "freezegun==1.5.5",
     "pre-commit>=3.4.0",
 ]
 
@@ -88,7 +87,7 @@ exclude_lines = [
 
 
 [tool.ruff]
-target-version = "py39"  # minimum target version
+target-version = "py310"  # minimum target version
 
 exclude = [
     ".github",
