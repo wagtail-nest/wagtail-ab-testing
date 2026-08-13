@@ -2,7 +2,15 @@ from django.urls import reverse
 from rest_framework import fields, routers, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from wagtail.models import Page, Site
+from wagtail import VERSION as WAGTAIL_VERSION
+from wagtail.models import Site
+
+if WAGTAIL_VERSION >= (8, 0):
+    import swapper
+
+    Page = swapper.load_model("wagtailcore", "Page")
+else:
+    from wagtail.models import Page
 
 from .models import AbTest
 
