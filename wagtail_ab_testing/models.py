@@ -13,9 +13,19 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as __
+from wagtail import VERSION as WAGTAIL_VERSION
 from wagtail.signals import page_unpublished
 
 from .events import get_event_types
+
+if WAGTAIL_VERSION >= (8, 0):
+    import swapper
+
+    swapper.set_app_prefix("wagtailcore", "wagtail")
+
+    PAGE_MODEL_NAME = swapper.get_model_name("wagtailcore", "Page")
+else:
+    PAGE_MODEL_NAME = "wagtailcore.Page"
 
 
 class AbTestManager(models.Manager):
@@ -77,7 +87,7 @@ class AbTest(models.Model):
     ]
 
     page = models.ForeignKey(
-        "wagtailcore.Page", on_delete=models.CASCADE, related_name="ab_tests"
+        PAGE_MODEL_NAME, on_delete=models.CASCADE, related_name="ab_tests"
     )
     name = models.CharField(max_length=255)
     hypothesis = models.TextField(blank=True)
@@ -86,7 +96,7 @@ class AbTest(models.Model):
     )
     goal_event = models.CharField(max_length=255)
     goal_page = models.ForeignKey(
-        "wagtailcore.Page",
+        PAGE_MODEL_NAME,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,

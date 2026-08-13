@@ -16,8 +16,11 @@ if WAGTAIL_VERSION >= (8, 0):
     import swapper
 
     Page = swapper.load_model("wagtailcore", "Page")
+    PAGE_MODEL_NAME = swapper.get_model_name("wagtailcore", "Page")
 else:
     from wagtail.models import Page
+
+    PAGE_MODEL_NAME = "wagtailcore.Page"
 
 
 class TestSaveAndCreateAbTestButton(WagtailTestUtils, TestCase):
@@ -207,7 +210,9 @@ class TestAddAbTestFormView(WagtailTestUtils, TestCase, PermissionTests):
             json.loads(response.context["goal_selector_props"]),
             {
                 "goalTypesByPageType": {
-                    "wagtailcore.page": [{"slug": "visit-page", "name": "Visit page"}],
+                    PAGE_MODEL_NAME.lower(): [
+                        {"slug": "visit-page", "name": "Visit page"}
+                    ],
                     "wagtail_ab_testing_test.simplepage": [
                         {"slug": "visit-page", "name": "Visit page"}
                     ],

@@ -18,6 +18,14 @@ import django.db.migrations.operations.special
 import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
+from wagtail import VERSION as WAGTAIL_VERSION
+
+if WAGTAIL_VERSION >= (8, 0):
+    import swapper
+
+    PAGE_MODEL_NAME = swapper.get_model_name("wagtailcore", "Page")
+else:
+    PAGE_MODEL_NAME = "wagtailcore.Page"
 
 
 # Migrated from wagtail_ab_testing.migrations.0007_grant_moderators_add_abtest_permission
@@ -104,7 +112,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
                         related_name="+",
-                        to="wagtailcore.page",
+                        to=PAGE_MODEL_NAME,
                     ),
                 ),
                 (
@@ -112,7 +120,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="ab_tests",
-                        to="wagtailcore.page",
+                        to=PAGE_MODEL_NAME,
                     ),
                 ),
                 (
