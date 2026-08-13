@@ -4,13 +4,20 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
-from wagtail.models import Page
+from wagtail import VERSION as WAGTAIL_VERSION
 from wagtail.test.utils import WagtailTestUtils
 
 from wagtail_ab_testing.models import AbTest
 from wagtail_ab_testing.test.models import SimplePage
 
 from .utils import assert_permission_denied
+
+if WAGTAIL_VERSION >= (8, 0):
+    import swapper
+
+    Page = swapper.load_model("wagtailcore", "Page")
+else:
+    from wagtail.models import Page
 
 
 class TestSaveAndCreateAbTestButton(WagtailTestUtils, TestCase):

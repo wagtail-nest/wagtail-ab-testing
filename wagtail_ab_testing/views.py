@@ -22,11 +22,19 @@ from rest_framework.decorators import (
     permission_classes,
 )
 from rest_framework.response import Response
+from wagtail import VERSION as WAGTAIL_VERSION
 from wagtail.admin import messages, panels
 from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
 from wagtail.admin.views.reports import ReportView
-from wagtail.models import PAGE_MODEL_CLASSES, Page
+from wagtail.models import PAGE_MODEL_CLASSES
+
+if WAGTAIL_VERSION >= (8, 0):
+    import swapper
+
+    Page = swapper.load_model("wagtailcore", "Page")
+else:
+    from wagtail.models import Page
 
 from .events import get_event_types
 from .models import AbTest
