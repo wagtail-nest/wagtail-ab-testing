@@ -13,7 +13,7 @@ jobs:
         steps:
             - uses: actions/checkout@v6
 
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@v6
               with:
                   node-version: 24
 
@@ -35,8 +35,9 @@ jobs:
             - name: Build package distributions
               run: python -m build
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               with:
+                  name: dist
                   path: ./dist
 
     # https://docs.pypi.org/trusted-publishers/using-a-publisher/
@@ -50,11 +51,13 @@ jobs:
             # Mandatory for trusted publishing
             id-token: write
         steps:
-            - uses: actions/download-artifact@v4
+            - uses: actions/download-artifact@v8
+              with:
+                  name: dist
 
             - name: Publish package distributions to PyPI
               uses: pypa/gh-action-pypi-publish@release/v1
               with:
-                  packages-dir: artifact/
+                  packages-dir: dist/
                   print-hash: true
                   repository-url: https://test.pypi.org/legacy/
